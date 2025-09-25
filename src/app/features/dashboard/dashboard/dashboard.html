@@ -1,0 +1,11 @@
+<div class="col-12 md:col-5">
+  <p-card header="Spending by Category">
+    @if(spendingChartData?.datasets[0]?.data?.length > 0) {
+      <div style="position: fixed; height: 300px">
+        <p-chart type="pie" [data]="spendingChartData" [options]="spendingChartOptions"></p-chart>
+      </div>
+    } @else {
+      <p class="text-center p-4">No expense data for this month.</p>
+    }
+  </p-card>
+</div>

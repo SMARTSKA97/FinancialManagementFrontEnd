@@ -1,0 +1,31 @@
+<p-confirmDialog></p-confirmDialog>
+<p-toast></p-toast>
+
+<div class="p-4">
+  <div class="mb-4">
+    <a routerLink="/accounts" class="no-underline">
+      <p-button label="Back to Accounts" icon="pi pi-arrow-left" styleClass="p-button-text"></p-button>
+    </a>
+  </div>
+
+  <p-card header="Transactions">
+    <ng-template pTemplate="header">
+      <div class="flex justify-content-end">
+        <p-button label="New Transaction" icon="pi pi-plus" (onClick)="showTransactionForm()"></p-button>
+      </div>
+    </ng-template>
+
+    @if (isLoading) {
+      <div class="flex justify-content-center p-4">
+        <p-progressSpinner></p-progressSpinner>
+      </div>
+    } @else {
+      <app-data-table [data]="transactions" [columns]="transactionColumns">
+        <ng-template #actions let-transaction>
+          <p-button icon="pi pi-pencil" styleClass="p-button-text p-button-rounded" (onClick)="showTransactionForm(transaction)"></p-button>
+          <p-button icon="pi pi-trash" styleClass="p-button-text p-button-rounded p-button-danger" (onClick)="deleteTransaction(transaction)"></p-button>
+        </ng-template>
+      </app-data-table>
+    }
+  </p-card>
+</div>

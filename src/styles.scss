@@ -1,0 +1,17 @@
+@import "primeicons/primeicons.css";
+
+// Define your application's color palette
+$primary-color: #3B82F6; // blue-500
+$secondary-color: #64748B; // slate-500
+$accent-color: #10B981; // emerald-500
+
+$text-color: #0F172A; // slate-900
+$surface-ground: #F1F5F9; // slate-100
+$surface-card: #FFFFFF;
+
+
+body {
+  // background-color: $surface-ground;
+  // color: $text-color;
+  font-family: var(--font-family);
+}

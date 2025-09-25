@@ -1,0 +1,16 @@
+<form [formGroup]="accountForm" (ngSubmit)="onSubmit()" class="p-4">
+  <div class="field">
+    <label for="name">Account Name</label>
+    <input id="name" type="text" pInputText formControlName="name" class="w-full" />
+  </div>
+
+  <div class="field mt-3">
+    <label for="balance">Starting Balance</label>
+    <p-inputNumber id="balance" formControlName="balance" mode="currency" currency="INR" locale="en-US" class="w-full"></p-inputNumber>
+  </div>
+  
+  <div class="flex justify-content-end mt-4">
+    <p-button label="Cancel" styleClass="p-button-secondary" (onClick)="ref.close()"></p-button>
+    <p-button label="Save" type="submit" styleClass="ml-2" [disabled]="accountForm.invalid"></p-button>
+  </div>
+</form>

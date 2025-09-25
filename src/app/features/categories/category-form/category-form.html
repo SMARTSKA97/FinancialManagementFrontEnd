@@ -1,0 +1,9 @@
+<form [formGroup]="categoryForm" (ngSubmit)="onSubmit()" class="p-4">
+      <div class="field">
+        <label for="name">Category Name</label>
+        <input id="name" type="text" pInputText formControlName="name" class="w-full" />
+      </div>
+      <div class="flex justify-content-end mt-4">
+        <p-button label="Save" type="submit" [disabled]="categoryForm.invalid"></p-button>
+      </div>
+    </form>
