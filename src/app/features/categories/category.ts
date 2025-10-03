@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { ApiResponse, GenericApi } from '../../core/services/generic-api';
 import { map, Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 export interface AccountCategory {
   id: number;
@@ -15,8 +16,8 @@ export interface TransactionCategory {
   providedIn: 'root'
 })
 export class Category {
-  private accountCategoryEndpoint = 'AccountCategories';
-  private transactionCategoryEndpoint = 'TransactionCategories';
+  private accountCategoryEndpoint = environment.apiBaseUrl+'/AccountCategories';
+  private transactionCategoryEndpoint = environment.apiBaseUrl+'/TransactionCategories';
 
   constructor(private apiService: GenericApi) { }
 

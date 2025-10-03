@@ -15,6 +15,7 @@ import { ConfirmationService, MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { GenericApi } from '../../core/services/generic-api';
+import { environment } from '../../../environments/environment';
 
 export interface DashboardSummary {
   netWorth: number;
@@ -33,7 +34,7 @@ export interface SpendingByCategory {
 })
 
 export class DashboardService {
-  private endpoint = 'Dashboard';
+  private endpoint = environment.apiBaseUrl + '/Dashboard';
 
   constructor(private apiService: GenericApi) { }
 

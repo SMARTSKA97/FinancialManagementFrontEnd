@@ -1,6 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { GenericApi } from '../../core/services/generic-api';
 import { map, Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 export enum TransactionType {
   Income,
@@ -24,7 +25,7 @@ export class Transaction {
   constructor(private apiService: GenericApi) { }
 
   getTransactionsForAccount(accountId: number): Observable<Transaction[]> {
-    const endpoint = `accounts/${accountId}/transactions`;
+    const endpoint = environment.apiBaseUrl + `/accounts/${accountId}/transactions`;
     // We use the 'map' operator to extract the 'result' from the ApiResponse
     return this.apiService.get<Transaction[]>(endpoint).pipe(
       map(response => response.result || [])

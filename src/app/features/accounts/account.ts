@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
 import { GenericApi, PaginatedResult } from '../../core/services/generic-api';
+import { environment } from '../../../environments/environment';
 
 export interface Account {
   id: number;
@@ -14,7 +15,7 @@ export interface Account {
   providedIn: 'root'
 })
 export class Account {
-  private endpoint = 'accounts';
+  private endpoint = environment.apiBaseUrl+'/accounts';
 
   constructor(private apiService: GenericApi) { }
 
