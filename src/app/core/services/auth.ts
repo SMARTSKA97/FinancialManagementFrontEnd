@@ -2,12 +2,13 @@ import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common'; // Import isPlatformBrowser
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class Auth {
-  private apiUrl = 'https://localhost:7123/api/Auth'; // Use your API's port
+  private apiUrl = environment.apiBaseUrl + '/Auth'; // Use your API's port
   private isBrowser: boolean;
 
   constructor(

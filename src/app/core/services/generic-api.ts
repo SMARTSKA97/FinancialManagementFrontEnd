@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 export interface ApiResponse<T> {
   result: T;
@@ -20,7 +21,7 @@ export interface PaginatedResult<T> {
   providedIn: 'root'
 })
 export class GenericApi {
-  private baseUrl = 'https://localhost:7123/api'; // Use your API's port
+  private baseUrl = environment.apiBaseUrl + '/api'; // Use your API's port
 
   constructor(private http: HttpClient) { }
 
