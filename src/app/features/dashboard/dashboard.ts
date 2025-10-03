@@ -37,12 +37,11 @@ export class DashboardService {
 
   constructor(private apiService: GenericApi) { }
 
-  getSummary(): Observable<DashboardSummary> {
-    // Use the map operator to extract the 'result'
-    return this.apiService.get<DashboardSummary>(`${this.endpoint}/summary`).pipe(
-      map(response => response.result)
-    );
-  }
+  getSummary() {
+  return this.apiService.get<DashboardSummary>(`${this.endpoint}/summary`).pipe(
+    map(r => r.result)
+  );
+}
 
   getSpendingByCategory(): Observable<SpendingByCategory[]> {
     // Use the map operator to extract the 'result'

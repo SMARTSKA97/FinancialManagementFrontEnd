@@ -21,26 +21,33 @@ export interface PaginatedResult<T> {
   providedIn: 'root'
 })
 export class GenericApi {
-  private baseUrl = environment.apiBaseUrl; // Use your API's port
+  private baseUrl = environment.apiBaseUrl.replace(/\/+$/, ''); // Use your API's port
 
   constructor(private http: HttpClient) { }
 
+  private join(endpoint: string, suffix = ''): string {
+    const clean = endpoint.replace(/^\/+/, '');         // no leading slash
+    const tail  = suffix ? `/${suffix.replace(/^\/+/, '')}` : '';
+    return `${this.baseUrl}/${clean}${tail}`;
+  }
+
   // Generic method for the new /search endpoints
   search<T>(endpoint: string, queryParams: any): Observable<ApiResponse<PaginatedResult<T>>> {
-    return this.http.post<ApiResponse<PaginatedResult<T>>>(`${this.baseUrl}${endpoint}/search`, queryParams);
+    return this.http.post<ApiResponse<PaginatedResult<T>>>(this.join(endpoint, 'search'), queryParams);
   }
 
-  // Generic method for the new /upsert endpoints
+  // POST .../<endpoint>/upsert
   upsert<T>(endpoint: string, data: any): Observable<ApiResponse<T>> {
-    return this.http.post<ApiResponse<T>>(`${this.baseUrl}${endpoint}/upsert`, data);
+    return this.http.post<ApiResponse<T>>(this.join(endpoint, 'upsert'), data);
   }
 
+  // DELETE .../<endpoint>/<id>
   delete<T>(endpoint: string, id: number): Observable<ApiResponse<T>> {
-    return this.http.delete<ApiResponse<T>>(`${this.baseUrl}${endpoint}/${id}`);
+    return this.http.delete<ApiResponse<T>>(this.join(endpoint, String(id)));
   }
 
-  // Generic get for simple, non-paginated data (like categories)
+  // GET .../<endpoint>
   get<T>(endpoint: string): Observable<ApiResponse<T>> {
-    return this.http.get<ApiResponse<T>>(`${this.baseUrl}${endpoint}`);
+    return this.http.get<ApiResponse<T>>(this.join(endpoint));
   }
 }
