@@ -27,20 +27,20 @@ export class GenericApi {
 
   // Generic method for the new /search endpoints
   search<T>(endpoint: string, queryParams: any): Observable<ApiResponse<PaginatedResult<T>>> {
-    return this.http.post<ApiResponse<PaginatedResult<T>>>(`${this.baseUrl}`+`${endpoint}/search`, queryParams);
+    return this.http.post<ApiResponse<PaginatedResult<T>>>(`${this.baseUrl}${endpoint}/search`, queryParams);
   }
 
   // Generic method for the new /upsert endpoints
   upsert<T>(endpoint: string, data: any): Observable<ApiResponse<T>> {
-    return this.http.post<ApiResponse<T>>(`${this.baseUrl}`+`${endpoint}/upsert`, data);
+    return this.http.post<ApiResponse<T>>(`${this.baseUrl}${endpoint}/upsert`, data);
   }
 
   delete<T>(endpoint: string, id: number): Observable<ApiResponse<T>> {
-    return this.http.delete<ApiResponse<T>>(`${this.baseUrl}`+`${endpoint}/${id}`);
+    return this.http.delete<ApiResponse<T>>(`${this.baseUrl}${endpoint}/${id}`);
   }
 
   // Generic get for simple, non-paginated data (like categories)
   get<T>(endpoint: string): Observable<ApiResponse<T>> {
-    return this.http.get<ApiResponse<T>>(`${this.baseUrl}`+`${endpoint}`);
+    return this.http.get<ApiResponse<T>>(`${this.baseUrl}${endpoint}`);
   }
 }
