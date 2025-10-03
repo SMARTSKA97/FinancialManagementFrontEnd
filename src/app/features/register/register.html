@@ -1,19 +1,38 @@
 <div class="flex justify-content-center align-items-center h-screen">
-  <p-card header="Register" [style]="{width: '360px'}">
+  <p-card header="Create an Account" [style]="{width: '400px'}">
     <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+      <!-- Full Name Field -->
       <div class="field">
-        <label for="username">Username</label>
-        <input id="username" type="text" pInputText formControlName="userName" class="w-full" />
+        <label for="name">Full Name</label>
+        <input id="name" type="text" pInputText formControlName="name" class="w-full" />
       </div>
+
+      <!-- Date of Birth Field -->
+      <div class="field mt-3">
+        <label for="dob">Date of Birth</label>
+        <p-datepicker id="dob" formControlName="dateOfBirth" styleClass="w-full" [showIcon]="true" dateFormat="yy-mm-dd"></p-datepicker>
+      </div>
+
+      <!-- Email Field -->
       <div class="field mt-3">
         <label for="email">Email</label>
         <input id="email" type="email" pInputText formControlName="email" class="w-full" />
       </div>
+
+      <!-- Username Field -->
+      <div class="field mt-3">
+        <label for="username">Username</label>
+        <input id="username" type="text" pInputText formControlName="userName" class="w-full" />
+      </div>
+      
+      <!-- Password Field -->
       <div class="field mt-3">
         <label for="password">Password</label>
-        <p-password id="password" formControlName="password" [feedback]="false" class="w-full"></p-password>
+        <p-password id="password" formControlName="password" [feedback]="true" styleClass="w-full" [toggleMask]="true"></p-password>
       </div>
-      <p-button label="Register" type="submit" class="w-full mt-4" [disabled]="registerForm.invalid"></p-button>
+
+      <p-button label="Register" type="submit" styleClass="w-full mt-4"></p-button>
+
       <div class="mt-3 text-center">
         <a routerLink="/login">Already have an account? Login</a>
       </div>

@@ -21,7 +21,7 @@ export interface PaginatedResult<T> {
   providedIn: 'root'
 })
 export class GenericApi {
-  private baseUrl = environment.apiBaseUrl + '/api'; // Use your API's port
+  private baseUrl = environment.apiBaseUrl; // Use your API's port
 
   constructor(private http: HttpClient) { }
 

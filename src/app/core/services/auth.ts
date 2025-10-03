@@ -8,7 +8,7 @@ import { environment } from '../../../environments/environment';
   providedIn: 'root'
 })
 export class Auth {
-  private apiUrl = environment.apiBaseUrl + '/Auth'; // Use your API's port
+  private apiUrl = environment.apiBaseUrl + 'Auth'; // Use your API's port
   private isBrowser: boolean;
 
   constructor(
