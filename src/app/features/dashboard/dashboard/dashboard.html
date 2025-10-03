@@ -1,7 +1,7 @@
-<div class="col-12 md:col-5">
-  <p-card header="Spending by Category">
+<div class="flex w-full justify-content-center">
+  <p-card header="Category Wise Spend">
     @if(spendingChartData?.datasets[0]?.data?.length > 0) {
-      <div style="position: fixed; height: 300px">
+      <div class="flex w-full">
         <p-chart type="pie" [data]="spendingChartData" [options]="spendingChartOptions"></p-chart>
       </div>
     } @else {

@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
 import { finalize, forkJoin } from 'rxjs';
 import { Account } from '../../accounts/account';
-import { DashboardService, SpendingByCategory } from '../dashboard';
+import { DashboardService, DashboardSummary, SpendingByCategory } from '../dashboard';
 import { CardModule } from 'primeng/card';
 import { ChartModule } from 'primeng/chart';
 
@@ -12,14 +12,17 @@ import { ChartModule } from 'primeng/chart';
   styleUrl: './dashboard.scss'
 })
 export class Dashboard implements OnInit {
-  private dashboard = inject(DashboardService);
+  private dashboardService = inject(DashboardService);
+  private accountService = inject(Account);
   private cdr = inject(ChangeDetectorRef);
-  private account = inject(Account);
+  
+  summary: DashboardSummary | null = null;
+  accounts: Account[] = [];
   spendingChartData: any;
   spendingChartOptions: any;
-  isLoading: boolean = false;
-  summary: any;
-  accounts:any;
+  isLoading = false;
+
+  // Other properties for your component
 
   ngOnInit(): void {
     this.loadDashboardData();
@@ -28,9 +31,10 @@ export class Dashboard implements OnInit {
   loadDashboardData(): void {
     this.isLoading = true;
     
-    const summary$ = this.dashboard.getSummary();
-    const accounts$ = this.account.getAccounts();
-    const spending$ = this.dashboard.getSpendingByCategory(); // <-- Fetch chart data
+    const summary$ = this.dashboardService.getSummary();
+    // Provide a default query object for the dashboard view
+    const accounts$ = this.accountService.getAccounts({ pageNumber: 1, pageSize: 10 });
+    const spending$ = this.dashboardService.getSpendingByCategory();
 
     forkJoin([summary$, accounts$, spending$]).pipe(
       finalize(() => {
@@ -40,12 +44,13 @@ export class Dashboard implements OnInit {
     ).subscribe({
       next: ([summaryData, accountsData, spendingData]) => {
         this.summary = summaryData;
-        this.accounts = accountsData;
-        this.setupSpendingChart(spendingData); // <-- Call the new chart setup method
+        this.accounts = accountsData.data; // The data is inside the 'data' property of PaginatedResult
+        this.setupSpendingChart(spendingData);
       },
       error: (err) => console.error('Failed to load dashboard data', err)
     });
   }
+
 
   // --- ADD THIS NEW METHOD ---
   setupSpendingChart(data: SpendingByCategory[]): void {

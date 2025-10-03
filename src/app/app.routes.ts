@@ -13,6 +13,7 @@ import { CategoryForm } from './features/categories/category-form/category-form'
 const accountColumns: ColumnDefinition[] = [
     { field: 'name', header: 'Name', isLink: true, linkPath: 'accounts/:id/transactions' },
     { field: 'balance', header: 'Balance', isCurrency: true },
+    { field: 'category', header: 'Category' },
 ];
 
 const transactionColumns: ColumnDefinition[] = [

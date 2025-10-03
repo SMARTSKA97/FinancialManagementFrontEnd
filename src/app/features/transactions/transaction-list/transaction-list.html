@@ -4,7 +4,7 @@
 <div class="p-4">
   <div class="mb-4">
     <a routerLink="/accounts" class="no-underline">
-      <p-button label="Back to Accounts" icon="pi pi-arrow-left" styleClass="p-button-text"></p-button>
+      <p-button label="Back to Accounts" icon="pi pi-arrow-left" class="p-button-text"></p-button>
     </a>
   </div>
 
@@ -22,8 +22,8 @@
     } @else {
       <app-data-table [data]="transactions" [columns]="transactionColumns">
         <ng-template #actions let-transaction>
-          <p-button icon="pi pi-pencil" styleClass="p-button-text p-button-rounded" (onClick)="showTransactionForm(transaction)"></p-button>
-          <p-button icon="pi pi-trash" styleClass="p-button-text p-button-rounded p-button-danger" (onClick)="deleteTransaction(transaction)"></p-button>
+          <p-button icon="pi pi-pencil" class="p-button-text p-button-rounded" (onClick)="showTransactionForm(transaction)"></p-button>
+          <p-button icon="pi pi-trash" class="p-button-text p-button-rounded p-button-danger" (onClick)="deleteTransaction(transaction)"></p-button>
         </ng-template>
       </app-data-table>
     }

@@ -8,7 +8,7 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { ButtonModule } from 'primeng/button';
 import { DatePickerModule } from 'primeng/datepicker';
 import { SelectModule } from 'primeng/select';
-import { Category } from '../../categories/category';
+import { Category, TransactionCategory } from '../../categories/category';
 import { firstValueFrom } from 'rxjs';
 
 @Component({
@@ -21,28 +21,28 @@ export class TransactionForm implements OnInit {
   private fb = inject(FormBuilder);
   public ref = inject(DynamicDialogRef);
   public config = inject(DynamicDialogConfig);
+  // Correctly inject the CategoryService
   private categoryService = inject(Category);
 
   transactionForm: FormGroup;
   transactionTypes: any[];
-  categories: Category[] = [];
+  // Use the correct type for categories
+  categories: TransactionCategory[] = [];
   currentFilter: string = '';
-
 
   constructor() {
     this.transactionForm = this.fb.group({
       description: ['', Validators.required],
       amount: [null, [Validators.required, Validators.min(0.01)]],
       date: [new Date(), Validators.required],
-      type: [TransactionType.Expense, Validators.required]
+      type: [TransactionType.Expense, Validators.required],
+      categoryId: [null]
     });
 
     this.transactionTypes = [
       { label: 'Expense', value: TransactionType.Expense },
       { label: 'Income', value: TransactionType.Income }
     ];
-
-    this.transactionForm.addControl('categoryId', this.fb.control(null)); 
   }
 
   ngOnInit(): void {
@@ -52,8 +52,12 @@ export class TransactionForm implements OnInit {
     }
   }
 
-  loadCategories(): void {
-    this.categoryService.getCategories().subscribe(data => this.categories = data);
+  async loadCategories(): Promise<void> {
+    // The service now returns the array directly
+    const categories = await firstValueFrom(this.categoryService.getTransactionCategories());
+    if (categories) {
+        this.categories = categories;
+    }
   }
 
   filterCategories(event: { filter: string }): void {
@@ -68,21 +72,22 @@ export class TransactionForm implements OnInit {
     return !this.categories.some(c => c.name.toLowerCase() === filter);
   }
 
-  // This method is called when the user clicks the "Add New" button
   async addNewCategory(): Promise<void> {
     const newCategoryName = this.currentFilter.trim();
     if (newCategoryName) {
       try {
-        const newCategory = await firstValueFrom(this.categoryService.createCategory({ name: newCategoryName }));
-        this.categories = [...this.categories, newCategory];
-        this.transactionForm.get('categoryId')?.setValue(newCategory.id);
-        this.currentFilter = ''; // Clear the filter
+        // Use the correct 'upsert' method
+        const newCategory = await firstValueFrom(this.categoryService.upsertTransactionCategory({ name: newCategoryName }));
+        if (newCategory) {
+          this.categories = [...this.categories, newCategory];
+          this.transactionForm.get('categoryId')?.setValue(newCategory.id);
+          this.currentFilter = '';
+        }
       } catch (err) {
         console.error("Failed to create new category", err);
       }
     }
   }
-
 
   onSubmit(): void {
     if (this.transactionForm.valid) {

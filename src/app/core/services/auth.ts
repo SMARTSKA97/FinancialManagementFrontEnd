@@ -25,9 +25,9 @@ export class Auth {
   login(credentials: any): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/login`, credentials).pipe(
       tap(response => {
-        if (this.isBrowser && response && response.token) {
+        if (this.isBrowser && response && response.result.token) {
           // Only access localStorage if in the browser
-          localStorage.setItem('authToken', response.token);
+          localStorage.setItem('authToken', response.result.token);
         }
       })
     );

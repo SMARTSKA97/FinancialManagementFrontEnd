@@ -1,15 +1,17 @@
 <div class="layout-wrapper">
     <p-drawer [(visible)]="sidebarVisible">
-        <h3>Menu</h3>
-        <p-button label="Toggle Dark Mode" (onClick)="toggleDarkMode()"/>
-        <p-button label="Logout" (onClick)="logout()" styleClass="p-button-danger"></p-button>
-        <p-button label="Accounts" (onClick)="navigateToAccounts()"></p-button>
-        <p-button label="Dashboard" (onClick)="navigateToDashboard()"></p-button>
+        <div class="flex flex-column w-full gap-2 align-items-center h-full">
+            <h3>Menu</h3>
+            <p-button label="Toggle Dark Mode" (onClick)="toggleDarkMode()" />
+            <p-button label="Logout" (onClick)="logout()" severity="danger"></p-button>
+            <p-button label="Accounts" (onClick)="navigateToAccounts()"></p-button>
+            <p-button label="Dashboard" (onClick)="navigateToDashboard()"></p-button>
+        </div>
     </p-drawer>
 
     <div class="layout-main">
         <header class="p-2 border-bottom-1 surface-border flex align-items-center">
-            <p-button icon="pi pi-bars" styleClass="p-button-text" (onClick)="sidebarVisible = true"></p-button>
+            <p-button icon="pi pi-bars" text="true" (onClick)="sidebarVisible = true"></p-button>
             <h2 class="ml-2">Financial Planner</h2>
         </header>
         <main class="p-4">

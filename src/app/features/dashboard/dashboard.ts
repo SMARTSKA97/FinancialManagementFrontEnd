@@ -9,7 +9,7 @@ import { TableModule } from 'primeng/table';
 import { ColumnDefinition, DataTable } from '../../shared/components/data-table/data-table';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { AccountForm } from '../accounts/account-form/account-form';
-import { asyncScheduler, filter, finalize, Observable, observeOn, switchMap, tap } from 'rxjs';
+import { asyncScheduler, filter, finalize, map, Observable, observeOn, switchMap, tap } from 'rxjs';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
@@ -34,13 +34,20 @@ export interface SpendingByCategory {
 
 export class DashboardService {
   private endpoint = 'Dashboard';
-  private apiService = inject(GenericApi);
+
+  constructor(private apiService: GenericApi) { }
 
   getSummary(): Observable<DashboardSummary> {
-    return this.apiService.get<DashboardSummary>(`${this.endpoint}/summary`);
+    // Use the map operator to extract the 'result'
+    return this.apiService.get<DashboardSummary>(`${this.endpoint}/summary`).pipe(
+      map(response => response.result)
+    );
   }
 
   getSpendingByCategory(): Observable<SpendingByCategory[]> {
-    return this.apiService.get<SpendingByCategory[]>(`${this.endpoint}/spending-by-category`);
+    // Use the map operator to extract the 'result'
+    return this.apiService.get<SpendingByCategory[]>(`${this.endpoint}/spending-by-category`).pipe(
+      map(response => response.result || [])
+    );
   }
 }

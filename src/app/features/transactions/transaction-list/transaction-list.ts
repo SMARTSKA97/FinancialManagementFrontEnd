@@ -23,7 +23,8 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 export class TransactionList implements OnInit {
 
   private route = inject(ActivatedRoute);
-  private transaction = inject(Transaction);
+  // Correctly inject TransactionService
+  private transactionService = inject(Transaction);
   private cdr = inject(ChangeDetectorRef);
   private messageService = inject(MessageService);
   private dialogService = inject(DialogService);
@@ -38,8 +39,8 @@ export class TransactionList implements OnInit {
     { field: 'date', header: 'Date', isDate: true },
     { field: 'description', header: 'Description' },
     { field: 'amount', header: 'Amount', isCurrency: true, isTransaction: true },
+    { field: 'categoryName', header: 'Category' }
   ];
-
 
   ngOnInit(): void {
     this.loadTransactions();
@@ -48,7 +49,6 @@ export class TransactionList implements OnInit {
   async loadTransactions(): Promise<void> {
     this.isLoading = true;
     try {
-      // 1. Wait for the route parameters to be available
       const params = await firstValueFrom(this.route.paramMap);
       const id = Number(params.get('id'));
 
@@ -59,16 +59,12 @@ export class TransactionList implements OnInit {
       }
       this.accountId = id;
 
-      // 2. Wait for the API call to complete
-      const data = await firstValueFrom(this.transaction.getTransactionsForAccount(this.accountId));
-      this.transactions = data;
+      this.transactions = await firstValueFrom(this.transactionService.getTransactionsForAccount(this.accountId));
 
     } catch (err) {
       console.error('Failed to load transactions', err);
     } finally {
-      // 3. This block runs after success or failure, guaranteeing the spinner hides
       this.isLoading = false;
-      // 4. Manually trigger the UI update
       this.cdr.markForCheck();
     }
   }
@@ -84,17 +80,13 @@ export class TransactionList implements OnInit {
     const result = await firstValueFrom(this.ref.onClose);
     if (result) {
       try {
-        if (isEditMode) {
-          await firstValueFrom(this.transaction.updateTransaction(this.accountId!, transactionToEdit.id, result));
-          this.messageService.add({severity:'success', summary: 'Success', detail: 'Transaction updated'});
-        } else {
-          await firstValueFrom(this.transaction.createTransaction(this.accountId!, result));
-          this.messageService.add({severity:'success', summary: 'Success', detail: 'Transaction added'});
-        }
+        // Use the single 'upsertTransaction' method for both create and update
+        await firstValueFrom(this.transactionService.upsertTransaction(this.accountId!, result));
+        this.messageService.add({ severity: 'success', summary: 'Success', detail: `Transaction ${isEditMode ? 'updated' : 'added'}` });
         this.loadTransactions();
       } catch (err) {
         console.error('Failed to save transaction', err);
-        this.messageService.add({severity:'error', summary: 'Error', detail: 'Failed to save transaction'});
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to save transaction' });
       }
     }
   }
@@ -106,12 +98,12 @@ export class TransactionList implements OnInit {
       icon: 'pi pi-exclamation-triangle',
       accept: async () => {
         try {
-          await firstValueFrom(this.transaction.deleteTransaction(this.accountId!, transaction.id));
-          this.messageService.add({severity:'success', summary: 'Success', detail: 'Transaction deleted'});
+          await firstValueFrom(this.transactionService.deleteTransaction(this.accountId!, transaction.id));
+          this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Transaction deleted' });
           this.loadTransactions();
         } catch (err) {
           console.error('Failed to delete transaction', err);
-          this.messageService.add({severity:'error', summary: 'Error', detail: 'Failed to delete transaction'});
+          this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to delete transaction' });
         }
       }
     });

@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { GenericApi } from '../../core/services/generic-api';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 
 export enum TransactionType {
   Income,
@@ -14,31 +14,35 @@ export interface Transaction {
   date: Date;
   type: TransactionType;
   accountId: number;
+  categoryName?: string;
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class Transaction {
-  private apiService = inject(GenericApi);
+  constructor(private apiService: GenericApi) { }
 
   getTransactionsForAccount(accountId: number): Observable<Transaction[]> {
     const endpoint = `accounts/${accountId}/transactions`;
-    return this.apiService.get<Transaction[]>(endpoint);
+    // We use the 'map' operator to extract the 'result' from the ApiResponse
+    return this.apiService.get<Transaction[]>(endpoint).pipe(
+      map(response => response.result || [])
+    );
   }
 
-  createTransaction(accountId: number, transactionData: any): Observable<Transaction> {
+  // Use the new 'upsert' method for both create and update
+  upsertTransaction(accountId: number, transactionData: any): Observable<Transaction> {
+    const endpoint = `accounts/${accountId}/transactions/upsert`;
+    return this.apiService.upsert<Transaction>(endpoint, transactionData).pipe(
+      map(response => response.result)
+    );
+  }
+
+  deleteTransaction(accountId: number, transactionId: number): Observable<boolean> {
     const endpoint = `accounts/${accountId}/transactions`;
-    return this.apiService.post<Transaction>(endpoint, transactionData);
-  }
-  
-  updateTransaction(accountId: number, transactionId: number, transactionData: any): Observable<void> {
-    const endpoint = `accounts/${accountId}/transactions/${transactionId}`;
-    return this.apiService.put<void>(endpoint, transactionData);
-  }
-
-  deleteTransaction(accountId: number, transactionId: number): Observable<void> {
-    const endpoint = `accounts/${accountId}/transactions/${transactionId}`;
-    return this.apiService.delete<void>(endpoint);
+    return this.apiService.delete<boolean>(endpoint, transactionId).pipe(
+      map(response => response.result)
+    );
   }
 }

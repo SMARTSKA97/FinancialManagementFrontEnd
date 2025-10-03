@@ -17,18 +17,22 @@ export class Layout {
   toggleDarkMode() {
     const element = document.querySelector('html');
     element?.classList.toggle('my-app-dark');
+    this.sidebarVisible = false;
   }
 
   logout(): void {
     this.auth.logout();
     this.router.navigate(['/login']);
+    this.sidebarVisible = false;
   }
 
   navigateToAccounts() {
     this.router.navigate(['/accounts']);
+    this.sidebarVisible = false;
   }
 
   navigateToDashboard() {
     this.router.navigate(['/dashboard']);
+    this.sidebarVisible = false;
   }
 }

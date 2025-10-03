@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
-import { GenericApi } from '../../core/services/generic-api';
+import { map, Observable } from 'rxjs';
+import { GenericApi, PaginatedResult } from '../../core/services/generic-api';
 
 export interface Account {
   id: number;
@@ -14,23 +14,27 @@ export interface Account {
   providedIn: 'root'
 })
 export class Account {
-  private endpoint = 'Accounts';
+  private endpoint = 'accounts';
 
-  constructor(private api: GenericApi) { }
+  constructor(private apiService: GenericApi) { }
 
-  getAccounts(): Observable<Account[]> {
-    return this.api.get<Account[]>(this.endpoint);
+  // Use the new 'search' method for paginated data
+  getAccounts(queryParams: any): Observable<PaginatedResult<Account>> {
+    return this.apiService.search<Account>(this.endpoint, queryParams).pipe(
+      map(response => response.result)
+    );
   }
 
-  createAccount(accountData: { name: string, balance: number }): Observable<Account> {
-    return this.api.post<Account>(this.endpoint, accountData);
+  // Use the new 'upsert' method for both create and update
+  upsertAccount(accountData: any): Observable<Account> {
+    return this.apiService.upsert<Account>(this.endpoint, accountData).pipe(
+      map(response => response.result)
+    );
   }
 
-  updateAccount(id: number, accountData: { name: string, balance: number }): Observable<void> {
-    return this.api.put<void>(`${this.endpoint}/${id}`, accountData);
-  }
-
-  deleteAccount(id: number): Observable<void> {
-    return this.api.delete<void>(`${this.endpoint}/${id}`);
+  deleteAccount(accountId: number): Observable<boolean> {
+    return this.apiService.delete<boolean>(this.endpoint, accountId).pipe(
+      map(response => response.result)
+    );
   }
 } 

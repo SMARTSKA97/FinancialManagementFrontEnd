@@ -6,7 +6,7 @@
     <div class="mb-4">
         <a [routerLink]="backLinkPath" class="no-underline">
             <p-button [label]="'Back to ' + title.replace('s', '')" icon="pi pi-arrow-left"
-                styleClass="p-button-text"></p-button>
+                class="p-button-text"></p-button>
         </a>
     </div>
     }
@@ -24,10 +24,11 @@
         } @else {
         <app-data-table [data]="(items$ | async) || []" [columns]="columns">
             <ng-template #actions let-item>
-                <p-button icon="pi pi-pencil" styleClass="p-button-text p-button-rounded"
-                    (onClick)="showForm(item)"></p-button>
-                <p-button icon="pi pi-trash" styleClass="p-button-text p-button-rounded p-button-danger"
-                    (onClick)="deleteItem(item)"></p-button>
+                <div class="flex gap-2 justify-content-end">
+                    <p-button icon="pi pi-pencil" text="true" rounded="true" (onClick)="showForm(item)"></p-button>
+                    <p-button icon="pi pi-trash" text="true" rounded="true" severity="danger"
+                        (onClick)="deleteItem(item)"></p-button>
+                </div>
             </ng-template>
         </app-data-table>
         }

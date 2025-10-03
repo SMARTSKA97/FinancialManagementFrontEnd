@@ -2,6 +2,20 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
+export interface ApiResponse<T> {
+  result: T;
+  apiResponseStatus: number; // 0 = Success, 1 = Warning, 2 = Error
+  message: string;
+  errors?: string[];
+}
+
+export interface PaginatedResult<T> {
+  totalRecords: number;
+  pageNumber: number;
+  pageSize: number;
+  data: T[];
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -10,19 +24,22 @@ export class GenericApi {
 
   constructor(private http: HttpClient) { }
 
-  get<T>(endpoint: string): Observable<T> {
-    return this.http.get<T>(`${this.baseUrl}/${endpoint}`);
+  // Generic method for the new /search endpoints
+  search<T>(endpoint: string, queryParams: any): Observable<ApiResponse<PaginatedResult<T>>> {
+    return this.http.post<ApiResponse<PaginatedResult<T>>>(`${this.baseUrl}/${endpoint}/search`, queryParams);
   }
 
-  post<T>(endpoint: string, data: any): Observable<T> {
-    return this.http.post<T>(`${this.baseUrl}/${endpoint}`, data);
+  // Generic method for the new /upsert endpoints
+  upsert<T>(endpoint: string, data: any): Observable<ApiResponse<T>> {
+    return this.http.post<ApiResponse<T>>(`${this.baseUrl}/${endpoint}/upsert`, data);
   }
 
-  put<T>(endpoint: string, data: any): Observable<T> {
-    return this.http.put<T>(`${this.baseUrl}/${endpoint}`, data);
+  delete<T>(endpoint: string, id: number): Observable<ApiResponse<T>> {
+    return this.http.delete<ApiResponse<T>>(`${this.baseUrl}/${endpoint}/${id}`);
   }
 
-  delete<T>(endpoint: string): Observable<T> {
-    return this.http.delete<T>(`${this.baseUrl}/${endpoint}`);
+  // Generic get for simple, non-paginated data (like categories)
+  get<T>(endpoint: string): Observable<ApiResponse<T>> {
+    return this.http.get<ApiResponse<T>>(`${this.baseUrl}/${endpoint}`);
   }
 }
