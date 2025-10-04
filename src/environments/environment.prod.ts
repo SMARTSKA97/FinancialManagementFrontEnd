@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiBaseUrl: 'https://localhost:7123/api'
+  apiBaseUrl: 'https://financialmanagementbackend.onrender.com/api'
 };
