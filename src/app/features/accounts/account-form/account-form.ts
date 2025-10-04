@@ -64,7 +64,7 @@ export class AccountForm {
     if (newCategoryName) {
       try {
         // Use the correct 'upsert' method
-        const newCategory = await firstValueFrom(this.categoryService.upsertTransactionCategory({ name: newCategoryName }));
+        const newCategory = await firstValueFrom(this.categoryService.upsertAccountCategory({ name: newCategoryName }));
         if (newCategory) {
           this.accountCategories = [...this.accountCategories, newCategory];
           this.accountForm.get('categoryId')?.setValue(newCategory.id);
