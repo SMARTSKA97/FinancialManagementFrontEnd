@@ -7,7 +7,7 @@ import { MenuItem } from 'primeng/api';
 import { MenuModule } from 'primeng/menu';
 import { environment } from '../../../../environments/environment';
 import { AvatarModule } from 'primeng/avatar';
-import { PopoverModule } from 'primeng/popover'; 
+import { PopoverModule } from 'primeng/popover';
 
 
 @Component({
@@ -22,13 +22,13 @@ export class Layout implements OnInit {
   private router = inject(Router);
   sidebarVisible = false;
   appVersion: string | undefined;
-   userDetails: UserDetails | null = null;
+  userDetails: UserDetails | null = null;
   userInitials: string = '';
   sessionExpires: string | null = null;
   navItems: MenuItem[];
 
   constructor() {
-    this.appVersion = environment.appVersion; 
+    this.appVersion = environment.appVersion;
     this.navItems = [
       {
         label: 'Main',
@@ -43,9 +43,9 @@ export class Layout implements OnInit {
         items: [
           { label: 'Account Categories', icon: 'pi pi-tags', routerLink: '/account-categories', disabled: true, command: () => { this.sidebarVisible = false; } },
           { label: 'Transaction Categories', icon: 'pi pi-tags', routerLink: '/transaction-categories', disabled: true, command: () => { this.sidebarVisible = false; } },
-          {
-            label: 'Toggle Dark Mode', icon: 'pi pi-sun', command: () => { this.toggleDarkMode(); this.sidebarVisible = false; }
-          }
+          { label: 'Toggle Dark Mode', icon: 'pi pi-sun', command: () => { this.toggleDarkMode(); this.sidebarVisible = false; } },
+          { label: 'Support', icon: 'pi pi-sun', routerLink: '/support', command: () => { this.sidebarVisible = false; } },
+
         ]
       }
     ];
@@ -66,7 +66,7 @@ export class Layout implements OnInit {
       }
     });
   }
-  
+
   toggleDarkMode() {
     const element = document.querySelector('html');
     element?.classList.toggle('my-app-dark');

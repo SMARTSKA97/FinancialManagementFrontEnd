@@ -9,6 +9,7 @@ import { ResourcePage } from './features/shared/resource-page/resource-page';
 import { AccountForm } from './features/accounts/account-form/account-form';
 import { TransactionForm } from './features/transactions/transaction-form/transaction-form';
 import { CategoryForm } from './features/categories/category-form/category-form';
+import { Support } from './features/support/support';
 
 const accountColumns: ColumnDefinition[] = [
     { field: 'name', header: 'Name', isLink: true, linkPath: 'accounts/:id/transactions' },
@@ -31,6 +32,7 @@ export const routes: Routes = [
     { path: 'login', component: Login },
     { path: 'register', component: Register },
     { path: 'dashboard', component: Dashboard },
+    { path: 'support', component: Support },
 
     // Route for Accounts (Dashboard)
     {
