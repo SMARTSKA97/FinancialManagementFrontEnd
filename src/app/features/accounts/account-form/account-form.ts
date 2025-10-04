@@ -43,7 +43,11 @@ export class AccountForm {
     }
 
     if (this.config.data) {
-      this.accountForm.patchValue(this.config.data);
+      const category = this.accountCategories.find(c => c.name === this.config.data.accountCategoryName);
+      this.accountForm.patchValue({
+        ...this.config.data,
+        accountCategoryId: category ? category.id : null
+      });
     }
   }
 

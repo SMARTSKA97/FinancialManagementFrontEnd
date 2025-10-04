@@ -1,9 +1,11 @@
 import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common'; // Import isPlatformBrowser
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from './generic-api';
+import { jwtDecode } from 'jwt-decode';
+
 
 // --- AUTH-SPECIFIC DTOs ---
 export interface RegisterUserDto {
@@ -24,6 +26,12 @@ export interface LoginResponseDto {
   userName: string;
 }
 
+export interface UserDetails {
+  name: string;
+  email: string;
+  exp: number; // Expiry timestamp
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -31,11 +39,15 @@ export class Auth {
   private apiBaseUrl = environment.apiBaseUrl;
   private isBrowser: boolean;
 
+  private currentUserSubject = new BehaviorSubject<UserDetails | null>(null);
+  public currentUser$ = this.currentUserSubject.asObservable();
+  
   constructor(
     private http: HttpClient,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {
     this.isBrowser = isPlatformBrowser(this.platformId);
+    this.loadUserFromToken();
   }
 
   private buildUrl(...segments: string[]): string {
@@ -74,5 +86,18 @@ export class Auth {
 
   isLoggedIn(): boolean {
     return !!this.getToken();
+  }
+
+  private loadUserFromToken(): void {
+    const token = this.getToken();
+    if (token) {
+      const decodedToken: any = jwtDecode(token);
+      const userDetails: UserDetails = {
+        name: decodedToken.sub, // 'sub' is the standard claim for username/subject
+        email: decodedToken.email,
+        exp: decodedToken.exp
+      };
+      this.currentUserSubject.next(userDetails);
+    }
   }
 }

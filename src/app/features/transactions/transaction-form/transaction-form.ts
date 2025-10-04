@@ -48,7 +48,13 @@ export class TransactionForm implements OnInit {
   ngOnInit(): void {
     this.loadCategories();
     if (this.config.data) {
-      this.transactionForm.patchValue(this.config.data);
+       const category = this.categories.find(c => c.name === this.config.data.categoryName);
+      
+      this.transactionForm.patchValue({
+        ...this.config.data,
+        date: new Date(this.config.data.date), // Ensure date is a Date object
+        transactionCategoryId: category ? category.id : null
+      });
     }
   }
 

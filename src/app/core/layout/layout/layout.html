@@ -1,20 +1,69 @@
-<div class="layout-wrapper">
-    <p-drawer [(visible)]="sidebarVisible">
-        <div class="flex flex-column w-full gap-2 align-items-center h-full">
-            <h3>Menu</h3>
-            <p-button label="Toggle Dark Mode" (onClick)="toggleDarkMode()" />
-            <p-button label="Logout" (onClick)="logout()" severity="danger"></p-button>
-            <p-button label="Accounts" (onClick)="navigateToAccounts()"></p-button>
-            <p-button label="Dashboard" (onClick)="navigateToDashboard()"></p-button>
+<div class="layout-wrapper min-h-screen flex flex-column">
+    <!-- Header -->
+    <header
+        class="p-3 surface-0 border-bottom-1 surface-border flex align-items-center justify-content-between sticky top-0 z-5">
+        <div class="flex align-items-center">
+            <p-button icon="pi pi-bars" styleClass="p-button-text" (onClick)="sidebarVisible = true"></p-button>
+            <a routerLink="/accounts" class="no-underline">
+                <h2 class="ml-2 my-0 text-primary">Financial Planner</h2>
+            </a>
         </div>
+        @if(userDetails) {
+        <div class="flex align-items-center gap-3">
+            <p-avatar [label]="userInitials" shape="circle" (click)="op.toggle($event)"></p-avatar>
+
+            <p-popover #op>
+                <div class="flex flex-column gap-3">
+                    <!-- User Info Section -->
+                    <div class="flex align-items-center gap-3">
+                        <p-avatar [label]="userInitials" class="bg-primary text-white" shape="circle"
+                            size="large"></p-avatar>
+                        <div>
+                            <span class="font-bold text-lg">{{ userDetails.name }}</span>
+                            <div class="text-sm text-color-secondary">{{ userDetails.email }}</div>
+                        </div>
+                    </div>
+
+                    <hr class="my-1">
+
+                    <!-- Session Info Section -->
+                    <div class="flex align-items-center gap-2 p-2">
+                        <i class="pi pi-clock text-primary text-xl"></i>
+                        <div>
+                            <div class="text-xs text-color-secondary">Session Expires</div>
+                            <span class="font-semibold">{{ sessionExpires }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Logout Button -->
+                    <p-button label="Logout" icon="pi pi-sign-out" styleClass="p-button-danger w-full"
+                        (onClick)="logout()"></p-button>
+                </div>
+            </p-popover>
+        </div>
+        }
+    </header>
+
+    <!-- Sidebar -->
+    <p-drawer [(visible)]="sidebarVisible">
+        <ng-template pTemplate="header">
+            <h3 class="p-3 my-0">Menu</h3>
+        </ng-template>
+        <ng-template pTemplate="content">
+            <div class="flex-grow-1">
+                <p-menu [model]="navItems" styleClass="w-full"></p-menu>
+            </div>
+        </ng-template>
+        <ng-template pTemplate="footer">
+            <div class="p-3 mt-auto border-top-1 surface-border">
+                <span class="text-sm text-color-secondary">Version {{ appVersion }}</span>
+            </div>
+        </ng-template>
     </p-drawer>
 
-    <div class="layout-main">
-        <header class="p-2 border-bottom-1 surface-border flex align-items-center">
-            <p-button icon="pi pi-bars" text="true" (onClick)="sidebarVisible = true"></p-button>
-            <h2 class="ml-2">Financial Planner</h2>
-        </header>
-        <main class="p-4">
+    <!-- Main Content Area -->
+    <div class="layout-main flex-grow-1">
+        <main class="p-3 md:p-5">
             <router-outlet></router-outlet>
         </main>
     </div>
