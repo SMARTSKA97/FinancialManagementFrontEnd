@@ -25,7 +25,7 @@ export class Transaction {
   constructor(private apiService: GenericApi) { }
 
   getTransactionsForAccount(accountId: number): Observable<Transaction[]> {
-    const endpoint = environment.apiBaseUrl + `/accounts/${accountId}/transactions`;
+    const endpoint = environment.apiBaseUrl + `/accounts/${accountId}/Transactions`;
     // We use the 'map' operator to extract the 'result' from the ApiResponse
     return this.apiService.get<Transaction[]>(endpoint).pipe(
       map(response => response.result || [])
@@ -34,14 +34,14 @@ export class Transaction {
 
   // Use the new 'upsert' method for both create and update
   upsertTransaction(accountId: number, transactionData: any): Observable<Transaction> {
-    const endpoint = `accounts/${accountId}/transactions/upsert`;
+    const endpoint = `accounts/${accountId}/Transactions/upsert`;
     return this.apiService.upsert<Transaction>(endpoint, transactionData).pipe(
       map(response => response.result)
     );
   }
 
   deleteTransaction(accountId: number, transactionId: number): Observable<boolean> {
-    const endpoint = `accounts/${accountId}/transactions`;
+    const endpoint = `accounts/${accountId}/Transactions`;
     return this.apiService.delete<boolean>(endpoint, transactionId).pipe(
       map(response => response.result)
     );

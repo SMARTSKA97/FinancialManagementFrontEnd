@@ -15,7 +15,7 @@ export interface Account {
   providedIn: 'root'
 })
 export class Account {
-  private endpoint = environment.apiBaseUrl+'/accounts';
+  private endpoint = environment.apiBaseUrl+'/Accounts';
 
   constructor(private apiService: GenericApi) { }
 
