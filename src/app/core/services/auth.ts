@@ -3,31 +3,56 @@ import { isPlatformBrowser } from '@angular/common'; // Import isPlatformBrowser
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { ApiResponse } from './generic-api';
+
+// --- AUTH-SPECIFIC DTOs ---
+export interface RegisterUserDto {
+  name: string;
+  dateOfBirth: string;
+  email: string;
+  userName: string;
+  password: string;
+}
+
+export interface LoginUserDto {
+  userName: string;
+  password: string;
+}
+
+export interface LoginResponseDto {
+  token: string;
+  userName: string;
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class Auth {
-  private apiUrl = `${environment.apiBaseUrl}/Auth`;  // Use your API's port
+  private apiBaseUrl = environment.apiBaseUrl;
   private isBrowser: boolean;
 
   constructor(
     private http: HttpClient,
-    @Inject(PLATFORM_ID) private platformId: Object // Inject PLATFORM_ID
+    @Inject(PLATFORM_ID) private platformId: Object
   ) {
-    // Determine if the code is running in a browser environment
     this.isBrowser = isPlatformBrowser(this.platformId);
   }
 
-  register(userData: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/register`, userData);
+  private buildUrl(...segments: string[]): string {
+    const fullPath = [this.apiBaseUrl, ...segments]
+      .map(segment => segment.replace(/^\/+|\/+$/g, ''))
+      .join('/');
+    return fullPath;
   }
 
-  login(credentials: any): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/login`, credentials).pipe(
+  register(userData: RegisterUserDto): Observable<ApiResponse<string>> {
+    return this.http.post<ApiResponse<string>>(this.buildUrl('Auth', 'register'), userData);
+  }
+
+  login(credentials: LoginUserDto): Observable<ApiResponse<LoginResponseDto>> {
+    return this.http.post<ApiResponse<LoginResponseDto>>(this.buildUrl('Auth', 'login'), credentials).pipe(
       tap(response => {
-        if (this.isBrowser && response && response.result.token) {
-          // Only access localStorage if in the browser
+        if (this.isBrowser && response.isSuccess && response.result?.token) {
           localStorage.setItem('authToken', response.result.token);
         }
       })
@@ -44,7 +69,7 @@ export class Auth {
     if (this.isBrowser) {
       return localStorage.getItem('authToken');
     }
-    return null; // On the server, there is no token
+    return null;
   }
 
   isLoggedIn(): boolean {

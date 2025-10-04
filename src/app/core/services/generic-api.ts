@@ -5,11 +5,12 @@ import { environment } from '../../../environments/environment';
 
 export interface ApiResponse<T> {
   result: T;
-  apiResponseStatus: number; // 0 = Success, 1 = Warning, 2 = Error
+  isSuccess: boolean;
   message: string;
   errors?: string[];
 }
 
+// This interface matches the PaginatedResult<T> from the backend
 export interface PaginatedResult<T> {
   totalRecords: number;
   pageNumber: number;
@@ -21,25 +22,40 @@ export interface PaginatedResult<T> {
   providedIn: 'root'
 })
 export class GenericApi {
-  constructor(private http: HttpClient) { }
+  private apiBaseUrl = environment.apiBaseUrl;
 
-  // Generic method for the new /search endpoints
-  search<T>(endpoint: string, queryParams: any): Observable<ApiResponse<PaginatedResult<T>>> {
-    return this.http.post<ApiResponse<PaginatedResult<T>>>(`${endpoint}/search`, queryParams);
+  constructor(private http: HttpClient) { 
+    if (!this.apiBaseUrl) {
+      console.error("API Base URL is not set in environment file!");
+    }
   }
 
-  // POST .../<endpoint>/upsert
-  upsert<T>(endpoint: string, data: any): Observable<ApiResponse<T>> {
-    return this.http.post<ApiResponse<T>>(`${endpoint}/upsert`, data);
+  /**
+   * Builds a safe, clean URL by joining segments.
+   */
+  private buildUrl(...segments: string[]): string {
+    const fullPath = [this.apiBaseUrl, ...segments]
+      .map(segment => segment.replace(/^\/+|\/+$/g, '')) // Remove leading/trailing slashes
+      .join('/');
+    return fullPath;
   }
 
-  // DELETE .../<endpoint>/<id>
-  delete<T>(endpoint: string, id: number): Observable<ApiResponse<T>> {
-    return this.http.delete<ApiResponse<T>>(`${endpoint}/${String(id)}`);
-  }
-
-  // GET .../<endpoint>
+  /**
+   * Performs a GET request for a simple list of items.
+   */
   get<T>(endpoint: string): Observable<ApiResponse<T>> {
-    return this.http.get<ApiResponse<T>>(`${endpoint}`);
+    return this.http.get<ApiResponse<T>>(this.buildUrl(endpoint));
+  }
+
+  search<T>(endpoint: string, queryParams: any): Observable<ApiResponse<PaginatedResult<T>>> {
+    return this.http.post<ApiResponse<PaginatedResult<T>>>(this.buildUrl(endpoint, 'search'), queryParams);
+  }
+
+  upsert<T>(endpoint: string, data: any): Observable<ApiResponse<T>> {
+    return this.http.post<ApiResponse<T>>(this.buildUrl(endpoint, 'upsert'), data);
+  }
+
+  delete<T>(endpoint: string, id: number): Observable<ApiResponse<T>> {
+    return this.http.delete<ApiResponse<T>>(this.buildUrl(endpoint, id.toString()));
   }
 }

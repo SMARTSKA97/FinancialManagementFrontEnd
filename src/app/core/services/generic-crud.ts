@@ -6,73 +6,67 @@ import { GenericApi, PaginatedResult } from './generic-api';
   providedIn: 'root'
 })
 export class GenericCrud<T extends { id: number }> {
+  // --- Private State ---
   private readonly _items = new BehaviorSubject<T[]>([]);
   private readonly _isLoading = new BehaviorSubject<boolean>(false);
-  private readonly _pagination = new BehaviorSubject<Omit<PaginatedResult<T>, 'data'> | null>(null);
+  private _totalRecords = new BehaviorSubject<number>(0);
 
+  // --- Public Observables for Components to Bind To ---
   public readonly items$ = this._items.asObservable();
   public readonly isLoading$ = this._isLoading.asObservable();
-  public readonly pagination$ = this._pagination.asObservable();
+  public readonly totalRecords$ = this._totalRecords.asObservable();
 
-  private apiService = inject(GenericApi);
+  constructor(private apiService: GenericApi) {}
 
-  async search(endpoint: string, queryParams: any): Promise<void> {
+  // --- Public Action Methods ---
+
+  public async search(endpoint: string, queryParams: any): Promise<void> {
     this._isLoading.next(true);
     try {
       const response = await firstValueFrom(this.apiService.search<T>(endpoint, queryParams));
-      if (response.apiResponseStatus === 0 && response.result) {
+      if (response.isSuccess && response.result) {
         this._items.next(response.result.data);
-        const { data, ...pagination } = response.result;
-        this._pagination.next(pagination);
+        this._totalRecords.next(response.result.totalRecords);
       } else {
+        // On failure, reset the state
         this._items.next([]);
-        this._pagination.next(null);
-        throw new Error(response.message || 'Failed to load data.');
+        this._totalRecords.next(0);
+        throw new Error(response.message);
       }
     } finally {
       this._isLoading.next(false);
     }
   }
 
-  async getAll(endpoint: string): Promise<void> {
-    this._isLoading.next(true);
-    try {
-      const response = await firstValueFrom(this.apiService.get<T[]>(endpoint));
-      if (response.apiResponseStatus === 0 && response.result) {
-        this._items.next(response.result);
-      } else {
-        this._items.next([]);
-        throw new Error(response.message || 'Failed to load data.');
-      }
-    } finally {
-      this._isLoading.next(false);
-    }
-  }
-
-  async upsert(endpoint: string, itemData: T | Omit<T, 'id'>): Promise<void> {
+  public async upsert(endpoint: string, itemData: Partial<T>): Promise<void> {
     const response = await firstValueFrom(this.apiService.upsert<T>(endpoint, itemData));
-    if (response.apiResponseStatus === 0 && response.result) {
+    if (response.isSuccess && response.result) {
       const savedItem = response.result;
       const currentItems = this._items.value;
-      const existingIndex = 'id' in itemData ? currentItems.findIndex(i => i.id === itemData.id) : -1;
+      const index = currentItems.findIndex(i => i.id === savedItem.id);
 
-      if (existingIndex > -1) {
-        currentItems[existingIndex] = savedItem;
-        this._items.next([...currentItems]);
+      if (index > -1) {
+        // Update existing item
+        const updatedItems = [...currentItems];
+        updatedItems[index] = savedItem;
+        this._items.next(updatedItems);
       } else {
+        // Add new item
         this._items.next([...currentItems, savedItem]);
+        this._totalRecords.next(this._totalRecords.value + 1);
       }
     } else {
-      throw new Error(response.message || 'Save operation failed.');
+      throw new Error(response.message);
     }
   }
 
-  async delete(endpoint: string, item: T): Promise<void> {
+  public async delete(endpoint: string, item: T): Promise<void> {
     const response = await firstValueFrom(this.apiService.delete<boolean>(endpoint, item.id));
-    if (response.apiResponseStatus === 0) {
+    if (response.isSuccess) {
       this._items.next(this._items.value.filter(i => i.id !== item.id));
+      this._totalRecords.next(this._totalRecords.value - 1);
     } else {
-      throw new Error(response.message || 'Delete operation failed.');
+      throw new Error(response.message);
     }
   }
 }

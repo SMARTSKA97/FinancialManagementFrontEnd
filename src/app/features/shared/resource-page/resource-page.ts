@@ -23,27 +23,26 @@ import { GenericApi } from '../../../core/services/generic-api';
 
 })
 export class ResourcePage<T extends { id: number }> implements OnInit {
+  // Use modern inject() for cleaner code
+  public crudService = inject(GenericCrud<T>);
+  private dialogService = inject(DialogService);
+  private confirmationService = inject(ConfirmationService);
+  private messageService = inject(MessageService);
+  private route = inject(ActivatedRoute);
+  // --- CONFIGURATION INPUTS ---
   @Input() title: string = '';
   @Input() backLinkPath?: string;
-  @Input() endpoint!: string;
-  @Input() columns!: ColumnDefinition[];
-  @Input() formComponent!: Type<any>;
+  @Input({required:true}) endpoint!: string;
+  @Input({required:true}) columns!: ColumnDefinition[];
+  @Input({required:true}) formComponent!: Type<any>;
 
-  private _items = new BehaviorSubject<T[]>([]);
-  items$ = this._items.asObservable();
-  
-  private _isLoading = new BehaviorSubject<boolean>(false);
-  isLoading$ = this._isLoading.asObservable();
+  // --- OBSERVABLES FOR THE TEMPLATE ---
+  items$ = this.crudService.items$;
+  isLoading$ = this.crudService.isLoading$;
 
   ref: DynamicDialogRef | undefined;
-
-  constructor(
-    private route: ActivatedRoute,
-    private apiService: GenericApi,
-    private dialogService: DialogService,
-    private confirmationService: ConfirmationService,
-    private messageService: MessageService
-  ) {}
+  
+  
 
   async ngOnInit(): Promise<void> {
     const routeData = await firstValueFrom(this.route.data);
@@ -60,23 +59,7 @@ export class ResourcePage<T extends { id: number }> implements OnInit {
     }
     this.endpoint = endpoint;
     
-    this.loadItems();
-  }
-
-  async loadItems(): Promise<void> {
-    this._isLoading.next(true);
-    try {
-      // Using a default query for now. This will be expanded for search/sort.
-      const queryParams = { pageNumber: 1, pageSize: 10 }; 
-      const response = await firstValueFrom(this.apiService.search<T>(this.endpoint, queryParams));
-      if (response.result?.data) {
-        this._items.next(response.result.data);
-      }
-    } catch (err) {
-      this.messageService.add({severity:'error', summary: 'Error', detail: 'Failed to load data'});
-    } finally {
-      this._isLoading.next(false);
-    }
+    this.crudService.search(this.endpoint, { pageNumber: 1, pageSize: 10 });
   }
 
   async showForm(itemToEdit?: T): Promise<void> {
@@ -89,17 +72,10 @@ export class ResourcePage<T extends { id: number }> implements OnInit {
 
     const result = await firstValueFrom(this.ref.onClose);
     if (result) {
-      try {
-        const response = await firstValueFrom(this.apiService.upsert<T>(this.endpoint, result));
-        if (response.apiResponseStatus === 0) { // Success
-          this.messageService.add({severity:'success', summary: 'Success', detail: `${this.title.slice(0, -1)} saved`});
-          this.loadItems(); // Refresh the list
-        } else {
-          this.messageService.add({severity:'error', summary: 'Error', detail: response.message});
-        }
-      } catch (err) {
-        this.messageService.add({severity:'error', summary: 'Error', detail: 'Operation failed'});
-      }
+        // The service now handles the update logic, so the component is simpler
+        this.crudService.upsert(this.endpoint, result)
+          .then(() => this.messageService.add({severity:'success', summary: 'Success', detail: `${this.title.slice(0, -1)} saved`}))
+          .catch(err => this.messageService.add({severity:'error', summary: 'Error', detail: err.message || 'Operation failed'}));
     }
   }
 
@@ -108,18 +84,11 @@ export class ResourcePage<T extends { id: number }> implements OnInit {
       message: `Are you sure you want to delete this item?`,
       header: 'Delete Confirmation',
       icon: 'pi pi-exclamation-triangle',
-      accept: async () => {
-        try {
-          const response = await firstValueFrom(this.apiService.delete<boolean>(this.endpoint, item.id));
-           if (response.apiResponseStatus === 0) { // Success
-            this.messageService.add({severity:'success', summary: 'Success', detail: 'Item deleted'});
-            this.loadItems(); // Refresh the list
-          } else {
-            this.messageService.add({severity:'error', summary: 'Error', detail: response.message});
-          }
-        } catch (err) {
-          this.messageService.add({severity:'error', summary: 'Error', detail: 'Operation failed'});
-        }
+      accept: () => {
+        // The service now handles the delete logic
+        this.crudService.delete(this.endpoint, item)
+          .then(() => this.messageService.add({severity:'success', summary: 'Success', detail: 'Item deleted'}))
+          .catch(err => this.messageService.add({severity:'error', summary: 'Error', detail: err.message || 'Operation failed'}));
       }
     });
   }

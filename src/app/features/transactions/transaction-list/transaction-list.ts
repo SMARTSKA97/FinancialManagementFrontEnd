@@ -21,9 +21,7 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
   providers: [DialogService, MessageService, ConfirmationService]
 })
 export class TransactionList implements OnInit {
-
-  private route = inject(ActivatedRoute);
-  // Correctly inject TransactionService
+private route = inject(ActivatedRoute);
   private transactionService = inject(Transaction);
   private cdr = inject(ChangeDetectorRef);
   private messageService = inject(MessageService);
@@ -39,7 +37,6 @@ export class TransactionList implements OnInit {
     { field: 'date', header: 'Date', isDate: true },
     { field: 'description', header: 'Description' },
     { field: 'amount', header: 'Amount', isCurrency: true, isTransaction: true },
-    { field: 'categoryName', header: 'Category' }
   ];
 
   ngOnInit(): void {
@@ -59,7 +56,12 @@ export class TransactionList implements OnInit {
       }
       this.accountId = id;
 
-      this.transactions = await firstValueFrom(this.transactionService.getTransactionsForAccount(this.accountId));
+      // FIX 1: Provide a default query object
+      const queryParams = { pageNumber: 1, pageSize: 10 }; 
+      const paginatedResult = await firstValueFrom(this.transactionService.getTransactionsForAccount(this.accountId, queryParams));
+      
+      // FIX 2: The data is inside the 'data' property of the paginated result
+      this.transactions = paginatedResult.data;
 
     } catch (err) {
       console.error('Failed to load transactions', err);
@@ -80,13 +82,13 @@ export class TransactionList implements OnInit {
     const result = await firstValueFrom(this.ref.onClose);
     if (result) {
       try {
-        // Use the single 'upsertTransaction' method for both create and update
+        // Use the single 'upsert' method
         await firstValueFrom(this.transactionService.upsertTransaction(this.accountId!, result));
-        this.messageService.add({ severity: 'success', summary: 'Success', detail: `Transaction ${isEditMode ? 'updated' : 'added'}` });
+        this.messageService.add({severity:'success', summary: 'Success', detail: `Transaction ${isEditMode ? 'updated' : 'added'}`});
         this.loadTransactions();
       } catch (err) {
         console.error('Failed to save transaction', err);
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to save transaction' });
+        this.messageService.add({severity:'error', summary: 'Error', detail: 'Failed to save transaction'});
       }
     }
   }
@@ -99,11 +101,11 @@ export class TransactionList implements OnInit {
       accept: async () => {
         try {
           await firstValueFrom(this.transactionService.deleteTransaction(this.accountId!, transaction.id));
-          this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Transaction deleted' });
+          this.messageService.add({severity:'success', summary: 'Success', detail: 'Transaction deleted'});
           this.loadTransactions();
         } catch (err) {
           console.error('Failed to delete transaction', err);
-          this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to delete transaction' });
+          this.messageService.add({severity:'error', summary: 'Error', detail: 'Failed to delete transaction'});
         }
       }
     });

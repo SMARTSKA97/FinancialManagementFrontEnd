@@ -23,26 +23,27 @@ export interface DashboardSummary {
   monthlyExpenses: number;
 }
 
-// Interface for the spending chart data
 export interface SpendingByCategory {
   categoryName: string;
   totalAmount: number;
 }
+
 
 @Injectable({
   providedIn: 'root'
 })
 
 export class DashboardService {
-  private endpoint = environment.apiBaseUrl + '/Dashboard';
+  private endpoint = 'Dashboard';
 
   constructor(private apiService: GenericApi) { }
 
-  getSummary() {
-  return this.apiService.get<DashboardSummary>(`${this.endpoint}/summary`).pipe(
-    map(r => r.result)
-  );
-}
+  getSummary(): Observable<DashboardSummary> {
+    // Use the map operator to extract the 'result'
+    return this.apiService.get<DashboardSummary>(`${this.endpoint}/summary`).pipe(
+      map(response => response.result)
+    );
+  }
 
   getSpendingByCategory(): Observable<SpendingByCategory[]> {
     // Use the map operator to extract the 'result'

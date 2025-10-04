@@ -15,24 +15,34 @@ export interface Account {
   providedIn: 'root'
 })
 export class Account {
-  private endpoint = environment.apiBaseUrl+'/Accounts';
+  private endpoint = 'Accounts';
 
   constructor(private apiService: GenericApi) { }
 
-  // Use the new 'search' method for paginated data
+  /**
+   * Fetches a paginated list of accounts using the new '/search' endpoint.
+   */
   getAccounts(queryParams: any): Observable<PaginatedResult<Account>> {
+    console.log(`Calling search endpoint for: ${this.endpoint}`);
+    // Use the 'search' method and map the result from the ApiResponse
     return this.apiService.search<Account>(this.endpoint, queryParams).pipe(
       map(response => response.result)
     );
   }
 
-  // Use the new 'upsert' method for both create and update
+  /**
+   * Creates or updates an account using the new '/upsert' endpoint.
+   */
   upsertAccount(accountData: any): Observable<Account> {
+    // Use the generic 'upsert' method
     return this.apiService.upsert<Account>(this.endpoint, accountData).pipe(
       map(response => response.result)
     );
   }
 
+  /**
+   * Deletes an account by its ID.
+   */
   deleteAccount(accountId: number): Observable<boolean> {
     return this.apiService.delete<boolean>(this.endpoint, accountId).pipe(
       map(response => response.result)

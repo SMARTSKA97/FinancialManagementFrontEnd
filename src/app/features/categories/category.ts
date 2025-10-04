@@ -12,12 +12,13 @@ export interface TransactionCategory {
   id: number;
   name: string;
 }
+
 @Injectable({
   providedIn: 'root'
 })
 export class Category {
-  private accountCategoryEndpoint = environment.apiBaseUrl+'/AccountCategories';
-  private transactionCategoryEndpoint = environment.apiBaseUrl+'/TransactionCategories';
+  private accountCategoryEndpoint = 'AccountCategories';
+  private transactionCategoryEndpoint = 'TransactionCategories';
 
   constructor(private apiService: GenericApi) { }
 
@@ -41,7 +42,6 @@ export class Category {
     );
   }
 
-
   // --- Transaction Category Methods ---
 
   getTransactionCategories(): Observable<TransactionCategory[]> {
@@ -49,7 +49,7 @@ export class Category {
       map(response => response.result || [])
     );
   }
-  
+
   upsertTransactionCategory(categoryData: { id?: number, name: string }): Observable<TransactionCategory> {
     return this.apiService.upsert<TransactionCategory>(this.transactionCategoryEndpoint, categoryData).pipe(
       map(response => response.result)

@@ -51,7 +51,6 @@ export class Dashboard implements OnInit {
     });
   }
 
-
   // --- ADD THIS NEW METHOD ---
   setupSpendingChart(data: SpendingByCategory[]): void {
     const documentStyle = getComputedStyle(document.documentElement);
