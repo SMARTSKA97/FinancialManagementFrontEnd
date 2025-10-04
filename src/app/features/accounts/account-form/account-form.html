@@ -12,8 +12,18 @@
   <div class="field mt-3">
     <label for="accountCategory">Category</label>
     <p-select id="accountCategory" [options]="accountCategories" formControlName="accountCategoryId"
-                optionLabel="name" optionValue="id" placeholder="Select a Category"
-                class="w-full" appendTo="body"></p-select>
+                optionLabel="name" optionValue="id" [showClear]="true" placeholder="Select or type to add"
+                class="w-full" appendTo="body" [filter]="true"
+            (onFilter)="filterCategories($event)">
+            <ng-template pTemplate="footer">
+                @if (isNewCategory()) {
+                <div class="p-2 border-top-1 surface-border">
+                    <p-button label="Create '{{ currentFilter }}'" class="p-button-link"
+                        (onClick)="addNewCategory()"></p-button>
+                </div>
+                }
+            </ng-template>
+          </p-select>
   </div>
   
   <div class="flex justify-content-end mt-4 gap-2">

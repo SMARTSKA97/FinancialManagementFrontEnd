@@ -24,6 +24,7 @@ export class AccountForm {
 
   accountForm: FormGroup;
   accountCategories: AccountCategory[] = [];
+  currentFilter: string = '';
 
   constructor() {
     this.accountForm = this.fb.group({
@@ -43,6 +44,35 @@ export class AccountForm {
 
     if (this.config.data) {
       this.accountForm.patchValue(this.config.data);
+    }
+  }
+
+  filterCategories(event: { filter: string }): void {
+    this.currentFilter = event.filter;
+  }
+
+  isNewCategory(): boolean {
+    const filter = this.currentFilter.trim().toLowerCase();
+    if (!filter) {
+      return false;
+    }
+    return !this.accountCategories.some(c => c.name.toLowerCase() === filter);
+  }
+
+  async addNewCategory(): Promise<void> {
+    const newCategoryName = this.currentFilter.trim();
+    if (newCategoryName) {
+      try {
+        // Use the correct 'upsert' method
+        const newCategory = await firstValueFrom(this.categoryService.upsertTransactionCategory({ name: newCategoryName }));
+        if (newCategory) {
+          this.accountCategories = [...this.accountCategories, newCategory];
+          this.accountForm.get('categoryId')?.setValue(newCategory.id);
+          this.currentFilter = '';
+        }
+      } catch (err) {
+        console.error("Failed to create new category", err);
+      }
     }
   }
 
