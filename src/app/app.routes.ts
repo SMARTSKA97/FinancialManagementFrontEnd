@@ -10,6 +10,8 @@ import { AccountForm } from './features/accounts/account-form/account-form';
 import { TransactionForm } from './features/transactions/transaction-form/transaction-form';
 import { CategoryForm } from './features/categories/category-form/category-form';
 import { Support } from './features/support/support';
+import { publicGuard } from './core/guards/public-guard';
+import { Layout } from './core/layout/layout/layout';
 
 const accountColumns: ColumnDefinition[] = [
     { field: 'name', header: 'Name', isLink: true, linkPath: 'accounts/:id/transactions' },
@@ -25,53 +27,76 @@ const transactionColumns: ColumnDefinition[] = [
 ];
 
 const categoryColumns: ColumnDefinition[] = [
-  { field: 'name', header: 'Name' }
+    { field: 'name', header: 'Name' }
 ];
 
 export const routes: Routes = [
-    { path: 'login', component: Login },
-    { path: 'register', component: Register },
-    { path: 'dashboard', component: Dashboard },
-    { path: 'support', component: Support },
+   // --- Public Auth Routes (No Layout) ---
+  // These are only accessible if the user is NOT logged in.
+  { path: 'login', component: Login, canActivate: [publicGuard] },
+  { path: 'register', component: Register, canActivate: [publicGuard] },
 
-    // Route for Accounts (Dashboard)
-    {
+  // --- Private App Routes (Inside the Main Layout) ---
+  // The authGuard protects this entire section.
+  {
+    path: '',
+    component: Layout,
+    canActivate: [authGuard],
+    children: [
+      {
         path: 'accounts',
         component: ResourcePage,
-        canActivate: [authGuard],
         data: {
-            title: 'Accounts',
-            endpoint: 'accounts',
-            columns: accountColumns,
-            formComponent: AccountForm
+          title: 'Accounts',
+          endpoint: 'Accounts',
+          columns: accountColumns,
+          formComponent: AccountForm
         }
-    },
-
-    {
+      },
+      {
         path: 'accounts/:id/transactions',
         component: ResourcePage,
-        canActivate: [authGuard],
         data: {
-            title: 'Transactions',
-            endpoint: 'accounts/:id/transactions',
-            columns: transactionColumns,
-            backLinkPath: '/accounts',
-            formComponent: TransactionForm
+          title: 'Transactions',
+          endpoint: 'accounts/:id/transactions',
+          columns: transactionColumns,
+          formComponent: TransactionForm,
+          backLinkPath: '/accounts'
         }
-    },
-
-    {
-    path: 'categories', // <-- ADD THIS CATEGORY MANAGEMENT ROUTE
-    component: ResourcePage,
-    canActivate: [authGuard],
-    data: {
-      title: 'Categories',
-      endpoint: 'categories',
-      columns: categoryColumns,
-      formComponent: CategoryForm
-    }
+      },
+      {
+        path: 'account-categories',
+        component: ResourcePage,
+        data: {
+          title: 'Account Categories',
+          endpoint: 'AccountCategories',
+          columns: categoryColumns,
+          formComponent: CategoryForm
+        }
+      },
+      {
+        path: 'transaction-categories',
+        component: ResourcePage,
+        data: {
+          title: 'Transaction Categories',
+          endpoint: 'TransactionCategories',
+          columns: categoryColumns,
+          formComponent: CategoryForm
+        }
+      },
+      {
+        path: 'support',
+        component: Support
+      },
+    //   {
+    //     path: 'about',
+    //     component: abou
+    //   },
+      // Default route for logged-in users
+      { path: '', redirectTo: 'accounts', pathMatch: 'full' }
+    ]
   },
 
-    { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
-    { path: '**', redirectTo: '/accounts' }
+  // Catch-all route redirects to the main app path
+  { path: '**', redirectTo: '', pathMatch: 'full' }
 ];

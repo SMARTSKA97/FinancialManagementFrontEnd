@@ -7,10 +7,18 @@ export const authGuard: CanActivateFn = (route, state) => {
   const router = inject(Router);
 
   if (authService.isLoggedIn()) {
-    return true;
+    const token = authService.getToken();
+    if (token) {
+      const decodedToken: any = JSON.parse(atob(token.split('.')[1]));
+      const expiry = decodedToken.exp * 1000;
+      if (expiry > Date.now()) {
+        return true; // Token exists and is not expired, allow access
+      }
+    }
   }
 
   // Ensure this correctly navigates to the login page
+  authService.logout();
   router.navigate(['/login']);
   return false;
 };

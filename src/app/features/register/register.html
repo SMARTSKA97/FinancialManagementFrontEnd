@@ -10,7 +10,7 @@
       <!-- Date of Birth Field -->
       <div class="field mt-3">
         <label for="dob">Date of Birth</label>
-        <p-datepicker id="dob" formControlName="dateOfBirth" styleClass="w-full" [showIcon]="true" dateFormat="yy-mm-dd"></p-datepicker>
+        <p-datepicker id="dob" formControlName="dateOfBirth" class="w-full" [showIcon]="true" dateFormat="yy-mm-dd"></p-datepicker>
       </div>
 
       <!-- Email Field -->
@@ -28,10 +28,10 @@
       <!-- Password Field -->
       <div class="field mt-3">
         <label for="password">Password</label>
-        <p-password id="password" formControlName="password" [feedback]="true" styleClass="w-full" [toggleMask]="true"></p-password>
+        <p-password id="password" formControlName="password" [feedback]="true" class="w-full" [toggleMask]="true"></p-password>
       </div>
 
-      <p-button label="Register" type="submit" styleClass="w-full mt-4"></p-button>
+      <p-button label="Register" type="submit" class="w-full mt-4"></p-button>
 
       <div class="mt-3 text-center">
         <a routerLink="/login">Already have an account? Login</a>
