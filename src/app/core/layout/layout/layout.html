@@ -1,48 +1,51 @@
 <div class="layout-wrapper min-h-screen flex flex-column">
     <!-- Header -->
-    <header
-        class="p-3 surface-0 border-bottom-1 surface-border flex align-items-center justify-content-between sticky top-0 z-5">
-        <div class="flex align-items-center">
-            <p-button icon="pi pi-bars" styleClass="p-button-text" (onClick)="sidebarVisible = true"></p-button>
-            <a routerLink="/accounts" class="no-underline">
-                <h2 class="ml-2 my-0 text-primary">Financial Planner</h2>
-            </a>
-        </div>
-        @if(userDetails) {
+    <div class="layout-wrapper min-h-screen flex flex-column">
+  <!-- Header -->
+  <header class="p-3 surface-0 border-bottom-1 surface-border flex align-items-center justify-content-between sticky top-0 z-5">
+    <div class="flex align-items-center">
+      <p-button icon="pi pi-bars" styleClass="p-button-text" (onClick)="sidebarVisible = true"></p-button>
+      <a routerLink="/accounts" class="no-underline">
+        <h2 class="ml-2 my-0 text-primary">Financial Planner</h2>
+      </a>
+    </div>
+
+    <div class="flex align-items-center gap-3">
+      <!-- Theme Toggle Button -->
+      <p-button 
+        [icon]="themeService.getCurrentTheme() === 'light' ? 'pi pi-moon' : 'pi pi-sun'" 
+        styleClass="p-button-text p-button-rounded" 
+        (onClick)="themeService.toggleTheme()">
+      </p-button>
+
+      <!-- User Profile Section with Async Pipe -->
+      @if(authService.currentUser$ | async; as userName) {
         <div class="flex align-items-center gap-3">
-            <p-avatar [label]="userInitials" shape="circle" (click)="op.toggle($event)"></p-avatar>
+          <p-avatar [label]="(userInitials$ | async)!" styleClass="bg-primary text-white" shape="circle" (click)="op.toggle($event)"></p-avatar>
 
-            <p-popover #op>
-                <div class="flex flex-column gap-3">
-                    <!-- User Info Section -->
-                    <div class="flex align-items-center gap-3">
-                        <p-avatar [label]="userInitials" class="bg-primary text-white" shape="circle"
-                            size="large"></p-avatar>
-                        <div>
-                            <span class="font-bold text-lg">{{ userDetails.name }}</span>
-                            <div class="text-sm text-color-secondary">{{ userDetails.email }}</div>
-                        </div>
-                    </div>
-
-                    <hr class="my-1">
-
-                    <!-- Session Info Section -->
-                    <div class="flex align-items-center gap-2 p-2">
-                        <i class="pi pi-clock text-primary text-xl"></i>
-                        <div>
-                            <div class="text-xs text-color-secondary">Session Expires</div>
-                            <span class="font-semibold">{{ sessionExpires }}</span>
-                        </div>
-                    </div>
-
-                    <!-- Logout Button -->
-                    <p-button label="Logout" icon="pi pi-sign-out" styleClass="p-button-danger w-full"
-                        (onClick)="logout()"></p-button>
+          <p-popover #op>
+            <div class="flex flex-column gap-3 w-15rem">
+              <div class="flex flex-column">
+                <span class="font-bold">{{ userName }}</span>
+                @if(authService.currentUserEmail$ | async; as userEmail) {
+                  <span class="text-sm text-color-secondary">{{ userEmail }}</span>
+                }
+              </div>
+              <hr class="my-1" />
+              <div class="flex flex-column gap-2 text-sm">
+                <div class="flex align-items-center gap-2">
+                  <i class="pi pi-clock"></i>
+                  <span>Session expires in {{ authService.sessionExpiresIn$ | async }}</span>
                 </div>
-            </p-popover>
+              </div>
+              <p-button label="Logout" icon="pi pi-sign-out" styleClass="p-button-danger p-button-sm mt-2" (onClick)="logout()"></p-button>
+            </div>
+          </p-popover>
         </div>
-        }
-    </header>
+      }
+    </div>
+  </header>
+
 
     <!-- Sidebar -->
     <p-drawer [(visible)]="sidebarVisible">
