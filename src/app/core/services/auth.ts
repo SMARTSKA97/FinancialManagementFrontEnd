@@ -38,7 +38,6 @@ export interface UserDetails {
 export class Auth {
   private apiBaseUrl = environment.apiBaseUrl;
   private isBrowser: boolean;
-
   private currentUserSubject = new BehaviorSubject<UserDetails | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
   

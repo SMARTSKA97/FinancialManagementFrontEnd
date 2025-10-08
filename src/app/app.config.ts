@@ -8,6 +8,8 @@ import { authInterceptor } from './core/interceptors/auth-interceptor';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { providePrimeNG } from 'primeng/config';
 import Aura from '@primeuix/themes/aura';
+import { DialogService } from 'primeng/dynamicdialog';
+import { MessageService } from 'primeng/api';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -17,6 +19,8 @@ export const appConfig: ApplicationConfig = {
     provideClientHydration(withEventReplay()),
     provideHttpClient(withInterceptors([authInterceptor])),
     provideAnimationsAsync(),
+    MessageService,
+    DialogService,
     providePrimeNG({
       theme: {
         preset: Aura,

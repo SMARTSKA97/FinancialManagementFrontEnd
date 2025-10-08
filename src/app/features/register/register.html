@@ -5,33 +5,66 @@
       <div class="field">
         <label for="name">Full Name</label>
         <input id="name" type="text" pInputText formControlName="name" class="w-full" />
+        @if (registerForm.get('name')?.invalid && registerForm.get('name')?.touched) {
+          <small class="p-error">Full name is required.</small>
+        }
       </div>
 
       <!-- Date of Birth Field -->
       <div class="field mt-3">
         <label for="dob">Date of Birth</label>
-        <p-datepicker id="dob" formControlName="dateOfBirth" class="w-full" [showIcon]="true" dateFormat="yy-mm-dd"></p-datepicker>
+        <p-datepicker id="dob" formControlName="dateOfBirth" styleClass="w-full" [showIcon]="true" dateFormat="yy-mm-dd"></p-datepicker>
+        @if (registerForm.get('dateOfBirth')?.invalid && registerForm.get('dateOfBirth')?.touched) {
+          <small class="p-error">Date of birth is required.</small>
+        }
       </div>
 
       <!-- Email Field -->
       <div class="field mt-3">
         <label for="email">Email</label>
         <input id="email" type="email" pInputText formControlName="email" class="w-full" />
+        @if (registerForm.get('email')?.hasError('required') && registerForm.get('email')?.touched) {
+          <small class="p-error">Email is required.</small>
+        }
+        @if (registerForm.get('email')?.hasError('email') && registerForm.get('email')?.touched) {
+          <small class="p-error">Please enter a valid email address.</small>
+        }
+        <!-- Display Server Error -->
+        @if (registerForm.get('email')?.hasError('serverError')) {
+          <small class="p-error">{{ registerForm.get('email')?.errors?.['serverError'] }}</small>
+        }
       </div>
 
       <!-- Username Field -->
       <div class="field mt-3">
         <label for="username">Username</label>
         <input id="username" type="text" pInputText formControlName="userName" class="w-full" />
+        @if (registerForm.get('userName')?.invalid && registerForm.get('userName')?.touched) {
+          <small class="p-error">Username is required.</small>
+        }
+        <!-- Display Server Error (e.g., "Username is already taken") -->
+        @if (registerForm.get('userName')?.hasError('serverError')) {
+          <small class="p-error">{{ registerForm.get('userName')?.errors?.['serverError'] }}</small>
+        }
       </div>
       
       <!-- Password Field -->
       <div class="field mt-3">
         <label for="password">Password</label>
-        <p-password id="password" formControlName="password" [feedback]="true" class="w-full" [toggleMask]="true"></p-password>
+        <p-password id="password" formControlName="password" [feedback]="true" styleClass="w-full" [toggleMask]="true"></p-password>
+        @if (registerForm.get('password')?.hasError('required') && registerForm.get('password')?.touched) {
+          <small class="p-error">Password is required.</small>
+        }
+        @if (registerForm.get('password')?.hasError('minlength') && registerForm.get('password')?.touched) {
+          <small class="p-error">Password must be at least 6 characters.</small>
+        }
+        <!-- Display Server Error (e.g., "Password must have a non-alphanumeric character") -->
+        @if (registerForm.get('password')?.hasError('serverError')) {
+          <small class="p-error">{{ registerForm.get('password')?.errors?.['serverError'] }}</small>
+        }
       </div>
 
-      <p-button label="Register" type="submit" class="w-full mt-4"></p-button>
+      <p-button label="Register" type="submit" styleClass="w-full mt-4" [loading]="isSubmitting"></p-button>
 
       <div class="mt-3 text-center">
         <a routerLink="/login">Already have an account? Login</a>
