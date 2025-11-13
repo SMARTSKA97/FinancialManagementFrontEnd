@@ -12,6 +12,8 @@ import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { TransactionForm } from '../transaction-form/transaction-form';
 import { ToastModule } from "primeng/toast";
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { AccountSummary } from '../../dashboard/dashboard';
+import { DashboardService } from '../../dashboard/dashboard';
 
 @Component({
   selector: 'app-transaction-list',
@@ -21,8 +23,9 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
   providers: [DialogService, MessageService, ConfirmationService]
 })
 export class TransactionList implements OnInit {
-private route = inject(ActivatedRoute);
+  private route = inject(ActivatedRoute);
   private transactionService = inject(Transaction);
+  private dashboardService = inject(DashboardService);
   private cdr = inject(ChangeDetectorRef);
   private messageService = inject(MessageService);
   private dialogService = inject(DialogService);
@@ -32,18 +35,20 @@ private route = inject(ActivatedRoute);
   isLoading = false;
   accountId: number | null = null;
   ref: DynamicDialogRef | undefined;
+  summary: AccountSummary | null = null;
 
   transactionColumns: ColumnDefinition[] = [
     { field: 'date', header: 'Date', isDate: true },
     { field: 'description', header: 'Description' },
+    { field: 'categoryName', header: 'Category' },
     { field: 'amount', header: 'Amount', isCurrency: true, isTransaction: true },
   ];
 
   ngOnInit(): void {
-    this.loadTransactions();
+    this.loadData();
   }
 
-  async loadTransactions(): Promise<void> {
+  async loadData(): Promise<void> {
     this.isLoading = true;
     try {
       const params = await firstValueFrom(this.route.paramMap);
@@ -56,15 +61,17 @@ private route = inject(ActivatedRoute);
       }
       this.accountId = id;
 
-      // FIX 1: Provide a default query object
-      const queryParams = { pageNumber: 1, pageSize: 10 }; 
-      const paginatedResult = await firstValueFrom(this.transactionService.getTransactionsForAccount(this.accountId, queryParams));
+      // --- FETCH BOTH DATASETS IN PARALLEL ---
+      const [paginatedResult, summaryData] = await Promise.all([
+        firstValueFrom(this.transactionService.getTransactionsForAccount(this.accountId, { pageNumber: 1, pageSize: 50 })),
+        firstValueFrom(this.dashboardService.getAccountSummary(this.accountId))
+      ]);
       
-      // FIX 2: The data is inside the 'data' property of the paginated result
       this.transactions = paginatedResult.data;
+      this.summary = summaryData; // <-- Store the summary data
 
     } catch (err) {
-      console.error('Failed to load transactions', err);
+      console.error('Failed to load data', err);
     } finally {
       this.isLoading = false;
       this.cdr.markForCheck();
@@ -76,20 +83,17 @@ private route = inject(ActivatedRoute);
     this.ref = this.dialogService.open(TransactionForm, {
       header: isEditMode ? 'Edit Transaction' : 'Add a New Transaction',
       width: '400px',
-      data: transactionToEdit
+      data: { 
+        transaction: transactionToEdit,
+        currentAccountId: this.accountId // Pass the current account ID to the form
+      }
     });
 
     const result = await firstValueFrom(this.ref.onClose);
     if (result) {
-      try {
-        // Use the single 'upsert' method
-        await firstValueFrom(this.transactionService.upsertTransaction(this.accountId!, result));
-        this.messageService.add({severity:'success', summary: 'Success', detail: `Transaction ${isEditMode ? 'updated' : 'added'}`});
-        this.loadTransactions();
-      } catch (err) {
-        console.error('Failed to save transaction', err);
-        this.messageService.add({severity:'error', summary: 'Error', detail: 'Failed to save transaction'});
-      }
+      // If the form returns 'true' (success), reload all data
+      this.loadData();
+      this.messageService.add({severity:'success', summary: 'Success', detail: 'Operation successful'});
     }
   }
 
@@ -102,7 +106,7 @@ private route = inject(ActivatedRoute);
         try {
           await firstValueFrom(this.transactionService.deleteTransaction(this.accountId!, transaction.id));
           this.messageService.add({severity:'success', summary: 'Success', detail: 'Transaction deleted'});
-          this.loadTransactions();
+          this.loadData(); // Reload all data
         } catch (err) {
           console.error('Failed to delete transaction', err);
           this.messageService.add({severity:'error', summary: 'Error', detail: 'Failed to delete transaction'});
@@ -111,4 +115,3 @@ private route = inject(ActivatedRoute);
     });
   }
 }
-

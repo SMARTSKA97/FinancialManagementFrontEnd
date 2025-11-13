@@ -1,44 +1,60 @@
+<p-toast></p-toast>
 <form [formGroup]="transactionForm" (ngSubmit)="onSubmit()" class="p-4">
-    <div class="field mt-3">
-        <label for="category">Category (Optional)</label>
-        <p-select id="category" [options]="categories" formControlName="categoryId" optionLabel="name" optionValue="id"
-            [showClear]="true" placeholder="Select or type to add" class="w-full" [filter]="true"
-            (onFilter)="filterCategories($event)">
-            <ng-template pTemplate="footer">
-                @if (isNewCategory()) {
-                <div class="p-2 border-top-1 surface-border">
-                    <p-button label="Create '{{ currentFilter }}'" class="p-button-link"
-                        (onClick)="addNewCategory()"></p-button>
-                </div>
-                }
-            </ng-template>
-        </p-select>
-    </div>
-    <div class="field">
-        <label for="description">Description</label>
-        <input id="description" type="text" pInputText formControlName="description" class="w-full" />
-    </div>
+  <div class="field">
+    <label for="description">Description</label>
+    <input id="description" type="text" pInputText formControlName="description" class="w-full" />
+  </div>
 
-    <div class="field mt-3">
-        <label for="amount">Amount</label>
-        <p-inputNumber id="amount" formControlName="amount" mode="currency" currency="INR" locale="en-US"
-            class="w-full"></p-inputNumber>
-    </div>
+  <div class="field mt-3">
+    <label for="amount">Amount</label>
+    <p-inputNumber id="amount" formControlName="amount" mode="currency" currency="INR" locale="en-IN" class="w-full"></p-inputNumber>
+  </div>
 
+  <div class="field mt-3">
+    <label for="date">Date</label>
+    <p-date-picker id="date" formControlName="date" [showIcon]="true" dateFormat="mm/dd/yy" class="w-full"></p-date-picker>
+  </div>
+  
+  <div class="field mt-3">
+    <label for="category">Category</label>
+    <p-select id="category" [options]="categories" formControlName="transactionCategoryId"
+                optionLabel="name" optionValue="id" [showClear]="true"
+                placeholder="Select or type to add" class="w-full"
+                [filter]="true"
+                (onFilter)="filterCategories($event)"
+                (onChange)="onCategoryChange($event)"> <!-- Add change event -->
+      <ng-template pTemplate="footer">
+        @if (isNewCategory()) {
+          <div class="p-2 border-top-1 surface-border">
+            <p-button label="Create '{{ currentFilter }}'" class="p-button-link" (onClick)="addNewCategory()"></p-button>
+          </div>
+        }
+      </ng-template>
+    </p-select>
+  </div>
+  
+  <!-- NEW: Show "Transfer to" only if it's a transfer category -->
+  @if(isTransfer) {
     <div class="field mt-3">
-        <label for="date">Date</label>
-        <p-date-picker id="date" formControlName="date" [showIcon]="true" dateFormat="mm/dd/yy" class="w-full"
-            appendTo="body"></p-date-picker>
+      <label for="destinationAccount">Transfer to</label>
+      <p-select id="destinationAccount" [options]="accounts" formControlName="destinationAccountId"
+                  optionLabel="name" optionValue="id" [showClear]="true"
+                  placeholder="Select destination account" class="w-full"
+                  [filter]="true">
+      </p-select>
     </div>
+  }
 
+  <!-- NEW: Show "Type" only if it's NOT a transfer -->
+  @if(!isTransfer) {
     <div class="field mt-3">
-        <label for="type">Type</label>
-        <p-select id="type" [options]="transactionTypes" formControlName="type" optionLabel="label" optionValue="value"
-            class="w-full" appendTo="body"></p-select>
+      <label for="type">Type</label>
+      <p-select id="type" [options]="transactionTypes" formControlName="type" optionLabel="label" optionValue="value" class="w-full"></p-select>
     </div>
-
-    <div class="flex justify-content-end mt-4 gap-2">
-        <p-button label="Cancel" class="p-button-secondary" (onClick)="ref.close()"></p-button>
-        <p-button label="Save" type="submit" class="ml-2" [disabled]="transactionForm.invalid"></p-button>
-    </div>
+  }
+  
+  <div class="flex justify-content-end mt-4">
+    <p-button label="Cancel" class="p-button-secondary" (onClick)="ref.close()"></p-button>
+    <p-button label="Save" type="submit" class="ml-2" [disabled]="transactionForm.invalid"></p-button>
+  </div>
 </form>

@@ -4,13 +4,34 @@
 <div class="p-4">
   <div class="mb-4">
     <a routerLink="/accounts" class="no-underline">
-      <p-button label="Back to Accounts" icon="pi pi-arrow-left" class="p-button-text"></p-button>
+      <p-button label="Back to Accounts" icon="pi pi-arrow-left" styleClass="p-button-text"></p-button>
     </a>
   </div>
 
+  <!-- SUMMARY CARDS (Feature 2) -->
+  @if(summary) {
+    <div class="grid mb-4">
+      <div class="col-12 md:col-4">
+        <p-card header="Current Balance">
+          <p class="text-2xl font-bold">{{ summary.currentBalance | currency:'INR' }}</p>
+        </p-card>
+      </div>
+      <div class="col-12 md:col-4">
+        <p-card header="Total Income (This Month)">
+          <p class="text-2xl font-bold text-green-500">{{ summary.totalIncome | currency:'INR' }}</p>
+        </p-card>
+      </div>
+      <div class="col-12 md:col-4">
+        <p-card header="Total Expenses (This Month)">
+          <p class="text-2xl font-bold text-red-500">{{ summary.totalExpenses | currency:'INR' }}</p>
+        </p-card>
+      </div>
+    </div>
+  }
+
   <p-card header="Transactions">
     <ng-template pTemplate="header">
-      <div class="flex justify-content-end gap-2">
+      <div class="flex justify-content-end">
         <p-button label="New Transaction" icon="pi pi-plus" (onClick)="showTransactionForm()"></p-button>
       </div>
     </ng-template>
@@ -22,8 +43,8 @@
     } @else {
       <app-data-table [data]="transactions" [columns]="transactionColumns">
         <ng-template #actions let-transaction>
-          <p-button icon="pi pi-pencil" class="p-button-text p-button-rounded" (onClick)="showTransactionForm(transaction)"></p-button>
-          <p-button icon="pi pi-trash" class="p-button-text p-button-rounded p-button-danger" (onClick)="deleteTransaction(transaction)"></p-button>
+          <p-button icon="pi pi-pencil" styleClass="p-button-text p-button-rounded" (onClick)="showTransactionForm(transaction)"></p-button>
+          <p-button icon="pi pi-trash" styleClass="p-button-text p-button-rounded p-button-danger" (onClick)="deleteTransaction(transaction)"></p-button>
         </ng-template>
       </app-data-table>
     }

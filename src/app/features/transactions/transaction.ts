@@ -48,4 +48,11 @@ export class Transaction {
       map(response => response.result)
     );
   }
+
+  createTransfer(sourceAccountId: number, transferData: any): Observable<boolean> {
+    const endpoint = `accounts/${sourceAccountId}/transactions/transfer`;
+    return this.apiService.post<boolean>(endpoint, transferData).pipe(
+      map(response => response.result)
+    );
+  }
 }

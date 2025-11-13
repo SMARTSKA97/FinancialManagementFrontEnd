@@ -16,11 +16,11 @@ export interface ColumnDefinition {
 @Component({
   selector: 'app-data-table',
   imports: [CommonModule, TableModule, RouterLink],
-  standalone: true, 
+  standalone: true,
   templateUrl: './data-table.html',
   styleUrl: './data-table.scss'
 })
-export class DataTable implements OnChanges{
+export class DataTable implements OnChanges {
   @Input() data: any[] = [];
   @Input() columns: ColumnDefinition[] = [];
   @ContentChild('actions') actionsTemplate!: TemplateRef<any>;
@@ -34,9 +34,10 @@ export class DataTable implements OnChanges{
     }
   }
 
-  constructLink(path: string, item: any): any[] {
+  constructLink(path: string, item: any): string[] {
     const replacedPath = path.replace(':id', item.id);
-    // Add a leading '/' to make the path absolute from the root
-    return ['/', ...replacedPath.split('/')];
+    const segments = replacedPath.split('/');
+    const cleanSegments = segments.filter(p => p.length > 0);
+    return ['/', ...cleanSegments];
   }
 }

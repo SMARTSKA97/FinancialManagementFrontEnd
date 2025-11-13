@@ -11,6 +11,7 @@ export interface AccountCategory {
 export interface TransactionCategory {
   id: number;
   name: string;
+  isTransferCategory: boolean;
 }
 
 @Injectable({
@@ -50,7 +51,7 @@ export class Category {
     );
   }
 
-  upsertTransactionCategory(categoryData: { id?: number, name: string }): Observable<TransactionCategory> {
+  upsertTransactionCategory(categoryData: { id?: number, name: string, isTransferCategory?: boolean }): Observable<TransactionCategory> {
     return this.apiService.upsert<TransactionCategory>(this.transactionCategoryEndpoint, categoryData).pipe(
       map(response => response.result)
     );

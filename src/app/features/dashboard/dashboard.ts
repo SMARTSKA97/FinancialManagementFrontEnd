@@ -16,6 +16,11 @@ import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { GenericApi } from '../../core/services/generic-api';
 import { environment } from '../../../environments/environment';
+export interface AccountSummary {
+  totalIncome: number;
+  totalExpenses: number;
+  currentBalance: number;
+}
 
 export interface DashboardSummary {
   netWorth: number;
@@ -28,7 +33,6 @@ export interface SpendingByCategory {
   totalAmount: number;
 }
 
-
 @Injectable({
   providedIn: 'root'
 })
@@ -39,16 +43,20 @@ export class DashboardService {
   constructor(private apiService: GenericApi) { }
 
   getSummary(): Observable<DashboardSummary> {
-    // Use the map operator to extract the 'result'
     return this.apiService.get<DashboardSummary>(`${this.endpoint}/summary`).pipe(
       map(response => response.result)
     );
   }
 
   getSpendingByCategory(): Observable<SpendingByCategory[]> {
-    // Use the map operator to extract the 'result'
     return this.apiService.get<SpendingByCategory[]>(`${this.endpoint}/spending-by-category`).pipe(
       map(response => response.result || [])
+    );
+  }
+  
+  getAccountSummary(accountId: number): Observable<AccountSummary> {
+    return this.apiService.get<AccountSummary>(`${this.endpoint}/account-summary/${accountId}`).pipe(
+      map(response => response.result)
     );
   }
 }
