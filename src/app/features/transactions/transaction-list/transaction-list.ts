@@ -14,6 +14,7 @@ import { ToastModule } from "primeng/toast";
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { AccountSummary } from '../../dashboard/dashboard';
 import { DashboardService } from '../../dashboard/dashboard';
+import { TransactionSwitchForm } from '../transaction-switch-form/transaction-switch-form';
 
 @Component({
   selector: 'app-transaction-list',
@@ -113,5 +114,26 @@ export class TransactionList implements OnInit {
         }
       }
     });
+  }
+
+  async showSwitchAccountForm(transaction: Transaction): Promise<void> {
+    this.ref = this.dialogService.open(TransactionSwitchForm, {
+      header: 'Switch Transaction Account',
+      width: '400px',
+      data: { currentAccountId: this.accountId }
+    });
+
+    const result = await firstValueFrom(this.ref.onClose);
+
+    if (result && result.destinationAccountId) {
+      try {
+        await firstValueFrom(this.transactionService.switchAccount(this.accountId!, transaction.id, result.destinationAccountId));
+        this.messageService.add({severity:'success', summary: 'Success', detail: 'Transaction switched successfully'});
+        this.loadData();
+      } catch (err: any) {
+        console.error('Failed to switch transaction', err);
+        this.messageService.add({severity:'error', summary: 'Error', detail: err.error?.message || 'Failed to switch transaction'});
+      }
+    }
   }
 }

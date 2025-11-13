@@ -55,4 +55,11 @@ export class Transaction {
       map(response => response.result)
     );
   }
+
+  switchAccount(currentAccountId: number, transactionId: number, destinationAccountId: number): Observable<boolean> {
+    const endpoint = `accounts/${currentAccountId}/transactions/${transactionId}/switch-account`;
+    return this.apiService.post<boolean>(endpoint, { destinationAccountId }).pipe(
+      map(response => response.result)
+    );
+  }
 }
