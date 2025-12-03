@@ -158,14 +158,16 @@ export class Auth {
     );
   }
 
-  logout(): void {
+  logout(reason?: string): void {
     const refreshToken = this.getRefreshToken();
     if (refreshToken) {
       // Call backend to revoke token
       this.http.post(this.buildUrl('Auth', 'logout'), { refreshToken }).subscribe();
     }
     this.clearTokens();
-    this.router.navigate(['/login']);
+    this.router.navigate(['/login'], {
+      queryParams: reason ? { reason } : undefined
+    });
   }
 
   isLoggedIn(): boolean {
