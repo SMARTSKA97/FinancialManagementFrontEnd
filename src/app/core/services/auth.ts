@@ -1,35 +1,34 @@
-import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common'; // Import isPlatformBrowser
+import { Injectable, Inject, PLATFORM_ID, inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, map, Observable, of, switchMap, tap, timer } from 'rxjs';
+import { BehaviorSubject, catchError, map, Observable, of, switchMap, tap, timer } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from './generic-api';
 import { jwtDecode } from 'jwt-decode';
+import { Router } from '@angular/router';
 
 
 // --- AUTH-SPECIFIC DTOs ---
 export interface RegisterUserDto {
   name: string;
-  dateOfBirth: string;
-  email: string;
-  userName: string;
-  password: string;
-}
-
-export interface LoginUserDto {
-  userName: string;
-  password: string;
-}
-
-export interface LoginResponseDto {
-  token: string;
-  userName: string;
 }
 
 export interface UserDetails {
   name: string;
   email: string;
-  exp: number; // Expiry timestamp
+  exp: number;
+}
+
+export interface LoginUserDto {
+  userName: string;
+  password: string;
+  forceLogin?: boolean;
+}
+
+export interface LoginResponseDto {
+  accessToken: string;
+  refreshToken: string;
+  userName: string;
 }
 
 @Injectable({
@@ -37,38 +36,28 @@ export interface UserDetails {
 })
 export class Auth {
   private apiBaseUrl = environment.apiBaseUrl;
-    private isBrowser: boolean;
+  private isBrowser: boolean;
+  private router = inject(Router);
+  private http = inject(HttpClient);
 
-    // A single source of truth for all user details
-    private currentUserDetailsSubject = new BehaviorSubject<UserDetails | null>(null);
+  private accessTokenSubject = new BehaviorSubject<string | null>(null);
+  public accessToken$ = this.accessTokenSubject.asObservable();
 
-    // Public observables derived from the single source of truth
-    public currentUserDetails$ = this.currentUserDetailsSubject.asObservable();
-    public currentUser$ = this.currentUserDetails$.pipe(map(details => details?.name ?? null));
-    public currentUserEmail$ = this.currentUserDetails$.pipe(map(details => details?.email ?? null));
+  // A single source of truth for all user details
+  private currentUserDetailsSubject = new BehaviorSubject<UserDetails | null>(null);
 
-    // An observable that updates the "expires in" message every minute
-    public sessionExpiresIn$: Observable<string> = timer(0, 60000).pipe(
-        switchMap(() => {
-            const details = this.currentUserDetailsSubject.value;
-            if (!details) return of('N/A');
+  // Public observables derived from the single source of truth
+  public currentUserDetails$ = this.currentUserDetailsSubject.asObservable();
+  public currentUser$ = this.currentUserDetails$.pipe(map(details => details?.name ?? null));
+  public currentUserEmail$ = this.currentUserDetails$.pipe(map(details => details?.email ?? null));
+  public sessionExpiresIn$: Observable<string>;
 
-            const now = Math.floor(Date.now() / 1000);
-            const expiresInSeconds = details.exp - now;
-            const expiresInMinutes = Math.round(expiresInSeconds / 60);
-
-            if (expiresInMinutes <= 0) return of('Expired');
-            return of(`${expiresInMinutes} minutes`);
-        })
-    );
-
-    constructor(
-        private http: HttpClient,
-        @Inject(PLATFORM_ID) private platformId: Object
-    ) {
-        this.isBrowser = isPlatformBrowser(this.platformId);
-        this.loadUserFromToken();
-    }
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+    // We don't load tokens on startup anymore because refresh token is in cookie
+    // We will call restoreSession() from APP_INITIALIZER
+    this.sessionExpiresIn$ = of('N/A');
+  }
 
   private buildUrl(...segments: string[]): string {
     const fullPath = [this.apiBaseUrl, ...segments]
@@ -77,49 +66,109 @@ export class Auth {
     return fullPath;
   }
 
+  public getAccessToken(): string | null {
+    return this.accessTokenSubject.value;
+  }
+
+  private getRefreshToken(): string | null {
+    if (this.isBrowser) {
+      return localStorage.getItem('refreshToken');
+    }
+    return null;
+  }
+
+  private storeTokens(accessToken: string, refreshToken: string): void {
+    this.accessTokenSubject.next(accessToken);
+    if (this.isBrowser) {
+      localStorage.setItem('refreshToken', refreshToken);
+    }
+    this.decodeAndSetUser(accessToken);
+  }
+
+  private clearTokens(): void {
+    this.accessTokenSubject.next(null);
+    this.currentUserDetailsSubject.next(null);
+    if (this.isBrowser) {
+      localStorage.removeItem('refreshToken');
+    }
+  }
+
+  // New method to restore session on app startup
+  public restoreSession(): Observable<boolean> {
+    if (!this.isBrowser) return of(false);
+
+    // Check if we have a refresh token in local storage
+    const refreshToken = this.getRefreshToken();
+    if (!refreshToken) return of(false);
+
+    return this.refreshToken().pipe(
+      map(success => success),
+      catchError(() => of(false))
+    );
+  }
+
+  private decodeAndSetUser(token: string): void {
+    try {
+      const decodedToken: any = jwtDecode(token);
+      const userDetails: UserDetails = {
+        name: decodedToken.sub,
+        email: decodedToken.email,
+        exp: decodedToken.exp
+      };
+      this.currentUserDetailsSubject.next(userDetails);
+    } catch (e) {
+      this.clearTokens();
+    }
+  }
+
   register(userData: RegisterUserDto): Observable<ApiResponse<string>> {
     return this.http.post<ApiResponse<string>>(this.buildUrl('Auth', 'register'), userData);
   }
 
   login(credentials: LoginUserDto): Observable<ApiResponse<LoginResponseDto>> {
-        return this.http.post<ApiResponse<LoginResponseDto>>(this.buildUrl('Auth', 'login'), credentials).pipe(
-            tap(response => {
-                if (this.isBrowser && response.isSuccess && response.result?.token) {
-                    localStorage.setItem('authToken', response.result.token);
-                    this.loadUserFromToken(); // Load user details after login
-                }
-            })
-        );
-    }
-
-    logout(): void {
-        if (this.isBrowser) {
-            localStorage.removeItem('authToken');
-            this.currentUserDetailsSubject.next(null); // Clear user details on logout
+    return this.http.post<ApiResponse<LoginResponseDto>>(this.buildUrl('Auth', 'login'), credentials).pipe(
+      tap(response => {
+        if (response.isSuccess && response.result) {
+          this.storeTokens(response.result.accessToken, response.result.refreshToken);
         }
+      })
+    );
+  }
+
+  refreshToken(): Observable<boolean> {
+    const refreshToken = this.getRefreshToken();
+    if (!refreshToken) {
+      this.logout();
+      return of(false);
     }
 
-    private loadUserFromToken(): void {
-        const token = this.getToken();
-        if (token) {
-            const decodedToken: any = jwtDecode(token);
-            const userDetails: UserDetails = {
-                name: decodedToken.sub, // 'sub' is the standard claim for username
-                email: decodedToken.email,
-                exp: decodedToken.exp
-            };
-            this.currentUserDetailsSubject.next(userDetails);
+    return this.http.post<ApiResponse<LoginResponseDto>>(this.buildUrl('Auth', 'refresh'), { refreshToken }).pipe(
+      map(response => {
+        if (response.isSuccess && response.result) {
+          this.storeTokens(response.result.accessToken, response.result.refreshToken);
+          return true;
         }
-    }
+        this.logout();
+        return false;
+      }),
+      catchError(() => {
+        this.logout();
+        return of(false);
+      })
+    );
+  }
 
-    getToken(): string | null {
-        if (this.isBrowser) {
-            return localStorage.getItem('authToken');
-        }
-        return null;
+  logout(): void {
+    const refreshToken = this.getRefreshToken();
+    if (refreshToken) {
+      // Call backend to revoke token
+      this.http.post(this.buildUrl('Auth', 'logout'), { refreshToken }).subscribe();
     }
+    this.clearTokens();
+    this.router.navigate(['/login']);
+  }
 
-    isLoggedIn(): boolean {
-        return !!this.getToken();
-    }
+  isLoggedIn(): boolean {
+    return !!this.getRefreshToken(); // Presence of refresh token indicates "logged in" status
+  }
 }

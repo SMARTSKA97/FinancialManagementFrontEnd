@@ -1,4 +1,3 @@
-<p-toast></p-toast>
 <div class="flex justify-content-center align-items-center h-screen">
   <p-card header="Login" [style]="{width: '360px'}">
     <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
@@ -31,3 +30,15 @@
     </form>
   </p-card>
 </div>
+
+<p-dialog header="Concurrent Login Detected" [(visible)]="showConcurrentLoginModal" [modal]="true"
+  [style]="{width: '400px'}" [closable]="false">
+  <p class="m-0">
+    You are already logged in on another device. Do you want to continue here? This will log you out from the other
+    device.
+  </p>
+  <ng-template pTemplate="footer">
+    <p-button icon="pi pi-times" (click)="cancelForceLogin()" label="Cancel" severity="danger"></p-button>
+    <p-button icon="pi pi-check" (click)="confirmForceLogin()" label="Continue Here" severity="success"></p-button>
+  </ng-template>
+</p-dialog>

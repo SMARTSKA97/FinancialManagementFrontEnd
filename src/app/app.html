@@ -1,1 +1,13 @@
+<p-toast position="top-right"></p-toast>
 <router-outlet></router-outlet>
+
+<p-dialog header="Session Active in Another Tab" [visible]="isSessionLocked()" [modal]="true" [closable]="false"
+    [style]="{width: '400px'}">
+    <p class="m-0">
+        You have the application open in another tab. Do you want to use it here instead?
+    </p>
+    <ng-template pTemplate="footer">
+        <p-button icon="pi pi-times" (click)="closeTab()" label="Cancel (Close Tab)" severity="danger"></p-button>
+        <p-button icon="pi pi-check" (click)="takeOverSession()" label="Continue Here" severity="success"></p-button>
+    </ng-template>
+</p-dialog>

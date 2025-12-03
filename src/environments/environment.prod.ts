@@ -1,5 +1,5 @@
 export const environment = {
   production: true,
   apiBaseUrl: 'https://financialmanagementbackend.onrender.com/api',
-  appVersion: '2.4.0'
+  appVersion: '3.0.0'
 };
