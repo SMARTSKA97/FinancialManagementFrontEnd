@@ -85,7 +85,7 @@ export class TransactionList implements OnInit {
       header: isEditMode ? 'Edit Transaction' : 'Add a New Transaction',
       width: '400px',
       modal: true,
-      dismissableMask: true,
+
       data: {
         transaction: transactionToEdit,
         currentAccountId: this.accountId // Pass the current account ID to the form
@@ -123,7 +123,7 @@ export class TransactionList implements OnInit {
       header: 'Switch Transaction Account',
       width: '400px',
       modal: true,
-      dismissableMask: true,
+
       data: { currentAccountId: this.accountId }
     });
 

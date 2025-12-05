@@ -68,7 +68,7 @@ export class ResourcePage<T extends { id: number }> implements OnInit {
       header: `${isEditMode ? 'Edit' : 'New'} ${this.title.slice(0, -1)}`,
       width: '400px',
       modal: true,
-      dismissableMask: true,
+
       data: itemToEdit
     });
 
