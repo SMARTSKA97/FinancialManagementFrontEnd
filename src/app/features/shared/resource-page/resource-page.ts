@@ -32,33 +32,33 @@ export class ResourcePage<T extends { id: number }> implements OnInit {
   // --- CONFIGURATION INPUTS ---
   @Input() title: string = '';
   @Input() backLinkPath?: string;
-  @Input({required:true}) endpoint!: string;
-  @Input({required:true}) columns!: ColumnDefinition[];
-  @Input({required:true}) formComponent!: Type<any>;
+  @Input({ required: true }) endpoint!: string;
+  @Input({ required: true }) columns!: ColumnDefinition[];
+  @Input({ required: true }) formComponent!: Type<any>;
 
   // --- OBSERVABLES FOR THE TEMPLATE ---
   items$ = this.crudService.items$;
   isLoading$ = this.crudService.isLoading$;
 
   ref: DynamicDialogRef | undefined;
-  
-  
+
+
 
   async ngOnInit(): Promise<void> {
     const routeData = await firstValueFrom(this.route.data);
     const params = await firstValueFrom(this.route.paramMap);
-    
+
     this.title = routeData['title'];
     this.columns = routeData['columns'];
     this.formComponent = routeData['formComponent'];
     this.backLinkPath = routeData['backLinkPath'];
-    
+
     let endpoint = routeData['endpoint'];
     if (params.has('id')) {
       endpoint = endpoint.replace(':id', params.get('id')!);
     }
     this.endpoint = endpoint;
-    
+
     this.crudService.search(this.endpoint, { pageNumber: 1, pageSize: 10 });
   }
 
@@ -67,15 +67,17 @@ export class ResourcePage<T extends { id: number }> implements OnInit {
     this.ref = this.dialogService.open(this.formComponent, {
       header: `${isEditMode ? 'Edit' : 'New'} ${this.title.slice(0, -1)}`,
       width: '400px',
+      modal: true,
+      dismissableMask: true,
       data: itemToEdit
     });
 
     const result = await firstValueFrom(this.ref.onClose);
     if (result) {
-        // The service now handles the update logic, so the component is simpler
-        this.crudService.upsert(this.endpoint, result)
-          .then(() => this.messageService.add({severity:'success', summary: 'Success', detail: `${this.title.slice(0, -1)} saved`}))
-          .catch(err => this.messageService.add({severity:'error', summary: 'Error', detail: err.message || 'Operation failed'}));
+      // The service now handles the update logic, so the component is simpler
+      this.crudService.upsert(this.endpoint, result)
+        .then(() => this.messageService.add({ severity: 'success', summary: 'Success', detail: `${this.title.slice(0, -1)} saved` }))
+        .catch(err => this.messageService.add({ severity: 'error', summary: 'Error', detail: err.message || 'Operation failed' }));
     }
   }
 
@@ -87,8 +89,8 @@ export class ResourcePage<T extends { id: number }> implements OnInit {
       accept: () => {
         // The service now handles the delete logic
         this.crudService.delete(this.endpoint, item)
-          .then(() => this.messageService.add({severity:'success', summary: 'Success', detail: 'Item deleted'}))
-          .catch(err => this.messageService.add({severity:'error', summary: 'Error', detail: err.message || 'Operation failed'}));
+          .then(() => this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Item deleted' }))
+          .catch(err => this.messageService.add({ severity: 'error', summary: 'Error', detail: err.message || 'Operation failed' }));
       }
     });
   }

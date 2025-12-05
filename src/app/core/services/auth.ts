@@ -56,7 +56,25 @@ export class Auth {
     this.isBrowser = isPlatformBrowser(this.platformId);
     // We don't load tokens on startup anymore because refresh token is in cookie
     // We will call restoreSession() from APP_INITIALIZER
-    this.sessionExpiresIn$ = of('N/A');
+
+    this.sessionExpiresIn$ = this.currentUserDetails$.pipe(
+      switchMap(details => {
+        if (!details || !details.exp) return of('N/A');
+
+        return timer(0, 1000).pipe(
+          map(() => {
+            const now = Math.floor(Date.now() / 1000);
+            const secondsLeft = details.exp - now;
+
+            if (secondsLeft <= 0) return 'Expired';
+
+            const minutes = Math.floor(secondsLeft / 60);
+            const seconds = secondsLeft % 60;
+            return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+          })
+        );
+      })
+    );
   }
 
   private buildUrl(...segments: string[]): string {

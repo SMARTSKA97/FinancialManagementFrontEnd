@@ -67,7 +67,7 @@ export class TransactionList implements OnInit {
         firstValueFrom(this.transactionService.getTransactionsForAccount(this.accountId, { pageNumber: 1, pageSize: 50 })),
         firstValueFrom(this.dashboardService.getAccountSummary(this.accountId))
       ]);
-      
+
       this.transactions = paginatedResult.data;
       this.summary = summaryData; // <-- Store the summary data
 
@@ -84,7 +84,9 @@ export class TransactionList implements OnInit {
     this.ref = this.dialogService.open(TransactionForm, {
       header: isEditMode ? 'Edit Transaction' : 'Add a New Transaction',
       width: '400px',
-      data: { 
+      modal: true,
+      dismissableMask: true,
+      data: {
         transaction: transactionToEdit,
         currentAccountId: this.accountId // Pass the current account ID to the form
       }
@@ -94,7 +96,7 @@ export class TransactionList implements OnInit {
     if (result) {
       // If the form returns 'true' (success), reload all data
       this.loadData();
-      this.messageService.add({severity:'success', summary: 'Success', detail: 'Operation successful'});
+      this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Operation successful' });
     }
   }
 
@@ -106,11 +108,11 @@ export class TransactionList implements OnInit {
       accept: async () => {
         try {
           await firstValueFrom(this.transactionService.deleteTransaction(this.accountId!, transaction.id));
-          this.messageService.add({severity:'success', summary: 'Success', detail: 'Transaction deleted'});
+          this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Transaction deleted' });
           this.loadData(); // Reload all data
         } catch (err) {
           console.error('Failed to delete transaction', err);
-          this.messageService.add({severity:'error', summary: 'Error', detail: 'Failed to delete transaction'});
+          this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to delete transaction' });
         }
       }
     });
@@ -120,6 +122,8 @@ export class TransactionList implements OnInit {
     this.ref = this.dialogService.open(TransactionSwitchForm, {
       header: 'Switch Transaction Account',
       width: '400px',
+      modal: true,
+      dismissableMask: true,
       data: { currentAccountId: this.accountId }
     });
 
@@ -128,11 +132,11 @@ export class TransactionList implements OnInit {
     if (result && result.destinationAccountId) {
       try {
         await firstValueFrom(this.transactionService.switchAccount(this.accountId!, transaction.id, result.destinationAccountId));
-        this.messageService.add({severity:'success', summary: 'Success', detail: 'Transaction switched successfully'});
+        this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Transaction switched successfully' });
         this.loadData();
       } catch (err: any) {
         console.error('Failed to switch transaction', err);
-        this.messageService.add({severity:'error', summary: 'Error', detail: err.error?.message || 'Failed to switch transaction'});
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Failed to switch transaction' });
       }
     }
   }
