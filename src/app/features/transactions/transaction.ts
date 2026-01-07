@@ -31,35 +31,35 @@ export class Transaction {
   getTransactionsForAccount(accountId: number, queryParams: any): Observable<PaginatedResult<Transaction>> {
     const endpoint = `accounts/${accountId}/transactions`;
     return this.apiService.search<Transaction>(endpoint, queryParams).pipe(
-      map(response => response.result)
+      map(response => response.value)
     );
   }
 
   upsertTransaction(accountId: number, transactionData: Partial<Transaction>): Observable<Transaction> {
     const endpoint = `accounts/${accountId}/transactions`;
     return this.apiService.upsert<Transaction>(endpoint, transactionData).pipe(
-      map(response => response.result)
+      map(response => response.value)
     );
   }
 
   deleteTransaction(accountId: number, transactionId: number): Observable<boolean> {
     const endpoint = `accounts/${accountId}/transactions`;
     return this.apiService.delete<boolean>(endpoint, transactionId).pipe(
-      map(response => response.result)
+      map(response => response.value)
     );
   }
 
   createTransfer(sourceAccountId: number, transferData: any): Observable<boolean> {
     const endpoint = `accounts/${sourceAccountId}/transactions/transfer`;
     return this.apiService.post<boolean>(endpoint, transferData).pipe(
-      map(response => response.result)
+      map(response => response.value)
     );
   }
 
   switchAccount(currentAccountId: number, transactionId: number, destinationAccountId: number): Observable<boolean> {
     const endpoint = `accounts/${currentAccountId}/transactions/${transactionId}/switch-account`;
     return this.apiService.post<boolean>(endpoint, { destinationAccountId }).pipe(
-      map(response => response.result)
+      map(response => response.value)
     );
   }
 }

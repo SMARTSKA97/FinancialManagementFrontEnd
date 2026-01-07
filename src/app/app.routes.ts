@@ -82,7 +82,7 @@ export const routes: Routes = [
       //   path: 'about',
       //   component: About
       // },
-      { path: '', redirectTo: 'accounts', pathMatch: 'full' }
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   },
   { path: '**', redirectTo: '', pathMatch: 'full' }

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { ApiResponse, GenericApi } from '../../core/services/generic-api';
+import { ApiResult, GenericApi } from '../../core/services/generic-api';
 import { map, Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
@@ -27,19 +27,19 @@ export class Category {
 
   getAccountCategories(): Observable<AccountCategory[]> {
     return this.apiService.get<AccountCategory[]>(this.accountCategoryEndpoint).pipe(
-      map(response => response.result || [])
+      map(response => response.value || [])
     );
   }
 
   upsertAccountCategory(categoryData: { id?: number, name: string }): Observable<AccountCategory> {
     return this.apiService.upsert<AccountCategory>(this.accountCategoryEndpoint, categoryData).pipe(
-      map(response => response.result)
+      map(response => response.value)
     );
   }
 
   deleteAccountCategory(id: number): Observable<boolean> {
     return this.apiService.delete<boolean>(this.accountCategoryEndpoint, id).pipe(
-      map(response => response.result)
+      map(response => response.value)
     );
   }
 
@@ -47,19 +47,19 @@ export class Category {
 
   getTransactionCategories(): Observable<TransactionCategory[]> {
     return this.apiService.get<TransactionCategory[]>(this.transactionCategoryEndpoint).pipe(
-      map(response => response.result || [])
+      map(response => response.value || [])
     );
   }
 
   upsertTransactionCategory(categoryData: { id?: number, name: string, isTransferCategory?: boolean }): Observable<TransactionCategory> {
     return this.apiService.upsert<TransactionCategory>(this.transactionCategoryEndpoint, categoryData).pipe(
-      map(response => response.result)
+      map(response => response.value)
     );
   }
 
   deleteTransactionCategory(id: number): Observable<boolean> {
     return this.apiService.delete<boolean>(this.transactionCategoryEndpoint, id).pipe(
-      map(response => response.result)
+      map(response => response.value)
     );
   }
 }

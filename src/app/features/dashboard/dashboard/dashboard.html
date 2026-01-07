@@ -3,48 +3,51 @@
     <div>
       <h1 class="text-3xl font-bold m-0">Dashboard</h1>
     </div>
+    <div class="mt-3 md:mt-0">
+      <p-button label="View Accounts" icon="pi pi-wallet" routerLink="/accounts"></p-button>
+    </div>
   </div>
 
   @if (isLoading) {
-    <div class="flex justify-content-center p-6">
-      <p-progressSpinner></p-progressSpinner>
-    </div>
+  <div class="flex justify-content-center p-6">
+    <p-progressSpinner></p-progressSpinner>
+  </div>
   } @else if (summary) {
-    <!-- Summary Cards Grid -->
-    <div class="grid mb-4">
-      <div class="col-12 md:col-4">
-        <p-card header="Net Worth">
-          <p class="text-2xl font-bold">{{ summary.netWorth | currency:'INR' }}</p>
-        </p-card>
-      </div>
-      <div class="col-12 md:col-4">
-        <p-card header="Monthly Income">
-          <p class="text-2xl font-bold text-green-500">{{ summary.monthlyIncome | currency:'INR' }}</p>
-        </p-card>
-      </div>
-      <div class="col-12 md:col-4">
-        <p-card header="Monthly Expenses">
-          <p class="text-2xl font-bold text-red-500">{{ summary.monthlyExpenses | currency:'INR' }}</p>
-        </p-card>
-      </div>
+  <!-- Summary Cards Grid -->
+  <div class="grid mb-4">
+    <div class="col-12 md:col-4">
+      <p-card header="Net Worth">
+        <p class="text-2xl font-bold">{{ summary.netWorth | currency:'INR' }}</p>
+      </p-card>
     </div>
+    <div class="col-12 md:col-4">
+      <p-card header="Monthly Income">
+        <p class="text-2xl font-bold text-green-500">{{ summary.monthlyIncome | currency:'INR' }}</p>
+      </p-card>
+    </div>
+    <div class="col-12 md:col-4">
+      <p-card header="Monthly Expenses">
+        <p class="text-2xl font-bold text-red-500">{{ summary.monthlyExpenses | currency:'INR' }}</p>
+      </p-card>
+    </div>
+  </div>
 
-    <!-- Pie Chart Card -->
-    <div class="grid">
-      <div class="col-12 md:col-6">
-        <p-card header="Spending by Category">
-          @if(spendingChartData?.datasets[0]?.data?.length > 0) {
-            <div style="position: relative; height: 350px" class="flex justify-content-center">
-              <p-chart type="pie" [data]="spendingChartData" [options]="spendingChartOptions"></p-chart>
-            </div>
-          } @else {
-            <div class="text-center p-4">
-              <i class="pi pi-chart-pie text-5xl text-gray-400"></i>
-              <p class="mt-3 text-gray-500">No expense data to display for this month.</p>
-            </div>
-          }
-        </p-card>
-      </div>
+  <!-- Pie Chart Card -->
+  <div class="grid">
+    <div class="col-12 md:col-6">
+      <p-card header="Spending by Category">
+        @if(spendingChartData?.datasets[0]?.data?.length > 0) {
+        <div style="position: relative; height: 350px" class="flex justify-content-center">
+          <p-chart type="pie" [data]="spendingChartData" [options]="spendingChartOptions"></p-chart>
+        </div>
+        } @else {
+        <div class="text-center p-4">
+          <i class="pi pi-chart-pie text-5xl text-gray-400"></i>
+          <p class="mt-3 text-gray-500">No expense data to display for this month.</p>
+        </div>
+        }
+      </p-card>
     </div>
+  </div>
   }
 </div>

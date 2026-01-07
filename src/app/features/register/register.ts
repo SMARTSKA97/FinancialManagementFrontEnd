@@ -72,7 +72,8 @@ export class Register {
           this.notificationService.showSuccess('Registration successful! Please login.');
           this.router.navigate(['/login']);
         } else {
-          this.notificationService.showError(response.message || 'Registration failed.');
+          const msg = response.error?.description || 'Registration failed.';
+          this.notificationService.showError(msg);
         }
         this.cdr.markForCheck();
       },
@@ -82,7 +83,8 @@ export class Register {
           this.processValidationErrors(err.error.errors);
           this.notificationService.showError('Please fix the validation errors.');
         } else {
-          const detail = err.error?.message || 'An unknown error occurred.';
+          // ProblemDetails uses 'detail'
+          const detail = err.error?.detail || err.error?.message || 'An unknown error occurred.';
           this.notificationService.showError(detail);
         }
         this.cdr.markForCheck();

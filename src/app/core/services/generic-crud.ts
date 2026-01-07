@@ -16,7 +16,7 @@ export class GenericCrud<T extends { id: number }> {
   public readonly isLoading$ = this._isLoading.asObservable();
   public readonly totalRecords$ = this._totalRecords.asObservable();
 
-  constructor(private apiService: GenericApi) {}
+  constructor(private apiService: GenericApi) { }
 
   // --- Public Action Methods ---
 
@@ -24,14 +24,14 @@ export class GenericCrud<T extends { id: number }> {
     this._isLoading.next(true);
     try {
       const response = await firstValueFrom(this.apiService.search<T>(endpoint, queryParams));
-      if (response.isSuccess && response.result) {
-        this._items.next(response.result.data);
-        this._totalRecords.next(response.result.totalRecords);
+      if (response.isSuccess && response.value) {
+        this._items.next(response.value.data);
+        this._totalRecords.next(response.value.totalRecords);
       } else {
         // On failure, reset the state
         this._items.next([]);
         this._totalRecords.next(0);
-        throw new Error(response.message);
+        throw new Error(response.error?.description || 'Search failed');
       }
     } finally {
       this._isLoading.next(false);
@@ -40,8 +40,8 @@ export class GenericCrud<T extends { id: number }> {
 
   public async upsert(endpoint: string, itemData: Partial<T>): Promise<void> {
     const response = await firstValueFrom(this.apiService.upsert<T>(endpoint, itemData));
-    if (response.isSuccess && response.result) {
-      const savedItem = response.result;
+    if (response.isSuccess && response.value) {
+      const savedItem = response.value;
       const currentItems = this._items.value;
       const index = currentItems.findIndex(i => i.id === savedItem.id);
 
@@ -56,7 +56,7 @@ export class GenericCrud<T extends { id: number }> {
         this._totalRecords.next(this._totalRecords.value + 1);
       }
     } else {
-      throw new Error(response.message);
+      throw new Error(response.error?.description || 'Operation failed');
     }
   }
 
@@ -66,7 +66,7 @@ export class GenericCrud<T extends { id: number }> {
       this._items.next(this._items.value.filter(i => i.id !== item.id));
       this._totalRecords.next(this._totalRecords.value - 1);
     } else {
-      throw new Error(response.message);
+      throw new Error(response.error?.description || 'Delete failed');
     }
   }
 }

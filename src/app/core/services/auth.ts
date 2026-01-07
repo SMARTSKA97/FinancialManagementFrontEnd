@@ -3,7 +3,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, catchError, map, Observable, of, switchMap, tap, timer } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { ApiResponse } from './generic-api';
+import { ApiResult } from './generic-api';
 import { jwtDecode } from 'jwt-decode';
 import { Router } from '@angular/router';
 
@@ -139,15 +139,15 @@ export class Auth {
     }
   }
 
-  register(userData: RegisterUserDto): Observable<ApiResponse<string>> {
-    return this.http.post<ApiResponse<string>>(this.buildUrl('Auth', 'register'), userData);
+  register(userData: RegisterUserDto): Observable<ApiResult<string>> {
+    return this.http.post<ApiResult<string>>(this.buildUrl('Auth', 'register'), userData);
   }
 
-  login(credentials: LoginUserDto): Observable<ApiResponse<LoginResponseDto>> {
-    return this.http.post<ApiResponse<LoginResponseDto>>(this.buildUrl('Auth', 'login'), credentials).pipe(
+  login(credentials: LoginUserDto): Observable<ApiResult<LoginResponseDto>> {
+    return this.http.post<ApiResult<LoginResponseDto>>(this.buildUrl('Auth', 'login'), credentials).pipe(
       tap(response => {
-        if (response.isSuccess && response.result) {
-          this.storeTokens(response.result.accessToken, response.result.refreshToken);
+        if (response.isSuccess && response.value) {
+          this.storeTokens(response.value.accessToken, response.value.refreshToken);
         }
       })
     );
@@ -160,10 +160,10 @@ export class Auth {
       return of(false);
     }
 
-    return this.http.post<ApiResponse<LoginResponseDto>>(this.buildUrl('Auth', 'refresh'), { refreshToken }).pipe(
+    return this.http.post<ApiResult<LoginResponseDto>>(this.buildUrl('Auth', 'refresh'), { refreshToken }).pipe(
       map(response => {
-        if (response.isSuccess && response.result) {
-          this.storeTokens(response.result.accessToken, response.result.refreshToken);
+        if (response.isSuccess && response.value) {
+          this.storeTokens(response.value.accessToken, response.value.refreshToken);
           return true;
         }
         this.logout();

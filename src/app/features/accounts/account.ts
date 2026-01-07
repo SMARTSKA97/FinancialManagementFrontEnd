@@ -24,9 +24,9 @@ export class Account {
    */
   getAccounts(queryParams: any): Observable<PaginatedResult<Account>> {
     console.log(`Calling search endpoint for: ${this.endpoint}`);
-    // Use the 'search' method and map the result from the ApiResponse
+    // Use the 'search' method and map the result from the ApiResult
     return this.apiService.search<Account>(this.endpoint, queryParams).pipe(
-      map(response => response.result)
+      map(response => response.value)
     );
   }
 
@@ -36,7 +36,7 @@ export class Account {
   upsertAccount(accountData: any): Observable<Account> {
     // Use the generic 'upsert' method
     return this.apiService.upsert<Account>(this.endpoint, accountData).pipe(
-      map(response => response.result)
+      map(response => response.value)
     );
   }
 
@@ -45,7 +45,7 @@ export class Account {
    */
   deleteAccount(accountId: number): Observable<boolean> {
     return this.apiService.delete<boolean>(this.endpoint, accountId).pipe(
-      map(response => response.result)
+      map(response => response.value)
     );
   }
 } 

@@ -44,19 +44,19 @@ export class DashboardService {
 
   getSummary(): Observable<DashboardSummary> {
     return this.apiService.get<DashboardSummary>(`${this.endpoint}/summary`).pipe(
-      map(response => response.result)
+      map(response => response.value)
     );
   }
 
   getSpendingByCategory(): Observable<SpendingByCategory[]> {
     return this.apiService.get<SpendingByCategory[]>(`${this.endpoint}/spending-by-category`).pipe(
-      map(response => response.result || [])
+      map(response => response.value || [])
     );
   }
-  
+
   getAccountSummary(accountId: number): Observable<AccountSummary> {
     return this.apiService.get<AccountSummary>(`${this.endpoint}/account-summary/${accountId}`).pipe(
-      map(response => response.result)
+      map(response => response.value)
     );
   }
 }

@@ -56,12 +56,17 @@ export class Login {
         this.isSubmitting = false;
         if (response.isSuccess) {
           this.showConcurrentLoginModal = false;
-          this.router.navigate(['/accounts']);
+          this.router.navigate(['/dashboard']);
         } else {
-          // Check for concurrent login in the success response if API returns 200 with failure flag
-          // But based on backend, it returns 400 for this case.
-          // Keeping this for generic failures.
-          this.messageService.add({ severity: 'error', summary: 'Login Failed', detail: response.message });
+          // Check for Concurrent Login (Backend returns 200 OK with failure)
+          if (response.error?.code === 'Auth.ConcurrentLogin') {
+            this.showConcurrentLoginModal = true;
+            this.cdr.markForCheck();
+            return;
+          }
+
+          const msg = response.error?.description || 'Login failed';
+          this.messageService.add({ severity: 'error', summary: 'Login Failed', detail: msg });
         }
         this.cdr.markForCheck();
       },

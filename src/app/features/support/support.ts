@@ -64,7 +64,7 @@ export class Support {
         });
         this.supportForm.reset();
       } else {
-        throw new Error(response.message);
+        throw new Error(response.error?.description || 'Submission failed');
       }
     } catch (err) {
       this.messageService.add({

@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { Account } from '../../accounts/account';
@@ -8,9 +8,10 @@ import { ButtonModule } from 'primeng/button';
 
 @Component({
   selector: 'app-transaction-switch-form',
-  imports: [SelectModule,ButtonModule,ReactiveFormsModule],
+  imports: [SelectModule, ButtonModule, ReactiveFormsModule],
   templateUrl: './transaction-switch-form.html',
-  styleUrl: './transaction-switch-form.scss'
+  styleUrl: './transaction-switch-form.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TransactionSwitchForm implements OnInit {
   private fb = inject(FormBuilder);

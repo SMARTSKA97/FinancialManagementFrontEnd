@@ -7,9 +7,12 @@ import { ChartModule } from 'primeng/chart';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { CurrencyPipe } from '@angular/common';
 
+import { ButtonModule } from 'primeng/button';
+import { RouterLink } from '@angular/router';
+
 @Component({
   selector: 'app-dashboard',
-  imports: [CardModule,ChartModule,ProgressSpinnerModule,CurrencyPipe ],
+  imports: [CardModule, ChartModule, ProgressSpinnerModule, CurrencyPipe, ButtonModule, RouterLink],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -17,7 +20,7 @@ import { CurrencyPipe } from '@angular/common';
 export class Dashboard implements OnInit {
   private dashboardService = inject(DashboardService);
   private cdr = inject(ChangeDetectorRef); // <-- Inject ChangeDetectorRef
-  
+
   summary: DashboardSummary | null = null;
   spendingChartData: any;
   spendingChartOptions: any;
@@ -33,7 +36,7 @@ export class Dashboard implements OnInit {
 
   async loadDashboardData(): Promise<void> {
     this.isLoading = true;
-    
+
     try {
       const summary$ = this.dashboardService.getSummary();
       const spending$ = this.dashboardService.getSpendingByCategory();
