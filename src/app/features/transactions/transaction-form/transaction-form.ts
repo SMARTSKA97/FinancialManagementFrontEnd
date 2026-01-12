@@ -1,7 +1,8 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { Transaction, TransactionType } from '../transaction';
+import { Transaction } from '../transaction';
+import { TransactionType } from '../../../core/models/transaction-type';
 import { CommonModule } from '@angular/common';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
@@ -13,10 +14,11 @@ import { firstValueFrom } from 'rxjs';
 import { Account } from '../../accounts/account';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
+import { AccountState } from '../../../core/state/account-state.service';
 
 @Component({
   selector: 'app-transaction-form',
-  imports: [CommonModule, ReactiveFormsModule, InputTextModule, InputNumberModule,ButtonModule, DatePickerModule, SelectModule,ToastModule],
+  imports: [CommonModule, ReactiveFormsModule, InputTextModule, InputNumberModule, ButtonModule, DatePickerModule, SelectModule, ToastModule],
   templateUrl: './transaction-form.html',
   styleUrl: './transaction-form.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -27,7 +29,7 @@ export class TransactionForm implements OnInit {
   public config = inject(DynamicDialogConfig);
   private categoryService = inject(Category);
   private transactionService = inject(Transaction);
-  private accountService = inject(Account);
+  private accountState = inject(AccountState);
   private messageService = inject(MessageService);
 
   transactionForm: FormGroup;
@@ -35,7 +37,7 @@ export class TransactionForm implements OnInit {
   categories: TransactionCategory[] = [];
   accounts: Account[] = []; // For the transfer dropdown
   currentFilter: string = '';
-  
+
   isEditMode = false;
   isTransfer = false;
   currentAccountId: number;
@@ -73,15 +75,12 @@ export class TransactionForm implements OnInit {
   }
 
   async loadInitialData(): Promise<void> {
-    // Fetch categories and all accounts in parallel
-    const [categories, accounts] = await Promise.all([
-      firstValueFrom(this.categoryService.getTransactionCategories()),
-      firstValueFrom(this.accountService.getAccounts({ pageNumber: 1, pageSize: 999 }))
-    ]);
-    
+    // Fetch categories
+    const categories = await firstValueFrom(this.categoryService.getTransactionCategories());
     this.categories = categories;
-    // Filter out the current account from the list
-    this.accounts = accounts.data.filter(a => a.id !== this.currentAccountId);
+
+    // Use state for accounts
+    this.accounts = this.accountState.accounts().filter(a => a.id !== this.currentAccountId);
 
     // After data is loaded, check if we are editing a transfer
     if (this.isEditMode) {
@@ -101,13 +100,13 @@ export class TransactionForm implements OnInit {
   }
 
   checkIfTransfer(categoryId: number | null): void {
-    console.log(categoryId);
-    
+    // console.log(categoryId);
+
     const category = this.categories.find(c => c.id === categoryId);
     this.isTransfer = category?.isTransferCategory || false;
 
-    console.log(category,this.isTransfer);
-    
+    // console.log(category, this.isTransfer);
+
 
     const typeControl = this.transactionForm.get('type');
     const destAccountControl = this.transactionForm.get('destinationAccountId');
@@ -124,7 +123,7 @@ export class TransactionForm implements OnInit {
     }
     destAccountControl?.updateValueAndValidity();
   }
-  
+
   // --- (Add-on-the-fly category logic) ---
   isNewCategory(): boolean {
     const filter = this.currentFilter.trim().toLowerCase();
@@ -163,11 +162,10 @@ export class TransactionForm implements OnInit {
       if (this.isTransfer) {
         // --- Call the new TRANSFER service method ---
         const transferData = {
-          description: formValue.description,
           amount: formValue.amount,
-          date: formValue.date,
+          date: formValue.date.toISOString(),
           destinationAccountId: formValue.destinationAccountId,
-          transactionCategoryId: formValue.transactionCategoryId
+          description: formValue.description
         };
         await firstValueFrom(this.transactionService.createTransfer(this.currentAccountId, transferData));
       } else {
@@ -176,16 +174,18 @@ export class TransactionForm implements OnInit {
           id: formValue.id,
           description: formValue.description,
           amount: formValue.amount,
-          date: formValue.date,
+          date: formValue.date.toISOString(),
           type: formValue.type,
-          transactionCategoryId: formValue.transactionCategoryId
+          transactionCategoryId: formValue.transactionCategoryId,
+          accountCategoryId: undefined // Explicitly undefined or omitted
         };
         await firstValueFrom(this.transactionService.upsertTransaction(this.currentAccountId, transactionData));
       }
+      await this.accountState.refresh();
       this.ref.close(true); // Close the dialog and signal success
     } catch (err: any) {
       console.error('Failed to save', err);
-      this.messageService.add({severity:'error', summary: 'Error', detail: err.error?.message || 'Failed to save transaction'});
+      this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Failed to save transaction' });
     }
   }
 }

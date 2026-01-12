@@ -4,6 +4,7 @@ import { provideRouter } from '@angular/router';
 import { routes } from './app.routes';
 import { provideHttpClient, withInterceptors, withXsrfConfiguration, HttpClient } from '@angular/common/http';
 import { authInterceptor } from './core/interceptors/auth-interceptor';
+import { errorInterceptor } from './core/interceptors/error-interceptor';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { providePrimeNG } from 'primeng/config';
 import Aura from '@primeuix/themes/aura';
@@ -30,14 +31,14 @@ function initializeApp(auth: Auth, sessionSync: SessionSyncService, http: HttpCl
           // Fetch CSRF token on app startup
           const csrfUrl = `${environment.apiBaseUrl}/antiforgery/token`;
           http.get(csrfUrl).subscribe({
-            next: () => console.log('[CSRF] Anti-forgery token fetched'),
+            next: () => { }, // console.log('[CSRF] Anti-forgery token fetched'),
             error: (err) => console.error('[CSRF] Failed to fetch token:', err)
           });
 
           // Start idle timer if user is authenticated
           if (sessionRestored && auth.isLoggedIn()) {
             idleTimer.startMonitoring();
-            console.log('[App] Idle timer started for authenticated user');
+            // console.log('[App] Idle timer started for authenticated user');
           }
 
           return of(true);
@@ -53,7 +54,7 @@ export const appConfig: ApplicationConfig = {
     provideZonelessChangeDetection(),
     provideRouter(routes),
     provideHttpClient(
-      withInterceptors([authInterceptor]),
+      withInterceptors([authInterceptor, errorInterceptor]),
       withXsrfConfiguration({
         cookieName: 'XSRF-TOKEN',
         headerName: 'X-XSRF-TOKEN'

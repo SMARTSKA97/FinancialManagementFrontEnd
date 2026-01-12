@@ -1,5 +1,5 @@
 import { Component, inject, Input, OnInit, Type } from '@angular/core';
-import { ConfirmationService, MessageService } from 'primeng/api';
+import { ConfirmationService } from 'primeng/api';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { GenericCrud } from '../../../core/services/generic-crud';
 import { ColumnDefinition, DataTable } from '../../../shared/components/data-table/data-table';
@@ -12,14 +12,14 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ToastModule } from 'primeng/toast';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { GenericApi } from '../../../core/services/generic-api';
+import { NotificationService } from '../../../core/services/notification.service';
 
 @Component({
   selector: 'app-resource-page',
   imports: [CommonModule, CardModule, ButtonModule, TableModule, DataTable, ProgressSpinnerModule, ConfirmDialogModule, ToastModule, RouterLink],
   templateUrl: './resource-page.html',
   styleUrl: './resource-page.scss',
-  providers: [DialogService, ConfirmationService, MessageService, GenericCrud]
+  providers: [DialogService, ConfirmationService, GenericCrud] // Removed MessageService to use root instance via NotificationService
 
 })
 export class ResourcePage<T extends { id: number }> implements OnInit {
@@ -27,9 +27,10 @@ export class ResourcePage<T extends { id: number }> implements OnInit {
   public crudService = inject(GenericCrud<T>);
   private dialogService = inject(DialogService);
   private confirmationService = inject(ConfirmationService);
-  private messageService = inject(MessageService);
+  private notificationService = inject(NotificationService); // Injected wrapper
   private route = inject(ActivatedRoute);
-  // --- CONFIGURATION INPUTS ---
+
+  // ... rest of inputs ...
   @Input() title: string = '';
   @Input() backLinkPath?: string;
   @Input({ required: true }) endpoint!: string;
@@ -41,8 +42,6 @@ export class ResourcePage<T extends { id: number }> implements OnInit {
   isLoading$ = this.crudService.isLoading$;
 
   ref: DynamicDialogRef | undefined;
-
-
 
   async ngOnInit(): Promise<void> {
     const routeData = await firstValueFrom(this.route.data);
@@ -69,15 +68,16 @@ export class ResourcePage<T extends { id: number }> implements OnInit {
       width: '400px',
       modal: true,
 
-      data: itemToEdit
+      data: {
+        itemToEdit: itemToEdit,
+        endpoint: this.endpoint
+      }
     });
 
     const result = await firstValueFrom(this.ref.onClose);
-    if (result) {
-      // The service now handles the update logic, so the component is simpler
-      this.crudService.upsert(this.endpoint, result)
-        .then(() => this.messageService.add({ severity: 'success', summary: 'Success', detail: `${this.title.slice(0, -1)} saved` }))
-        .catch(err => this.messageService.add({ severity: 'error', summary: 'Error', detail: err.message || 'Operation failed' }));
+    if (result === true) {
+      // Reload list as the form has modified the data
+      this.crudService.search(this.endpoint, { pageNumber: 1, pageSize: 10 });
     }
   }
 
@@ -89,8 +89,8 @@ export class ResourcePage<T extends { id: number }> implements OnInit {
       accept: () => {
         // The service now handles the delete logic
         this.crudService.delete(this.endpoint, item)
-          .then(() => this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Item deleted' }))
-          .catch(err => this.messageService.add({ severity: 'error', summary: 'Error', detail: err.message || 'Operation failed' }));
+          .then(() => this.notificationService.showSuccess('Item deleted'))
+          .catch(err => this.notificationService.showError(err.message || 'Operation failed'));
       }
     });
   }

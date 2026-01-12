@@ -1,18 +1,18 @@
 <form [formGroup]="categoryForm" (ngSubmit)="onSubmit()" class="p-4">
-  <div class="field">
-    <label for="name">Category Name</label>
+  <app-form-field label="Category Name" inputId="name" [control]="categoryForm.get('name')">
     <input id="name" type="text" pInputText formControlName="name" class="w-full" />
-  </div>
+  </app-form-field>
 
   <!-- NEW: Show this checkbox only for Transaction Categories -->
   @if(isTransactionCategory) {
-    <div class="field-checkbox mt-3">
-      <p-checkbox formControlName="isTransferCategory" [binary]="true" inputId="isTransfer"></p-checkbox>
-      <label for="isTransfer" class="ml-2">Is this a transfer category?</label>
-    </div>
+  <div class="field-checkbox mt-3">
+    <p-checkbox formControlName="isTransferCategory" [binary]="true" inputId="isTransfer"></p-checkbox>
+    <label for="isTransfer" class="ml-2">Is this a transfer category?</label>
+  </div>
   }
 
   <div class="flex justify-content-end mt-4">
-    <p-button label="Save" type="submit" [disabled]="categoryForm.invalid"></p-button>
+    <p-button label="Save" type="submit" [disabled]="categoryForm.invalid || isSubmitting"
+      [loading]="isSubmitting"></p-button>
   </div>
 </form>

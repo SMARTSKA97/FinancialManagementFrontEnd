@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, computed } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { DrawerModule } from 'primeng/drawer';
@@ -9,30 +9,30 @@ import { environment } from '../../../../environments/environment';
 import { AvatarModule } from 'primeng/avatar';
 import { PopoverModule } from 'primeng/popover';
 import { Theme } from '../../services/theme';
-import { map, Observable } from 'rxjs';
 import { AsyncPipe } from '@angular/common';
 
 
 @Component({
   selector: 'app-layout',
-  imports: [RouterOutlet, DrawerModule, ButtonModule, MenuModule, AvatarModule, PopoverModule,AsyncPipe],
+  imports: [RouterOutlet, DrawerModule, ButtonModule, MenuModule, AvatarModule, PopoverModule],
   templateUrl: './layout.html',
   styleUrl: './layout.scss'
 })
 
 export class Layout {
   public authService = inject(Auth);
-  public themeService = inject(Theme); 
+  public themeService = inject(Theme);
   private router = inject(Router);
 
   sidebarVisible = false;
   navItems: MenuItem[];
   appVersion: string;
 
-  // Create an observable for the user's initials directly from the auth service
-  userInitials$: Observable<string> = this.authService.currentUser$.pipe(
-    map(name => name ? name.substring(0, 2).toUpperCase() : '')
-  );
+  // Create an signal for the user's initials directly from the auth service
+  userInitials = computed(() => {
+    const name = this.authService.currentUser();
+    return name ? name.substring(0, 2).toUpperCase() : '';
+  });
 
 
   constructor() {

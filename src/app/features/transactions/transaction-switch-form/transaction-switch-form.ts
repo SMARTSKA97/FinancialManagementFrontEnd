@@ -1,8 +1,7 @@
-import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { Account } from '../../accounts/account';
-import { firstValueFrom } from 'rxjs';
+import { AccountState } from '../../../core/state/account-state.service';
 import { SelectModule } from 'primeng/select';
 import { ButtonModule } from 'primeng/button';
 
@@ -17,11 +16,14 @@ export class TransactionSwitchForm implements OnInit {
   private fb = inject(FormBuilder);
   public ref = inject(DynamicDialogRef);
   public config = inject(DynamicDialogConfig);
-  private accountService = inject(Account);
+  private accountState = inject(AccountState);
 
   switchForm: FormGroup;
-  filteredAccounts: Account[] = [];
   currentAccountId: number;
+
+  filteredAccounts = computed(() =>
+    this.accountState.accounts().filter(a => a.id !== this.currentAccountId)
+  );
 
   constructor() {
     this.currentAccountId = this.config.data.currentAccountId;
@@ -31,9 +33,10 @@ export class TransactionSwitchForm implements OnInit {
   }
 
   async ngOnInit(): Promise<void> {
-    const accountsResult = await firstValueFrom(this.accountService.getAccounts({ pageNumber: 1, pageSize: 999 }));
-    // Populate the dropdown with all accounts EXCEPT the one we are in
-    this.filteredAccounts = accountsResult.data.filter(a => a.id !== this.currentAccountId);
+    // Ensure data is loaded
+    if (this.accountState.accounts().length === 0) {
+      await this.accountState.refresh();
+    }
   }
 
   onSubmit(): void {

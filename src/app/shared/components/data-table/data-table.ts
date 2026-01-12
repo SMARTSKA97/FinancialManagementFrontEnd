@@ -1,7 +1,8 @@
+import { ChangeDetectionStrategy, Component, ContentChild, Input, TemplateRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, ContentChild, Input, OnChanges, SimpleChanges, TemplateRef } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { TableModule } from 'primeng/table';
+import { SkeletonModule } from 'primeng/skeleton';
 
 export interface ColumnDefinition {
   field: string;
@@ -15,24 +16,17 @@ export interface ColumnDefinition {
 
 @Component({
   selector: 'app-data-table',
-  imports: [CommonModule, TableModule, RouterLink],
+  imports: [CommonModule, TableModule, RouterLink, SkeletonModule],
   standalone: true,
   templateUrl: './data-table.html',
-  styleUrl: './data-table.scss'
+  styleUrl: './data-table.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class DataTable implements OnChanges {
-  @Input() data: any[] = [];
+export class DataTable {
+  @Input() data: any[] | null = [];
   @Input() columns: ColumnDefinition[] = [];
+  @Input() loading: boolean | null = false;
   @ContentChild('actions') actionsTemplate!: TemplateRef<any>;
-
-
-  constructor(private cdr: ChangeDetectorRef) { }
-
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['data']) {
-      this.cdr.detectChanges();
-    }
-  }
 
   constructLink(path: string, item: any): string[] {
     const replacedPath = path.replace(':id', item.id);

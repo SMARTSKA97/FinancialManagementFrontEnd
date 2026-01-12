@@ -17,17 +17,17 @@
           styleClass="p-button-text p-button-rounded" (onClick)="themeService.toggleTheme()">
         </p-button>
 
-        <!-- User Profile Section with Async Pipe -->
-        @if(authService.currentUser$ | async; as userName) {
+        <!-- User Profile Section with Signals -->
+        @if(authService.currentUser(); as userName) {
         <div class="flex align-items-center gap-3">
-          <p-avatar [label]="(userInitials$ | async)!" styleClass="bg-primary text-white" shape="circle"
+          <p-avatar [label]="userInitials()!" styleClass="bg-primary text-white" shape="circle"
             (click)="op.toggle($event)"></p-avatar>
 
           <p-popover #op>
             <div class="flex flex-column gap-3 w-15rem">
               <div class="flex flex-column">
                 <span class="font-bold">{{ userName }}</span>
-                @if(authService.currentUserEmail$ | async; as userEmail) {
+                @if(authService.currentUserEmail(); as userEmail) {
                 <span class="text-sm text-color-secondary">{{ userEmail }}</span>
                 }
               </div>
@@ -35,7 +35,7 @@
               <div class="flex flex-column gap-2 text-sm">
                 <div class="flex align-items-center gap-2">
                   <i class="pi pi-clock"></i>
-                  <span>Session expires in {{ authService.sessionExpiresIn$ | async }}</span>
+                  <span>Session expires in {{ authService.sessionExpiresIn() }}</span>
                 </div>
               </div>
               <p-button label="Logout" icon="pi pi-sign-out" styleClass="p-button-danger p-button-sm mt-2"

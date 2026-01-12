@@ -1,5 +1,23 @@
-<!-- This guard prevents errors by waiting for data and columns -->
-@if (data && columns) {
+@if (loading) {
+  <p-table [value]="[1,2,3,4,5]" [tableStyle]="{'min-width': '50rem'}">
+    <ng-template pTemplate="header">
+      <tr>
+        @for (col of columns; track col.field) {
+          <th>{{ col.header }}</th>
+        }
+        <th style="width: 8rem">Actions</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body">
+      <tr>
+        @for (col of columns; track col.field) {
+          <td><p-skeleton></p-skeleton></td>
+        }
+        <td><p-skeleton width="4rem"></p-skeleton></td>
+      </tr>
+    </ng-template>
+  </p-table>
+} @else if (data && columns) {
   <p-table [value]="data" [tableStyle]="{'min-width': '50rem'}">
     <ng-template pTemplate="header">
       <tr>

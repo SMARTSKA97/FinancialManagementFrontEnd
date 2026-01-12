@@ -6,10 +6,11 @@ import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
 import { Auth, LoginUserDto } from '../../core/services/auth';
-import { MessageService } from 'primeng/api';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ToastModule } from 'primeng/toast';
 import { DialogModule } from 'primeng/dialog';
+import { NotificationService } from '../../core/services/notification.service';
+import { ValidationService } from '../../core/services/validation.service';
 
 
 @Component({
@@ -23,7 +24,8 @@ export class Login {
   private fb = inject(FormBuilder);
   private authService = inject(Auth);
   private router = inject(Router);
-  private messageService = inject(MessageService);
+  private notificationService = inject(NotificationService);
+  public validationService = inject(ValidationService);
   private cdr = inject(ChangeDetectorRef);
 
   loginForm: FormGroup;
@@ -66,7 +68,7 @@ export class Login {
           }
 
           const msg = response.error?.description || 'Login failed';
-          this.messageService.add({ severity: 'error', summary: 'Login Failed', detail: msg });
+          this.notificationService.showError(msg, 'Login Failed');
         }
         this.cdr.markForCheck();
       },
@@ -75,7 +77,7 @@ export class Login {
 
         // Check for Concurrent Login Error
         if (err.status === 400) {
-          console.error('Login Error Response:', err.error); // Debugging
+          // console.error('Login Error Response:', err.error); // Debugging
           const errorBody = err.error;
 
           // Robust check for ConcurrentLogin flag
@@ -99,7 +101,7 @@ export class Login {
         }
 
         const detail = err.error?.message || 'An unknown error occurred.';
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: detail });
+        this.notificationService.showError(detail, 'Error');
         this.cdr.markForCheck();
       }
     });

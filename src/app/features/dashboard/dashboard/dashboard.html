@@ -8,26 +8,26 @@
     </div>
   </div>
 
-  @if (isLoading) {
+  @if (isLoading()) {
   <div class="flex justify-content-center p-6">
     <p-progressSpinner></p-progressSpinner>
   </div>
-  } @else if (summary) {
+  } @else if (summary()) {
   <!-- Summary Cards Grid -->
   <div class="grid mb-4">
     <div class="col-12 md:col-4">
       <p-card header="Net Worth">
-        <p class="text-2xl font-bold">{{ summary.netWorth | currency:'INR' }}</p>
+        <p class="text-2xl font-bold">{{ summary()?.netWorth | currency:'INR' }}</p>
       </p-card>
     </div>
     <div class="col-12 md:col-4">
       <p-card header="Monthly Income">
-        <p class="text-2xl font-bold text-green-500">{{ summary.monthlyIncome | currency:'INR' }}</p>
+        <p class="text-2xl font-bold text-green-500">{{ summary()?.monthlyIncome | currency:'INR' }}</p>
       </p-card>
     </div>
     <div class="col-12 md:col-4">
       <p-card header="Monthly Expenses">
-        <p class="text-2xl font-bold text-red-500">{{ summary.monthlyExpenses | currency:'INR' }}</p>
+        <p class="text-2xl font-bold text-red-500">{{ summary()?.monthlyExpenses | currency:'INR' }}</p>
       </p-card>
     </div>
   </div>
@@ -36,9 +36,9 @@
   <div class="grid">
     <div class="col-12 md:col-6">
       <p-card header="Spending by Category">
-        @if(spendingChartData?.datasets[0]?.data?.length > 0) {
+        @if(hasChartData()) {
         <div style="position: relative; height: 350px" class="flex justify-content-center">
-          <p-chart type="pie" [data]="spendingChartData" [options]="spendingChartOptions"></p-chart>
+          <p-chart type="pie" [data]="spendingChartData()" [options]="spendingChartOptions"></p-chart>
         </div>
         } @else {
         <div class="text-center p-4">

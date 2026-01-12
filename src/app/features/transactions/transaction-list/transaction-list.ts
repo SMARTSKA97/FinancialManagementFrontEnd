@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
 import { Transaction } from '../transaction';
 import { ColumnDefinition, DataTable } from '../../../shared/components/data-table/data-table';
 import { asyncScheduler, filter, finalize, firstValueFrom, observeOn, switchMap, tap } from 'rxjs';
@@ -15,13 +15,15 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { AccountSummary } from '../../dashboard/dashboard';
 import { DashboardService } from '../../dashboard/dashboard';
 import { TransactionSwitchForm } from '../transaction-switch-form/transaction-switch-form';
+import { AccountState } from '../../../core/state/account-state.service';
 
 @Component({
   selector: 'app-transaction-list',
   imports: [CommonModule, RouterLink, CardModule, ButtonModule, ProgressSpinnerModule, DataTable, ToastModule, ConfirmDialogModule],
   templateUrl: './transaction-list.html',
   styleUrl: './transaction-list.scss',
-  providers: [DialogService, MessageService, ConfirmationService]
+  providers: [DialogService, MessageService, ConfirmationService],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TransactionList implements OnInit {
   private route = inject(ActivatedRoute);
@@ -31,6 +33,7 @@ export class TransactionList implements OnInit {
   private messageService = inject(MessageService);
   private dialogService = inject(DialogService);
   private confirmationService = inject(ConfirmationService);
+  private accountState = inject(AccountState);
 
   transactions: Transaction[] = [];
   isLoading = false;
@@ -69,7 +72,13 @@ export class TransactionList implements OnInit {
       ]);
 
       this.transactions = paginatedResult.data;
-      this.summary = summaryData; // <-- Store the summary data
+      this.summary = summaryData;
+
+      // Sync balance with AccountState (Single Source of Truth)
+      const accountInState = this.accountState.accounts().find(a => a.id === this.accountId);
+      if (accountInState && this.summary) {
+        this.summary.currentBalance = accountInState.balance;
+      }
 
     } catch (err) {
       console.error('Failed to load data', err);
@@ -94,7 +103,6 @@ export class TransactionList implements OnInit {
 
     const result = await firstValueFrom(this.ref.onClose);
     if (result) {
-      // If the form returns 'true' (success), reload all data
       this.loadData();
       this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Operation successful' });
     }
@@ -109,7 +117,8 @@ export class TransactionList implements OnInit {
         try {
           await firstValueFrom(this.transactionService.deleteTransaction(this.accountId!, transaction.id));
           this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Transaction deleted' });
-          this.loadData(); // Reload all data
+          await this.accountState.refresh();
+          await this.loadData();
         } catch (err) {
           console.error('Failed to delete transaction', err);
           this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to delete transaction' });
@@ -133,7 +142,8 @@ export class TransactionList implements OnInit {
       try {
         await firstValueFrom(this.transactionService.switchAccount(this.accountId!, transaction.id, result.destinationAccountId));
         this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Transaction switched successfully' });
-        this.loadData();
+        await this.accountState.refresh();
+        await this.loadData();
       } catch (err: any) {
         console.error('Failed to switch transaction', err);
         this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Failed to switch transaction' });

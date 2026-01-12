@@ -1,7 +1,7 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
-import { finalize, firstValueFrom, forkJoin } from 'rxjs';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, computed } from '@angular/core';
 import { Account } from '../../accounts/account';
-import { DashboardService, DashboardSummary, SpendingByCategory } from '../dashboard';
+import { DashboardState } from '../../../core/state/dashboard-state.service';
+import { DashboardSummary, SpendingByCategory } from '../dashboard';
 import { CardModule } from 'primeng/card';
 import { ChartModule } from 'primeng/chart';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
@@ -17,48 +17,18 @@ import { RouterLink } from '@angular/router';
   styleUrl: './dashboard.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class Dashboard implements OnInit {
-  private dashboardService = inject(DashboardService);
-  private cdr = inject(ChangeDetectorRef); // <-- Inject ChangeDetectorRef
+export class Dashboard {
+  public state = inject(DashboardState);
+  private cdr = inject(ChangeDetectorRef);
 
-  summary: DashboardSummary | null = null;
-  spendingChartData: any;
-  spendingChartOptions: any;
-  isLoading = false;
+  // Expose signals for easier template access
+  summary = this.state.summary;
+  isLoading = this.state.isLoading;
 
-  constructor() {
-    this.setupSpendingChartOptions();
-  }
-
-  ngOnInit(): void {
-    this.loadDashboardData();
-  }
-
-  async loadDashboardData(): Promise<void> {
-    this.isLoading = true;
-
-    try {
-      const summary$ = this.dashboardService.getSummary();
-      const spending$ = this.dashboardService.getSpendingByCategory();
-
-      // Wait for both API calls to complete
-      const [summaryData, spendingData] = await Promise.all([
-        firstValueFrom(summary$),
-        firstValueFrom(spending$)
-      ]);
-      this.summary = summaryData;
-      this.setupSpendingChart(spendingData);
-
-    } catch (err) {
-      console.error('Failed to load dashboard data', err);
-    } finally {
-      this.isLoading = false;
-      this.cdr.markForCheck();
-    }
-  }
-
-  setupSpendingChart(data: SpendingByCategory[]): void {
-    this.spendingChartData = {
+  // Compute chart data from the state signal
+  spendingChartData = computed(() => {
+    const data = this.state.spending();
+    return {
       labels: data?.map(item => item.categoryName) || [],
       datasets: [
         {
@@ -66,6 +36,25 @@ export class Dashboard implements OnInit {
         }
       ]
     };
+  });
+
+  hasChartData = computed(() => {
+    const d = this.spendingChartData();
+    return d.datasets[0].data.length > 0;
+  });
+
+  spendingChartOptions: any;
+
+  constructor() {
+    this.setupSpendingChartOptions();
+    // Ensure fresh data on component load?
+    // The state service loads on creation. If we navigate away and back, it shows cached data.
+    // If we want fresh data, we can call refresh.
+    // this.state.refresh(); 
+    // Is it needed? If AccountState triggers refresh, then data is up to date.
+    // If multiple tabs? User refreshes?
+    // Calling refresh on init is safe.
+    this.state.refresh();
   }
 
   setupSpendingChartOptions(): void {

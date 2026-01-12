@@ -12,28 +12,28 @@ export class IdleTimerService {
   private readonly ngZone = inject(NgZone);
   private readonly platformId = inject(PLATFORM_ID);
   private readonly isBrowser = isPlatformBrowser(this.platformId);
-  
+
   startMonitoring() {
     if (!this.isBrowser) {
       return; // Don't run on server-side rendering
     }
 
     this.resetTimer();
-    
+
     // Listen for user activity events
     const events = ['mousedown', 'keydown', 'scroll', 'touchstart', 'click'];
     events.forEach(event => {
-      document.addEventListener(event, () => this.resetTimer(),{ passive: true });
+      document.addEventListener(event, () => this.resetTimer(), { passive: true });
     });
-    
-    console.log('[IdleTimer] Started monitoring - 15 min inactivity timeout');
+
+    // console.log('[IdleTimer] Started monitoring - 15 min inactivity timeout');
   }
 
   private resetTimer() {
     if (this.timeoutId) {
       clearTimeout(this.timeoutId);
     }
-    
+
     // Run timeout outside Angular zone to avoid unnecessary change detection
     this.ngZone.runOutsideAngular(() => {
       this.timeoutId = window.setTimeout(() => {
@@ -44,12 +44,12 @@ export class IdleTimerService {
 
   private handleTimeout() {
     console.warn('[IdleTimer] User inactive for 15 minutes - auto logout');
-    
+
     // Call backend logout API
     this.authService.logout();
-    
+
     // Navigate to login with inactivity reason
-    this.router.navigate(['/login'], { 
+    this.router.navigate(['/login'], {
       queryParams: { reason: 'inactivity' },
       replaceUrl: true
     });
@@ -60,6 +60,6 @@ export class IdleTimerService {
       clearTimeout(this.timeoutId);
       this.timeoutId = undefined;
     }
-    console.log('[IdleTimer] Stopped monitoring');
+    // console.log('[IdleTimer] Stopped monitoring');
   }
 }

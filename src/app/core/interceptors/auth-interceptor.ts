@@ -8,7 +8,7 @@ let refreshTokenSubject: BehaviorSubject<string | null> = new BehaviorSubject<st
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(Auth);
-  const accessToken = authService.getAccessToken();
+  const accessToken = authService.accessToken();
 
   // 1. Add the access token if we have one
   if (accessToken) {
@@ -43,7 +43,7 @@ const handle401Error = (req: HttpRequest<any>, next: HttpHandlerFn, authService:
       switchMap((success: boolean) => {
         isRefreshing = false;
         if (success) {
-          const newToken = authService.getAccessToken();
+          const newToken = authService.accessToken();
           refreshTokenSubject.next(newToken);
           return next(addToken(req, newToken!));
         } else {

@@ -1,12 +1,12 @@
-import { Injectable, Inject, PLATFORM_ID, inject } from '@angular/core';
+import { Injectable, Inject, PLATFORM_ID, inject, signal, computed, effect } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, catchError, map, Observable, of, switchMap, tap, timer } from 'rxjs';
+import { catchError, map, Observable, of, tap, throwError, interval } from 'rxjs';
+import { toSignal, toObservable } from '@angular/core/rxjs-interop';
 import { environment } from '../../../environments/environment';
 import { ApiResult } from './generic-api';
 import { jwtDecode } from 'jwt-decode';
 import { Router } from '@angular/router';
-
 
 // --- AUTH-SPECIFIC DTOs ---
 export interface RegisterUserDto {
@@ -40,41 +40,40 @@ export class Auth {
   private router = inject(Router);
   private http = inject(HttpClient);
 
-  private accessTokenSubject = new BehaviorSubject<string | null>(null);
-  public accessToken$ = this.accessTokenSubject.asObservable();
+  // --- STATE WITH SIGNALS ---
+  private _accessToken = signal<string | null>(null);
+  private _currentUserDetails = signal<UserDetails | null>(null);
 
-  // A single source of truth for all user details
-  private currentUserDetailsSubject = new BehaviorSubject<UserDetails | null>(null);
+  // Public readonly signals
+  public accessToken = this._accessToken.asReadonly();
+  public currentUserDetails = this._currentUserDetails.asReadonly();
 
-  // Public observables derived from the single source of truth
-  public currentUserDetails$ = this.currentUserDetailsSubject.asObservable();
-  public currentUser$ = this.currentUserDetails$.pipe(map(details => details?.name ?? null));
-  public currentUserEmail$ = this.currentUserDetails$.pipe(map(details => details?.email ?? null));
-  public sessionExpiresIn$: Observable<string>;
+  public currentUser = computed(() => this._currentUserDetails()?.name ?? null);
+  public currentUserEmail = computed(() => this._currentUserDetails()?.email ?? null);
+  public isLoggedIn = computed(() => !!this._accessToken() || (this.isBrowser && !!localStorage.getItem('refreshToken')));
+
+  // Session Expiry Timer
+  private _now = toSignal(interval(1000).pipe(map(() => Math.floor(Date.now() / 1000))), { initialValue: Math.floor(Date.now() / 1000) });
+
+  public sessionExpiresIn = computed(() => {
+    const details = this._currentUserDetails();
+    if (!details || !details.exp) return 'N/A';
+
+    const now = this._now();
+    const secondsLeft = details.exp - now;
+
+    if (secondsLeft <= 0) return 'Expired';
+
+    const minutes = Math.floor(secondsLeft / 60);
+    const seconds = secondsLeft % 60;
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  });
+
+  private refreshTimer: any;
+  private isLoggingOut = false;
 
   constructor(@Inject(PLATFORM_ID) private platformId: Object) {
     this.isBrowser = isPlatformBrowser(this.platformId);
-    // We don't load tokens on startup anymore because refresh token is in cookie
-    // We will call restoreSession() from APP_INITIALIZER
-
-    this.sessionExpiresIn$ = this.currentUserDetails$.pipe(
-      switchMap(details => {
-        if (!details || !details.exp) return of('N/A');
-
-        return timer(0, 1000).pipe(
-          map(() => {
-            const now = Math.floor(Date.now() / 1000);
-            const secondsLeft = details.exp - now;
-
-            if (secondsLeft <= 0) return 'Expired';
-
-            const minutes = Math.floor(secondsLeft / 60);
-            const seconds = secondsLeft % 60;
-            return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-          })
-        );
-      })
-    );
   }
 
   private buildUrl(...segments: string[]): string {
@@ -84,9 +83,7 @@ export class Auth {
     return fullPath;
   }
 
-  public getAccessToken(): string | null {
-    return this.accessTokenSubject.value;
-  }
+  // --- PRIVATE HELPERS ---
 
   private getRefreshToken(): string | null {
     if (this.isBrowser) {
@@ -96,22 +93,84 @@ export class Auth {
   }
 
   private storeTokens(accessToken: string, refreshToken: string): void {
-    this.accessTokenSubject.next(accessToken);
+    if (this.isLoggingOut) return; // Prevent race condition
+
+    // GUARD: valid tokens
+    if (!accessToken || !refreshToken) {
+      console.error('[Auth] Attempted to store invalid tokens.');
+      return;
+    }
+
+    this._accessToken.set(accessToken);
     if (this.isBrowser) {
       localStorage.setItem('refreshToken', refreshToken);
     }
     this.decodeAndSetUser(accessToken);
+    this.startSilentRefresh();
   }
 
   private clearTokens(): void {
-    this.accessTokenSubject.next(null);
-    this.currentUserDetailsSubject.next(null);
+    this._accessToken.set(null);
+    this._currentUserDetails.set(null);
     if (this.isBrowser) {
       localStorage.removeItem('refreshToken');
     }
+    this.stopSilentRefresh();
   }
 
-  // New method to restore session on app startup
+  private decodeAndSetUser(token: string): void {
+    try {
+      const decodedToken: any = jwtDecode(token);
+      const userDetails: UserDetails = {
+        name: decodedToken.sub,
+        email: decodedToken.email,
+        exp: decodedToken.exp
+      };
+      this._currentUserDetails.set(userDetails);
+    } catch (e) {
+      console.warn('[Auth] Token decoding failed', e);
+      this.clearTokens();
+    }
+  }
+
+  // --- SILENT REFRESH LOGIC ---
+
+  private startSilentRefresh() {
+    this.stopSilentRefresh(); // clear any existing
+
+    const details = this._currentUserDetails();
+    if (!details || !details.exp) return;
+
+    const expiresAt = details.exp * 1000;
+    const now = Date.now();
+    // Refresh 1 minute before expiry, or immediately if close
+    const timeUntilExpiry = expiresAt - now;
+    const refreshTime = timeUntilExpiry - (60 * 1000); // 1 minute before
+
+    // If token is already expired or expires in < 1 min, refresh immediately (next tick) or soon
+    const delay = Math.max(0, refreshTime);
+
+    // console.log(`[Auth] Silent refresh scheduled in ${Math.round(delay / 1000)} seconds.`);
+
+    this.refreshTimer = setTimeout(() => {
+      // console.log('[Auth] Executing silent refresh...');
+      this.refreshToken().subscribe();
+    }, delay);
+  }
+
+  private stopSilentRefresh() {
+    if (this.refreshTimer) {
+      clearTimeout(this.refreshTimer);
+      this.refreshTimer = null;
+    }
+  }
+
+  // --- PUBLIC API ---
+
+  /**
+   * Restores the user session from local storage on application startup.
+   * @returns An Observable that emits true if session is restored, false otherwise.
+   */
   public restoreSession(): Observable<boolean> {
     if (!this.isBrowser) return of(false);
 
@@ -125,25 +184,23 @@ export class Auth {
     );
   }
 
-  private decodeAndSetUser(token: string): void {
-    try {
-      const decodedToken: any = jwtDecode(token);
-      const userDetails: UserDetails = {
-        name: decodedToken.sub,
-        email: decodedToken.email,
-        exp: decodedToken.exp
-      };
-      this.currentUserDetailsSubject.next(userDetails);
-    } catch (e) {
-      this.clearTokens();
-    }
-  }
-
+  /**
+   * Registers a new user.
+   * @param userData The user registration DTO.
+   * @returns An Observable containing the API result.
+   */
   register(userData: RegisterUserDto): Observable<ApiResult<string>> {
+    this.isLoggingOut = false;
     return this.http.post<ApiResult<string>>(this.buildUrl('Auth', 'register'), userData);
   }
 
+  /**
+   * Authenticates a user.
+   * @param credentials The user login DTO.
+   * @returns An Observable containing the login response with tokens.
+   */
   login(credentials: LoginUserDto): Observable<ApiResult<LoginResponseDto>> {
+    this.isLoggingOut = false;
     return this.http.post<ApiResult<LoginResponseDto>>(this.buildUrl('Auth', 'login'), credentials).pipe(
       tap(response => {
         if (response.isSuccess && response.value) {
@@ -153,10 +210,14 @@ export class Auth {
     );
   }
 
+  /**
+   * Refreshes the access token using the stored refresh token.
+   * @returns An Observable that emits true if refresh was successful, false otherwise.
+   */
   refreshToken(): Observable<boolean> {
     const refreshToken = this.getRefreshToken();
     if (!refreshToken) {
-      this.logout();
+      this.logout('Session Expired');
       return of(false);
     }
 
@@ -166,29 +227,35 @@ export class Auth {
           this.storeTokens(response.value.accessToken, response.value.refreshToken);
           return true;
         }
-        this.logout();
+        this.logout('Refresh Failed');
         return false;
       }),
       catchError(() => {
-        this.logout();
+        this.logout('Refresh Error');
         return of(false);
       })
     );
   }
 
+  /**
+   * Logs out the current user, clears tokens, and redirects to login.
+   * @param reason Optional reason for logout to display on login page.
+   */
   logout(reason?: string): void {
+    if (this.isLoggingOut) return; // Debounce
+    this.isLoggingOut = true;
+
     const refreshToken = this.getRefreshToken();
     if (refreshToken) {
-      // Call backend to revoke token
-      this.http.post(this.buildUrl('Auth', 'logout'), { refreshToken }).subscribe();
+      // Call backend to revoke token - Fire and forget
+      this.http.post(this.buildUrl('Auth', 'logout'), { refreshToken }).pipe(
+        catchError(() => of(null))
+      ).subscribe();
     }
+
     this.clearTokens();
     this.router.navigate(['/login'], {
       queryParams: reason ? { reason } : undefined
     });
-  }
-
-  isLoggedIn(): boolean {
-    return !!this.getRefreshToken(); // Presence of refresh token indicates "logged in" status
   }
 }

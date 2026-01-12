@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { ApiResult, GenericApi } from '../../core/services/generic-api';
 import { map, Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { UpsertCategoryRequest } from '../../core/models/api-contracts';
 
 export interface AccountCategory {
   id: number;
@@ -31,7 +32,7 @@ export class Category {
     );
   }
 
-  upsertAccountCategory(categoryData: { id?: number, name: string }): Observable<AccountCategory> {
+  upsertAccountCategory(categoryData: UpsertCategoryRequest): Observable<AccountCategory> {
     return this.apiService.upsert<AccountCategory>(this.accountCategoryEndpoint, categoryData).pipe(
       map(response => response.value)
     );
@@ -51,7 +52,7 @@ export class Category {
     );
   }
 
-  upsertTransactionCategory(categoryData: { id?: number, name: string, isTransferCategory?: boolean }): Observable<TransactionCategory> {
+  upsertTransactionCategory(categoryData: UpsertCategoryRequest): Observable<TransactionCategory> {
     return this.apiService.upsert<TransactionCategory>(this.transactionCategoryEndpoint, categoryData).pipe(
       map(response => response.value)
     );

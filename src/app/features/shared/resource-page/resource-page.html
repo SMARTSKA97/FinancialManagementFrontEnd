@@ -17,12 +17,7 @@
             </div>
         </ng-template>
 
-        @if (isLoading$ | async) {
-        <div class="flex justify-content-center p-4">
-            <p-progressSpinner></p-progressSpinner>
-        </div>
-        } @else {
-        <app-data-table [data]="(items$ | async) || []" [columns]="columns">
+        <app-data-table [data]="(items$ | async) || []" [columns]="columns" [loading]="isLoading$ | async">
             <ng-template #actions let-item>
                 <div class="flex gap-2 justify-content-end">
                     <p-button icon="pi pi-pencil" text="true" rounded="true" (onClick)="showForm(item)"></p-button>
@@ -31,6 +26,6 @@
                 </div>
             </ng-template>
         </app-data-table>
-        }
+
     </p-card>
 </div>
