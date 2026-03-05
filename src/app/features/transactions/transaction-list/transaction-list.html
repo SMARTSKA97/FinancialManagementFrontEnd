@@ -41,6 +41,7 @@
       <p-progressSpinner></p-progressSpinner>
     </div>
     } @else {
+    @defer (on viewport) {
     <app-data-table [data]="transactions" [columns]="transactionColumns">
       <ng-template #actions let-transaction>
         <div class="flex gap-2">
@@ -53,6 +54,11 @@
         </div>
       </ng-template>
     </app-data-table>
+    } @placeholder {
+    <div class="flex justify-content-center p-4">
+      <p-progressSpinner></p-progressSpinner>
+    </div>
+    }
     }
   </p-card>
 </div>

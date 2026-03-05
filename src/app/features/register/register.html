@@ -1,92 +1,207 @@
-<div class="flex justify-content-center align-items-center h-screen">
-  <p-card header="Create an Account" [style]="{width: '400px'}">
-    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
-      <!-- Full Name Field -->
-      <div class="field">
-        <label for="name">Full Name</label>
-        <input id="name" type="text" pInputText formControlName="name" class="w-full" />
-        @if (registerForm.get('name')?.invalid && registerForm.get('name')?.touched) {
-        <small class="p-error">Full name is required.</small>
-        }
-      </div>
+<div class="auth-background">
+  <div class="glass-container">
+    <div class="auth-header zoom-in">
+      <h1>Let's Get Started</h1>
+      <p>Securely manage your finances by creating an account.</p>
+    </div>
+    <form [formGroup]="registerForm" class="fade-in">
+      <p-stepper [value]="activeStep" [linear]="true">
 
-      <!-- Date of Birth Field -->
-      <div class="field mt-3">
-        <label for="dob">Date of Birth</label>
-        <p-datepicker id="dob" formControlName="dateOfBirth" styleClass="w-full" [showIcon]="true"
-          dateFormat="yy-mm-dd"></p-datepicker>
-        @if (registerForm.get('dateOfBirth')?.invalid && registerForm.get('dateOfBirth')?.touched) {
-        <small class="p-error">Date of birth is required.</small>
-        }
-      </div>
+        <p-step-list>
+          <p-step [value]="1">Basic Details</p-step>
+          <p-step [value]="2">Account specific</p-step>
+          <p-step [value]="3">Security</p-step>
+          <p-step [value]="4">Verify Email</p-step>
+        </p-step-list>
 
-      <!-- Email Field -->
-      <div class="field mt-3">
-        <label for="email">Email</label>
-        <input id="email" type="email" pInputText formControlName="email" class="w-full" />
-        @if (registerForm.get('email')?.hasError('required') && registerForm.get('email')?.touched) {
-        <small class="p-error">Email is required.</small>
-        }
-        @if (registerForm.get('email')?.hasError('email') && registerForm.get('email')?.touched) {
-        <small class="p-error">Please enter a valid email address.</small>
-        }
-        <!-- Display Server Error -->
-        @if (registerForm.get('email')?.hasError('serverError')) {
-        <small class="p-error">{{ registerForm.get('email')?.errors?.['serverError'] }}</small>
-        }
-      </div>
+        <p-step-panels>
+          <!-- Step 1 Panel -->
+          <p-step-panel [value]="1">
+            <ng-template #content let-activateCallback="activateCallback">
+              <div class="flex flex-column gap-3 mt-3">
+                <div class="field">
+                  <label for="name">Full Name</label>
+                  <input id="name" type="text" pInputText formControlName="name" class="w-full" />
+                  @if (registerForm.get('name')?.invalid && registerForm.get('name')?.touched) {
+                  <small class="p-error block mt-1">Full name is required.</small>
+                  }
+                </div>
 
-      <!-- Username Field -->
-      <div class="field mt-3">
-        <label for="username">Username</label>
-        <input id="username" type="text" pInputText formControlName="userName" class="w-full" />
-        @if (registerForm.get('userName')?.invalid && registerForm.get('userName')?.touched) {
-        <small class="p-error">Username is required.</small>
-        }
-        <!-- Display Server Error (e.g., "Username is already taken") -->
-        @if (registerForm.get('userName')?.hasError('serverError')) {
-        <small class="p-error">{{ registerForm.get('userName')?.errors?.['serverError'] }}</small>
-        }
-      </div>
+                <div class="field mt-3">
+                  <label for="dob">Date of Birth</label>
+                  <p-datepicker id="dob" formControlName="dateOfBirth" styleClass="w-full" [showIcon]="true"
+                    dateFormat="yy-mm-dd" appendTo="body"></p-datepicker>
+                  @if (registerForm.get('dateOfBirth')?.invalid && registerForm.get('dateOfBirth')?.touched) {
+                  <small class="p-error block mt-1">Date of birth is required.</small>
+                  }
+                </div>
+              </div>
+              <div class="flex pt-4 justify-content-end">
+                <p-button label="Next" icon="pi pi-arrow-right" iconPos="right"
+                  (onClick)="nextStep(); activateCallback(2)"
+                  [disabled]="registerForm.get('name')?.invalid || registerForm.get('dateOfBirth')?.invalid"></p-button>
+              </div>
+            </ng-template>
+          </p-step-panel>
 
-      <!-- Password Field -->
-      <div class="field mt-3">
-        <label for="password">Password</label>
-        <p-password id="password" formControlName="password" [feedback]="true" styleClass="w-full"
-          [toggleMask]="true"></p-password>
-        @if (registerForm.get('password')?.hasError('required') && registerForm.get('password')?.touched) {
-        <small class="p-error block">Password is required.</small>
-        }
-        @if (registerForm.get('password')?.hasError('minlength') && registerForm.get('password')?.touched) {
-        <small class="p-error block">Password must be at least 8 characters.</small>
-        }
-        @if (registerForm.get('password')?.hasError('pattern') && registerForm.get('password')?.touched) {
-        <small class="p-error block">Password must contain uppercase, lowercase, digit, and special character.</small>
-        }
-        @if (registerForm.get('password')?.hasError('serverError')) {
-        <small class="p-error block">{{ registerForm.get('password')?.errors?.['serverError'] }}</small>
-        }
-      </div>
+          <!-- Step 2 Panel -->
+          <p-step-panel [value]="2">
+            <ng-template #content let-activateCallback="activateCallback">
+              <div class="flex flex-column gap-3 mt-3">
+                <div class="field">
+                  <label for="email">Email</label>
+                  <input id="email" type="email" pInputText formControlName="email" class="w-full" />
+                  @if (registerForm.get('email')?.hasError('required') && registerForm.get('email')?.touched) {
+                  <small class="p-error block mt-1">Email is required.</small>
+                  }
+                  @if (registerForm.get('email')?.hasError('email') && registerForm.get('email')?.touched) {
+                  <small class="p-error block mt-1">Please enter a valid email address.</small>
+                  }
+                  @if (registerForm.get('email')?.hasError('emailTaken') && registerForm.get('email')?.touched) {
+                  <small class="p-error block mt-1">This email is already in use.</small>
+                  }
+                  @if (registerForm.get('email')?.dirty && registerForm.get('email')?.pending) {
+                  <small class="text-primary block mt-1"><i class="pi pi-spin pi-spinner"></i> Checking
+                    availability...</small>
+                  }
+                </div>
 
-      <!-- Confirm Password Field -->
-      <div class="field mt-3">
-        <label for="confirmPassword">Confirm Password</label>
-        <p-password id="confirmPassword" formControlName="confirmPassword" [feedback]="false" styleClass="w-full"
-          [toggleMask]="true"></p-password>
-        @if (registerForm.get('confirmPassword')?.hasError('required') && registerForm.get('confirmPassword')?.touched)
-        {
-        <small class="p-error block">Confirm Password is required.</small>
-        }
-        @if (registerForm.hasError('passwordMismatch') && registerForm.get('confirmPassword')?.touched) {
-        <small class="p-error block">Passwords do not match.</small>
-        }
-      </div>
+                <div class="field mt-3">
+                  <label for="username">Username</label>
+                  <input id="username" type="text" pInputText formControlName="userName" class="w-full" />
+                  @if (registerForm.get('userName')?.hasError('required') && registerForm.get('userName')?.touched) {
+                  <small class="p-error block mt-1">Username is required.</small>
+                  }
+                  @if (registerForm.get('userName')?.hasError('usernameTaken') && registerForm.get('userName')?.touched)
+                  {
+                  <small class="p-error block mt-1">This username is already taken.</small>
+                  }
+                  @if (registerForm.get('userName')?.dirty && registerForm.get('userName')?.pending) {
+                  <small class="text-primary block mt-1"><i class="pi pi-spin pi-spinner"></i> Checking
+                    availability...</small>
+                  }
+                </div>
+              </div>
+              <div class="flex pt-4 justify-content-between">
+                <p-button label="Back" severity="secondary" icon="pi pi-arrow-left"
+                  (onClick)="prevStep(); activateCallback(1)"></p-button>
+                <p-button label="Next" icon="pi pi-arrow-right" iconPos="right"
+                  (onClick)="nextStep(); activateCallback(3)"
+                  [disabled]="registerForm.get('email')?.invalid || registerForm.get('userName')?.invalid || registerForm.get('email')?.pending || registerForm.get('userName')?.pending"></p-button>
+              </div>
+            </ng-template>
+          </p-step-panel>
 
-      <p-button label="Register" type="submit" styleClass="w-full mt-4" [loading]="isSubmitting"></p-button>
+          <!-- Step 3 Panel: Password -->
+          <p-step-panel [value]="3">
+            <ng-template #content let-activateCallback="activateCallback">
+              <div class="flex flex-column gap-3 mt-3">
+                <div class="field">
+                  <label for="password">Password</label>
+                  <p-password id="password" formControlName="password" [feedback]="false" styleClass="w-full"
+                    [toggleMask]="true"></p-password>
 
-      <div class="mt-3 text-center">
-        <a routerLink="/login">Already have an account? Login</a>
+                  <!-- Password Hints -->
+                  <div class="mt-2 p-2 border-round"
+                    style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);">
+                    <div class="text-sm font-medium mb-2 text-300">Password Requirements:</div>
+                    <div class="flex flex-wrap gap-2 text-xs">
+                      <div class="flex align-items-center gap-1"
+                        [class.text-green-500]="hasMinLength(registerForm.get('password')?.value)"
+                        [class.text-500]="!hasMinLength(registerForm.get('password')?.value)">
+                        <i class="pi" [class.pi-check]="hasMinLength(registerForm.get('password')?.value)"
+                          [class.pi-circle]="!hasMinLength(registerForm.get('password')?.value)"></i> 8+ chars
+                      </div>
+                      <div class="flex align-items-center gap-1"
+                        [class.text-green-500]="hasUpper(registerForm.get('password')?.value)"
+                        [class.text-500]="!hasUpper(registerForm.get('password')?.value)">
+                        <i class="pi" [class.pi-check]="hasUpper(registerForm.get('password')?.value)"
+                          [class.pi-circle]="!hasUpper(registerForm.get('password')?.value)"></i> Uppercase
+                      </div>
+                      <div class="flex align-items-center gap-1"
+                        [class.text-green-500]="hasLower(registerForm.get('password')?.value)"
+                        [class.text-500]="!hasLower(registerForm.get('password')?.value)">
+                        <i class="pi" [class.pi-check]="hasLower(registerForm.get('password')?.value)"
+                          [class.pi-circle]="!hasLower(registerForm.get('password')?.value)"></i> Lowercase
+                      </div>
+                      <div class="flex align-items-center gap-1"
+                        [class.text-green-500]="hasNumber(registerForm.get('password')?.value)"
+                        [class.text-500]="!hasNumber(registerForm.get('password')?.value)">
+                        <i class="pi" [class.pi-check]="hasNumber(registerForm.get('password')?.value)"
+                          [class.pi-circle]="!hasNumber(registerForm.get('password')?.value)"></i> Number
+                      </div>
+                      <div class="flex align-items-center gap-1"
+                        [class.text-green-500]="hasSpecial(registerForm.get('password')?.value)"
+                        [class.text-500]="!hasSpecial(registerForm.get('password')?.value)">
+                        <i class="pi" [class.pi-check]="hasSpecial(registerForm.get('password')?.value)"
+                          [class.pi-circle]="!hasSpecial(registerForm.get('password')?.value)"></i> Special Char
+                      </div>
+                    </div>
+                  </div>
+
+                  @if (registerForm.get('password')?.hasError('required') && registerForm.get('password')?.touched) {
+                  <small class="p-error block mt-1">Password is required.</small>
+                  }
+                </div>
+
+                <div class="field mt-3">
+                  <label for="confirmPassword">Confirm Password</label>
+                  <p-password id="confirmPassword" formControlName="confirmPassword" [feedback]="false"
+                    styleClass="w-full" [toggleMask]="true"></p-password>
+                  @if (registerForm.get('confirmPassword')?.hasError('required') &&
+                  registerForm.get('confirmPassword')?.touched) {
+                  <small class="p-error block mt-1">Confirm Password is required.</small>
+                  }
+                  @if (registerForm.hasError('passwordMismatch') && registerForm.get('confirmPassword')?.touched) {
+                  <small class="p-error block mt-1">Passwords do not match.</small>
+                  }
+                </div>
+              </div>
+              <div class="flex pt-4 justify-content-between">
+                <p-button label="Back" severity="secondary" icon="pi pi-arrow-left"
+                  (onClick)="prevStep(); activateCallback(2)"></p-button>
+                <p-button label="Send Verification Code" icon="pi pi-envelope" iconPos="right"
+                  (onClick)="sendOtp(); activateCallback(4)" [disabled]="registerForm.invalid"
+                  [loading]="isSubmitting"></p-button>
+              </div>
+            </ng-template>
+          </p-step-panel>
+
+          <!-- Step 4 Panel: OTP Verification -->
+          <p-step-panel [value]="4">
+            <ng-template #content let-activateCallback="activateCallback">
+              <div class="flex flex-column gap-3 mt-3 align-items-center">
+                <div class="text-center mb-3">
+                  <i class="pi pi-envelope text-5xl mb-3" style="color: #10b981;"></i>
+                  <h3 class="mt-2 mb-1" style="color: #f4f4f5;">Check Your Email</h3>
+                  <p class="text-400 text-sm">We've sent a 6-digit verification code to<br>
+                    <strong class="text-primary">{{ registerForm.get('email')?.value }}</strong>
+                  </p>
+                </div>
+
+                <div class="field">
+                  <p-inputotp [(ngModel)]="otpValue" [length]="6" [integerOnly]="true"
+                    [ngModelOptions]="{standalone: true}"></p-inputotp>
+                </div>
+
+                <p class="text-400 text-xs mt-2">Code expires in 10 minutes</p>
+              </div>
+              <div class="flex pt-4 justify-content-between">
+                <p-button label="Resend Code" severity="secondary" icon="pi pi-refresh" (onClick)="sendOtp()"
+                  [loading]="isSubmitting"></p-button>
+                <p-button label="Verify & Create Account" icon="pi pi-check" iconPos="right" (onClick)="verifyOtp()"
+                  [disabled]="!otpValue || otpValue.length < 6" [loading]="isVerifying"></p-button>
+              </div>
+            </ng-template>
+          </p-step-panel>
+        </p-step-panels>
+      </p-stepper>
+
+      <div class="mt-4 text-center">
+        <a routerLink="/login"
+          class="no-underline text-400 hover:text-white transition-colors transition-duration-300">Already have an
+          account? Login here</a>
       </div>
     </form>
-  </p-card>
+  </div>
 </div>

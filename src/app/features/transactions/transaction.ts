@@ -39,8 +39,9 @@ export class Transaction {
     if (!accountId || accountId <= 0) {
       return throwError(() => new Error('Invalid Account ID'));
     }
-    const endpoint = `accounts/${accountId}/transactions`;
-    return this.apiService.search<Transaction>(endpoint, queryParams).pipe(
+    const endpoint = `Transactions`;
+    const payload = { accountId, queryParameters: queryParams };
+    return this.apiService.search<Transaction>(endpoint, payload).pipe(
       map(response => response.value)
     );
   }
@@ -55,8 +56,9 @@ export class Transaction {
     if (!accountId || accountId <= 0) {
       return throwError(() => new Error('Invalid Account ID'));
     }
-    const endpoint = `accounts/${accountId}/transactions`;
-    return this.apiService.upsert<Transaction>(endpoint, transactionData).pipe(
+    const endpoint = `Transactions`;
+    const payload = { accountId, transaction: transactionData };
+    return this.apiService.upsert<Transaction>(endpoint, payload).pipe(
       map(response => response.value)
     );
   }
@@ -74,8 +76,9 @@ export class Transaction {
     if (!transactionId || transactionId <= 0) {
       return throwError(() => new Error('Invalid Transaction ID'));
     }
-    const endpoint = `accounts/${accountId}/transactions`;
-    return this.apiService.delete<boolean>(endpoint, transactionId).pipe(
+    const endpoint = `Transactions/delete`;
+    const payload = { accountId, transactionId };
+    return this.apiService.post<boolean>(endpoint, payload).pipe(
       map(response => response.value)
     );
   }
@@ -90,8 +93,9 @@ export class Transaction {
     if (!sourceAccountId || sourceAccountId <= 0) {
       return throwError(() => new Error('Invalid Source Account ID'));
     }
-    const endpoint = `accounts/${sourceAccountId}/transactions/transfer`;
-    return this.apiService.post<boolean>(endpoint, transferData).pipe(
+    const endpoint = `Transactions/transfer`;
+    const payload = { accountId: sourceAccountId, transfer: transferData };
+    return this.apiService.post<boolean>(endpoint, payload).pipe(
       map(response => response.value)
     );
   }
@@ -110,8 +114,8 @@ export class Transaction {
     if (!transactionId || transactionId <= 0) {
       return throwError(() => new Error('Invalid Transaction ID'));
     }
-    const endpoint = `accounts/${currentAccountId}/transactions/${transactionId}/switch-account`;
-    const payload: SwitchTransactionAccountRequest = { destinationAccountId };
+    const endpoint = `Transactions/switch-account`;
+    const payload = { transactionId, destinationAccountId };
     return this.apiService.post<boolean>(endpoint, payload).pipe(
       map(response => response.value)
     );

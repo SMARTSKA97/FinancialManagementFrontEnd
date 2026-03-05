@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
@@ -15,7 +15,7 @@ import { AccountState } from '../../../core/state/account-state.service';
 
 @Component({
   selector: 'app-account-form',
-  imports: [CommonModule, ReactiveFormsModule, InputTextModule, InputNumberModule, ButtonModule, SelectModule, FormField],
+  imports: [ReactiveFormsModule, InputTextModule, InputNumberModule, ButtonModule, SelectModule, FormField],
   templateUrl: './account-form.html',
   styleUrl: './account-form.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

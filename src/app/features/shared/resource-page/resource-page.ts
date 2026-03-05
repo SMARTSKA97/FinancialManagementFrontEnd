@@ -1,4 +1,4 @@
-import { Component, inject, Input, OnInit, Type } from '@angular/core';
+import { Component, inject, Input, OnInit, Type, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { ConfirmationService } from 'primeng/api';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { GenericCrud } from '../../../core/services/generic-crud';
@@ -19,8 +19,8 @@ import { NotificationService } from '../../../core/services/notification.service
   imports: [CommonModule, CardModule, ButtonModule, TableModule, DataTable, ProgressSpinnerModule, ConfirmDialogModule, ToastModule, RouterLink],
   templateUrl: './resource-page.html',
   styleUrl: './resource-page.scss',
-  providers: [DialogService, ConfirmationService, GenericCrud] // Removed MessageService to use root instance via NotificationService
-
+  providers: [DialogService, ConfirmationService, GenericCrud], // Removed MessageService to use root instance via NotificationService
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ResourcePage<T extends { id: number }> implements OnInit {
   // Use modern inject() for cleaner code
@@ -29,6 +29,7 @@ export class ResourcePage<T extends { id: number }> implements OnInit {
   private confirmationService = inject(ConfirmationService);
   private notificationService = inject(NotificationService); // Injected wrapper
   private route = inject(ActivatedRoute);
+  private cdr = inject(ChangeDetectorRef);
 
   // ... rest of inputs ...
   @Input() title: string = '';
@@ -59,6 +60,7 @@ export class ResourcePage<T extends { id: number }> implements OnInit {
     this.endpoint = endpoint;
 
     this.crudService.search(this.endpoint, { pageNumber: 1, pageSize: 10 });
+    this.cdr.markForCheck();
   }
 
   async showForm(itemToEdit?: T): Promise<void> {

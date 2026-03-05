@@ -1,0 +1,94 @@
+<div class="public-layout layout-wrapper min-h-screen flex flex-column auth-background p-0 block-orbs">
+    <!-- Sticky Frosted Navbar -->
+    <header class="public-header">
+        <div class="public-header-inner">
+            <!-- Logo -->
+            <a routerLink="/" class="no-underline flex align-items-center gap-2 cursor-pointer">
+                <i class="pi pi-wallet text-3xl gradient-text"></i>
+                <h2 class="m-0 font-bold gradient-text">Financial Planner</h2>
+            </a>
+
+            <!-- Desktop Nav Links -->
+            <nav class="hidden md:flex align-items-center gap-5">
+                <a routerLink="/features" routerLinkActive="active-link" [routerLinkActiveOptions]="{exact: true}"
+                    class="nav-link">Features</a>
+                <a routerLink="/pricing" routerLinkActive="active-link" [routerLinkActiveOptions]="{exact: true}"
+                    class="nav-link">Pricing</a>
+                <a routerLink="/blog" routerLinkActive="active-link" [routerLinkActiveOptions]="{exact: true}"
+                    class="nav-link">Blog</a>
+                <a routerLink="/about" routerLinkActive="active-link" [routerLinkActiveOptions]="{exact: true}"
+                    class="nav-link">About</a>
+                <a routerLink="/contact" routerLinkActive="active-link" [routerLinkActiveOptions]="{exact: true}"
+                    class="nav-link">Contact</a>
+            </nav>
+
+            <!-- Right Side Actions -->
+            <div class="flex align-items-center gap-3">
+                <p-button [icon]="themeService.getCurrentTheme() === 'light' ? 'pi pi-moon' : 'pi pi-sun'"
+                    styleClass="p-button-text p-button-rounded" (onClick)="themeService.toggleTheme()">
+                </p-button>
+
+                @if(isLoggedIn()) {
+                <a routerLink="/app/dashboard" class="no-underline hidden sm:block">
+                    <p-button label="Go to Dashboard" icon="pi pi-arrow-right" iconPos="right"
+                        styleClass="p-button-sm"></p-button>
+                </a>
+                } @else {
+                <a routerLink="/login" class="no-underline hidden sm:block">
+                    <p-button label="Log In" styleClass="p-button-text p-button-sm"></p-button>
+                </a>
+                <a routerLink="/register" class="no-underline hidden sm:block">
+                    <p-button label="Get Started" icon="pi pi-arrow-right" iconPos="right"
+                        styleClass="p-button-sm"></p-button>
+                </a>
+                }
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow-1 z-1 relative">
+        <router-outlet></router-outlet>
+    </main>
+
+    <!-- Footer -->
+    <footer class="public-footer">
+        <div class="public-footer-inner">
+            <div class="footer-left">
+                <a routerLink="/" class="no-underline flex align-items-center gap-2 mb-3">
+                    <i class="pi pi-wallet text-xl gradient-text"></i>
+                    <span class="font-bold text-lg gradient-text">Financial Planner</span>
+                </a>
+                <p class="text-color-secondary text-sm m-0">&copy; 2026 Financial Planner. All rights reserved.</p>
+            </div>
+
+            <div class="footer-links">
+                <div class="flex flex-column gap-2">
+                    <span class="font-bold text-sm mb-1">Product</span>
+                    <a routerLink="/features" class="footer-link">Features</a>
+                    <a routerLink="/pricing" class="footer-link">Pricing</a>
+                    <a routerLink="/blog" class="footer-link">Blog</a>
+                </div>
+                <div class="flex flex-column gap-2">
+                    <span class="font-bold text-sm mb-1">Company</span>
+                    <a routerLink="/about" class="footer-link">About</a>
+                    <a routerLink="/contact" class="footer-link">Contact</a>
+                    <a routerLink="/register" class="footer-link">Get Started</a>
+                </div>
+            </div>
+
+            <div class="footer-social">
+                <span class="font-bold text-sm mb-2 block">Follow Us</span>
+                <div class="flex gap-3">
+                    <a href="#" class="social-icon"><i class="pi pi-twitter text-xl"></i></a>
+                    <a href="#" class="social-icon"><i class="pi pi-github text-xl"></i></a>
+                    <a href="#" class="social-icon"><i class="pi pi-discord text-xl"></i></a>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <span class="text-color-secondary text-xs">Built with Angular, PrimeNG & .NET</span>
+        </div>
+    </footer>
+</div>

@@ -1,0 +1,76 @@
+<section class="px-4 py-8 md:px-8 max-w-5xl mx-auto">
+    <div class="text-center mb-6">
+        <h1 class="text-4xl md:text-5xl font-bold mb-3 zoom-in"
+            style="background: linear-gradient(135deg, #10b981, #38bdf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+            Simple, Transparent Pricing</h1>
+        <p class="text-lg mb-4" style="color: var(--text-muted);">Choose the plan that works best for you.</p>
+
+        <!-- Hideable Toggle -->
+        <div class="flex justify-content-center align-items-center gap-3 mb-4">
+            <span style="color: var(--text-muted);">Show Pricing</span>
+            <p-togglebutton [(ngModel)]="showPricing" onIcon="pi pi-eye" offIcon="pi pi-eye-slash"></p-togglebutton>
+        </div>
+    </div>
+
+    @if(showPricing) {
+    <div class="grid">
+        <!-- Free Tier -->
+        <div class="col-12 md:col-6 p-3">
+            <div class="glass-card p-5 border-round-2xl text-center h-full">
+                <h3 class="text-lg font-semibold mb-2" style="color: var(--text-muted);">Free</h3>
+                <h2 class="text-4xl font-bold mb-1">₹0</h2>
+                <p class="mb-4" style="color: var(--text-muted);">forever</p>
+                <ul class="list-none p-0 text-left mb-5" style="color: var(--text-muted);">
+                    <li class="mb-2"><i class="pi pi-check-circle mr-2" style="color: #10b981;"></i>Unlimited Accounts
+                    </li>
+                    <li class="mb-2"><i class="pi pi-check-circle mr-2" style="color: #10b981;"></i>Full Analytics
+                        Dashboard</li>
+                    <li class="mb-2"><i class="pi pi-check-circle mr-2" style="color: #10b981;"></i>Transaction History
+                        & Search</li>
+                    <li class="mb-2"><i class="pi pi-check-circle mr-2" style="color: #10b981;"></i>Custom Categories
+                    </li>
+                    <li class="mb-2"><i class="pi pi-check-circle mr-2" style="color: #10b981;"></i>Dark & Light Mode
+                    </li>
+                    <li class="mb-2"><i class="pi pi-times-circle mr-2" style="color: var(--text-muted);"></i>Priority
+                        Support</li>
+                </ul>
+                <a routerLink="/register" class="no-underline">
+                    <p-button label="Get Started Free" styleClass="w-full p-button-outlined"></p-button>
+                </a>
+            </div>
+        </div>
+
+        <!-- Pro Tier -->
+        <div class="col-12 md:col-6 p-3">
+            <div class="glass-card p-5 border-round-2xl text-center h-full" style="border: 2px solid #10b981;">
+                <span class="inline-block px-3 py-1 text-sm font-bold border-round-xl mb-3"
+                    style="background: linear-gradient(135deg, #10b981, #38bdf8); color: white;">COMING SOON</span>
+                <h3 class="text-lg font-semibold mb-2" style="color: var(--text-muted);">Pro</h3>
+                <h2 class="text-4xl font-bold mb-1">₹299</h2>
+                <p class="mb-4" style="color: var(--text-muted);">/month</p>
+                <ul class="list-none p-0 text-left mb-5" style="color: var(--text-muted);">
+                    <li class="mb-2"><i class="pi pi-check-circle mr-2" style="color: #10b981;"></i>Everything in Free
+                    </li>
+                    <li class="mb-2"><i class="pi pi-check-circle mr-2" style="color: #10b981;"></i>Priority Support
+                    </li>
+                    <li class="mb-2"><i class="pi pi-check-circle mr-2" style="color: #10b981;"></i>Export Reports
+                        (PDF/CSV)</li>
+                    <li class="mb-2"><i class="pi pi-check-circle mr-2" style="color: #10b981;"></i>Advanced Insights &
+                        Alerts</li>
+                    <li class="mb-2"><i class="pi pi-check-circle mr-2" style="color: #10b981;"></i>Team Collaboration
+                    </li>
+                    <li class="mb-2"><i class="pi pi-check-circle mr-2" style="color: #10b981;"></i>Dedicated Account
+                        Manager</li>
+                </ul>
+                <p-button label="Notify Me" icon="pi pi-bell" styleClass="w-full" [disabled]="true"></p-button>
+            </div>
+        </div>
+    </div>
+    } @else {
+    <div class="text-center p-6 glass-card border-round-2xl">
+        <i class="pi pi-eye-slash text-5xl mb-3" style="color: var(--text-muted);"></i>
+        <p class="text-lg" style="color: var(--text-muted);">Pricing details are currently hidden. Toggle the switch
+            above to reveal plans.</p>
+    </div>
+    }
+</section>

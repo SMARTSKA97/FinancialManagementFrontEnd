@@ -8,14 +8,14 @@ import { ButtonModule } from 'primeng/button';
 import { SelectModule } from "primeng/select";
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
-import { CommonModule } from '@angular/common';
+
 import { EditorModule } from 'primeng/editor';
 import { InputTextModule } from 'primeng/inputtext';
 import { GenericApi } from '../../core/services/generic-api';
 
 @Component({
   selector: 'app-support',
-  imports: [CardModule, ButtonModule, SelectModule, ToastModule, CommonModule, ReactiveFormsModule, EditorModule, InputTextModule],
+  imports: [CardModule, ButtonModule, SelectModule, ToastModule, ReactiveFormsModule, EditorModule, InputTextModule],
   templateUrl: './support.html',
   styleUrl: './support.scss',
   providers: [MessageService]

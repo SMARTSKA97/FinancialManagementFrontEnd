@@ -8,7 +8,7 @@ export const publicGuard: CanActivateFn = (route, state) => {
 
   if (authService.isLoggedIn()) {
     // If the user is already logged in, redirect them away from public pages
-    router.navigate(['/dashboard']);
+    router.navigate(['/app/dashboard']);
     return false;
   }
 

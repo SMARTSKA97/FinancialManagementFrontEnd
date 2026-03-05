@@ -11,11 +11,23 @@ import { CategoryForm } from './features/categories/category-form/category-form'
 import { Support } from './features/support/support';
 import { ColumnDefinition } from './shared/components/data-table/data-table';
 import { Dashboard } from './features/dashboard/dashboard/dashboard';
+import { ChangePasswordComponent } from './features/auth/change-password/change-password.component';
+import { ForgotPasswordComponent } from './features/auth/forgot-password/forgot-password.component';
+import { ResetPasswordComponent } from './features/auth/reset-password/reset-password.component';
+
+import { PublicLayout } from './core/layout/public-layout/public-layout';
+import { Home } from './features/public/home/home';
+import { Features } from './features/public/features/features';
+import { Pricing } from './features/public/pricing/pricing';
+import { About } from './features/public/about/about';
+import { Blog } from './features/public/blog/blog';
+import { Contact } from './features/public/contact/contact';
+import { Settings } from './features/settings/settings/settings';
 
 
 // --- Column Definitions ---
 const accountColumns: ColumnDefinition[] = [
-  { field: 'name', header: 'Name', isLink: true, linkPath: '/accounts/:id/transactions' },
+  { field: 'name', header: 'Name', isLink: true, linkPath: '/app/accounts/:id/transactions' },
   { field: 'accountCategoryName', header: 'Category' },
   { field: 'balance', header: 'Balance', isCurrency: true },
 ];
@@ -25,11 +37,29 @@ const categoryColumns: ColumnDefinition[] = [
 
 // --- Final Application Routes ---
 export const routes: Routes = [
+  // Auth pages (no layout)
   { path: 'login', component: Login, canActivate: [publicGuard] },
   { path: 'register', component: Register, canActivate: [publicGuard] },
+  { path: 'forgot-password', component: ForgotPasswordComponent, canActivate: [publicGuard] },
+  { path: 'reset-password', component: ResetPasswordComponent },
 
+  // Public pages (PublicLayout with navbar + footer)
   {
     path: '',
+    component: PublicLayout,
+    children: [
+      { path: '', component: Home, pathMatch: 'full' },
+      { path: 'features', component: Features },
+      { path: 'pricing', component: Pricing },
+      { path: 'about', component: About },
+      { path: 'blog', component: Blog },
+      { path: 'contact', component: Contact }
+    ]
+  },
+
+  // Authenticated pages (Dashboard Layout with sidebar)
+  {
+    path: 'app',
     component: Layout,
     canActivate: [authGuard],
     children: [
@@ -44,9 +74,8 @@ export const routes: Routes = [
         }
       },
       {
-        // --- THIS ROUTE IS NOW FIXED ---
         path: 'accounts/:id/transactions',
-        component: TransactionList, // <-- Use the new "smart" component
+        component: TransactionList,
       },
       {
         path: 'account-categories',
@@ -56,7 +85,7 @@ export const routes: Routes = [
           endpoint: 'AccountCategories',
           columns: categoryColumns,
           formComponent: CategoryForm,
-          formConfig: { endpoint: 'AccountCategories' } // Pass config to form
+          formConfig: { endpoint: 'AccountCategories' }
         }
       },
       {
@@ -67,7 +96,7 @@ export const routes: Routes = [
           endpoint: 'TransactionCategories',
           columns: categoryColumns,
           formComponent: CategoryForm,
-          formConfig: { endpoint: 'TransactionCategories' } // Pass config to form
+          formConfig: { endpoint: 'TransactionCategories' }
         }
       },
       {
@@ -78,10 +107,14 @@ export const routes: Routes = [
         path: 'support',
         component: Support
       },
-      // {
-      //   path: 'about',
-      //   component: About
-      // },
+      {
+        path: 'settings',
+        component: Settings
+      },
+      {
+        path: 'change-password',
+        component: ChangePasswordComponent
+      },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   },

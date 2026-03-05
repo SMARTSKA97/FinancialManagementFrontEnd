@@ -1,0 +1,72 @@
+<div class="p-4 md:p-6">
+    <h1 class="text-3xl font-bold mb-4">Settings</h1>
+
+    <div class="grid">
+        <!-- Profile Settings -->
+        <div class="col-12 md:col-6 p-3">
+            <p-card header="Profile">
+                <div class="flex flex-column gap-3">
+                    <div>
+                        <label for="displayName">Display Name</label>
+                        <input id="displayName" type="text" pInputText class="w-full" [(ngModel)]="profile.name"
+                            placeholder="Your display name">
+                    </div>
+                    <div>
+                        <label for="email">Email</label>
+                        <input id="email" type="email" pInputText class="w-full" [value]="profile.email" disabled
+                            placeholder="Email (read-only)">
+                    </div>
+                    <p-button label="Save Profile" icon="pi pi-save" (onClick)="saveProfile()"></p-button>
+                </div>
+            </p-card>
+        </div>
+
+        <!-- Appearance Settings -->
+        <div class="col-12 md:col-6 p-3">
+            <p-card header="Appearance">
+                <div class="flex flex-column gap-3">
+                    <div class="flex align-items-center justify-content-between">
+                        <label class="m-0">Dark Mode</label>
+                        <p-togglebutton [(ngModel)]="isDarkMode" onIcon="pi pi-moon" offIcon="pi pi-sun"
+                            (onChange)="toggleTheme()"></p-togglebutton>
+                    </div>
+                    <div class="flex align-items-center justify-content-between">
+                        <label class="m-0">Compact View</label>
+                        <p-togglebutton [(ngModel)]="isCompact" onIcon="pi pi-th-large" offIcon="pi pi-list"
+                            (onChange)="toggleCompact()"></p-togglebutton>
+                    </div>
+                </div>
+            </p-card>
+        </div>
+
+        <!-- Security Settings -->
+        <div class="col-12 md:col-6 p-3">
+            <p-card header="Security">
+                <div class="flex flex-column gap-3">
+                    <a routerLink="/app/change-password" class="no-underline">
+                        <p-button label="Change Password" icon="pi pi-lock"
+                            styleClass="p-button-outlined w-full"></p-button>
+                    </a>
+                    <p-button label="Log Out" icon="pi pi-sign-out" severity="danger" (onClick)="logout()"
+                        styleClass="w-full"></p-button>
+                </div>
+            </p-card>
+        </div>
+
+        <!-- Data Management -->
+        <div class="col-12 md:col-6 p-3">
+            <p-card header="Data Management">
+                <div class="flex flex-column gap-3">
+                    <a routerLink="/app/account-categories" class="no-underline">
+                        <p-button label="Manage Account Categories" icon="pi pi-folder"
+                            styleClass="p-button-outlined w-full"></p-button>
+                    </a>
+                    <a routerLink="/app/transaction-categories" class="no-underline">
+                        <p-button label="Manage Transaction Categories" icon="pi pi-tag"
+                            styleClass="p-button-outlined w-full"></p-button>
+                    </a>
+                </div>
+            </p-card>
+        </div>
+    </div>
+</div>

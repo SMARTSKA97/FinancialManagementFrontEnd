@@ -9,8 +9,6 @@ import { environment } from '../../../../environments/environment';
 import { AvatarModule } from 'primeng/avatar';
 import { PopoverModule } from 'primeng/popover';
 import { Theme } from '../../services/theme';
-import { AsyncPipe } from '@angular/common';
-
 
 @Component({
   selector: 'app-layout',
@@ -28,12 +26,10 @@ export class Layout {
   navItems: MenuItem[];
   appVersion: string;
 
-  // Create an signal for the user's initials directly from the auth service
   userInitials = computed(() => {
     const name = this.authService.currentUser();
     return name ? name.substring(0, 2).toUpperCase() : '';
   });
-
 
   constructor() {
     this.appVersion = environment.appVersion;
@@ -41,19 +37,23 @@ export class Layout {
       {
         label: 'Main',
         items: [
-          { label: 'Dashboard', icon: 'pi pi-home', routerLink: '/dashboard', command: () => { this.sidebarVisible = false; } },
-          { label: 'Accounts', icon: 'pi pi-wallet', routerLink: '/accounts', command: () => { this.sidebarVisible = false; } },
+          { label: 'Home', icon: 'pi pi-globe', routerLink: '/', command: () => { this.sidebarVisible = false; } },
+          { label: 'Dashboard', icon: 'pi pi-home', routerLink: '/app/dashboard', command: () => { this.sidebarVisible = false; } },
+          { label: 'Accounts', icon: 'pi pi-wallet', routerLink: '/app/accounts', command: () => { this.sidebarVisible = false; } },
         ],
-
+      },
+      {
+        label: 'Categories',
+        items: [
+          { label: 'Account Categories', icon: 'pi pi-folder', routerLink: '/app/account-categories', command: () => { this.sidebarVisible = false; } },
+          { label: 'Transaction Categories', icon: 'pi pi-tag', routerLink: '/app/transaction-categories', command: () => { this.sidebarVisible = false; } },
+        ]
       },
       {
         label: 'Settings',
         items: [
-          { label: 'Account Categories', icon: 'pi pi-tags', routerLink: '/account-categories', disabled: true, command: () => { this.sidebarVisible = false; } },
-          { label: 'Transaction Categories', icon: 'pi pi-tags', routerLink: '/transaction-categories', disabled: true, command: () => { this.sidebarVisible = false; } },
-          // { label: 'Toggle Dark Mode', icon: 'pi pi-sun', command: () => { this.toggleDarkMode(); this.sidebarVisible = false; } },
-          { label: 'Support', icon: 'pi pi-sun', routerLink: '/support', command: () => { this.sidebarVisible = false; } },
-
+          { label: 'Settings', icon: 'pi pi-cog', routerLink: '/app/settings', command: () => { this.sidebarVisible = false; } },
+          { label: 'Support', icon: 'pi pi-question-circle', routerLink: '/app/support', command: () => { this.sidebarVisible = false; } },
         ]
       }
     ];

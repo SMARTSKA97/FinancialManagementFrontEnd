@@ -1,0 +1,34 @@
+<section class="px-4 py-8 md:px-8 max-w-3xl mx-auto">
+    <div class="text-center mb-6">
+        <h1 class="text-4xl md:text-5xl font-bold mb-3 zoom-in"
+            style="background: linear-gradient(135deg, #14b8a6, #10b981); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+            Get in Touch</h1>
+        <p class="text-lg" style="color: var(--text-muted);">Have questions? We'd love to hear from you.</p>
+    </div>
+
+    <div class="glass-card p-5 border-round-2xl">
+        <form (ngSubmit)="onSubmit()" class="flex flex-column gap-4">
+            <div>
+                <label for="name">Name</label>
+                <input id="name" type="text" pInputText [(ngModel)]="form.name" name="name" class="w-full"
+                    placeholder="Your name">
+            </div>
+            <div>
+                <label for="email">Email</label>
+                <input id="email" type="email" pInputText [(ngModel)]="form.email" name="email" class="w-full"
+                    placeholder="you@example.com">
+            </div>
+            <div>
+                <label for="subject">Subject</label>
+                <input id="subject" type="text" pInputText [(ngModel)]="form.subject" name="subject" class="w-full"
+                    placeholder="How can we help?">
+            </div>
+            <div>
+                <label for="message">Message</label>
+                <textarea id="message" pInputTextarea [(ngModel)]="form.message" name="message" class="w-full" rows="5"
+                    placeholder="Tell us more..."></textarea>
+            </div>
+            <p-button type="submit" label="Send Message" icon="pi pi-send" styleClass="w-full"></p-button>
+        </form>
+    </div>
+</section>

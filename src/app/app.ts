@@ -1,5 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Router, RouterOutlet } from '@angular/router';
 import { Theme } from './core/services/theme';
 import { ToastModule } from 'primeng/toast';
 import { DialogModule } from 'primeng/dialog';
@@ -19,9 +19,19 @@ export class App {
 
   isSessionLocked = signal(false);
 
+  private router = inject(Router);
+
   constructor() {
     this.sessionSync.state$.subscribe(state => {
-      this.isSessionLocked.set(state === 'locked');
+      // Don't lock session on public pages (login, register, reset-password etc)
+      const isPublicPage = this.router.url.includes('/login') ||
+        this.router.url.includes('/register') ||
+        this.router.url.includes('/reset-password') ||
+        this.router.url.includes('/forgot-password');
+
+      if (!isPublicPage) {
+        this.isSessionLocked.set(state === 'locked');
+      }
     });
   }
 

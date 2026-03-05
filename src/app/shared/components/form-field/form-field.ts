@@ -1,12 +1,12 @@
 import { Component, inject, Input } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { AbstractControl } from '@angular/forms';
 import { ValidationService } from '../../../core/services/validation.service';
 
 @Component({
     selector: 'app-form-field',
     standalone: true,
-    imports: [CommonModule],
+    imports: [],
     templateUrl: './form-field.html',
     styleUrl: './form-field.scss'
 })

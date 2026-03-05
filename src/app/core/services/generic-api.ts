@@ -60,7 +60,7 @@ export class GenericApi {
   }
 
   delete<T>(endpoint: string, id: number): Observable<ApiResult<T>> {
-    return this.http.delete<ApiResult<T>>(this.buildUrl(endpoint, id.toString()));
+    return this.http.post<ApiResult<T>>(this.buildUrl(endpoint, 'delete'), { id });
   }
 
   post<T>(endpoint: string, data: any): Observable<ApiResult<T>> {

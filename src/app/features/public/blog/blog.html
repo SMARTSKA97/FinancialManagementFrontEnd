@@ -1,0 +1,26 @@
+<section class="px-4 py-8 md:px-8 max-w-5xl mx-auto">
+    <div class="text-center mb-6">
+        <h1 class="text-4xl md:text-5xl font-bold mb-3 zoom-in"
+            style="background: linear-gradient(135deg, #f59e0b, #ef4444); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+            Blog</h1>
+        <p class="text-lg" style="color: var(--text-muted);">Tips, guides, and updates from the Financial Planner team.
+        </p>
+    </div>
+
+    <div class="grid">
+        @for(post of blogPosts; track post.title) {
+        <div class="col-12 md:col-6 p-3">
+            <div class="glass-card p-5 border-round-2xl h-full cursor-pointer">
+                <span class="inline-block text-xs font-bold px-2 py-1 border-round-lg mb-3"
+                    [style.background]="post.tagColor" style="color: white;">{{ post.tag }}</span>
+                <h3 class="text-xl font-bold mb-2">{{ post.title }}</h3>
+                <p style="color: var(--text-muted);">{{ post.excerpt }}</p>
+                <div class="flex align-items-center mt-3 gap-2" style="color: var(--text-muted);">
+                    <i class="pi pi-calendar text-sm"></i>
+                    <span class="text-sm">{{ post.date }}</span>
+                </div>
+            </div>
+        </div>
+        }
+    </div>
+</section>

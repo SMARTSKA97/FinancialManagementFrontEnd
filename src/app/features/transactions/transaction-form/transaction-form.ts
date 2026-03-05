@@ -3,7 +3,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { Transaction } from '../transaction';
 import { TransactionType } from '../../../core/models/transaction-type';
-import { CommonModule } from '@angular/common';
+
 import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { ButtonModule } from 'primeng/button';
@@ -18,7 +18,7 @@ import { AccountState } from '../../../core/state/account-state.service';
 
 @Component({
   selector: 'app-transaction-form',
-  imports: [CommonModule, ReactiveFormsModule, InputTextModule, InputNumberModule, ButtonModule, DatePickerModule, SelectModule, ToastModule],
+  imports: [ReactiveFormsModule, InputTextModule, InputNumberModule, ButtonModule, DatePickerModule, SelectModule, ToastModule],
   templateUrl: './transaction-form.html',
   styleUrl: './transaction-form.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

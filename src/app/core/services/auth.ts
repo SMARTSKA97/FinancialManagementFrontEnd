@@ -31,6 +31,26 @@ export interface LoginResponseDto {
   userName: string;
 }
 
+export interface ChangePasswordDto {
+  currentPassword: string;
+  newPassword: string;
+}
+
+export interface ForgotPasswordDto {
+  email: string;
+}
+
+export interface VerifyOtpDto {
+  email: string;
+  otp: string;
+}
+
+export interface ResetPasswordDto {
+  email: string;
+  otp: string;
+  newPassword: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -132,6 +152,9 @@ export class Auth {
       this.clearTokens();
     }
   }
+  public cleanSession(): void {
+    this.clearTokens();
+  }
 
   // --- SILENT REFRESH LOGIC ---
 
@@ -185,13 +208,30 @@ export class Auth {
   }
 
   /**
-   * Registers a new user.
+   * Initiates registration — sends OTP to user's email.
    * @param userData The user registration DTO.
    * @returns An Observable containing the API result.
    */
   register(userData: RegisterUserDto): Observable<ApiResult<string>> {
     this.isLoggingOut = false;
     return this.http.post<ApiResult<string>>(this.buildUrl('Auth', 'register'), userData);
+  }
+
+  /**
+   * Completes registration by verifying the OTP.
+   * @param dto The verify registration DTO (email + otp).
+   * @returns An Observable containing the API result.
+   */
+  verifyRegistration(dto: { email: string; otp: string }): Observable<ApiResult<string>> {
+    return this.http.post<ApiResult<string>>(this.buildUrl('Auth', 'verify-registration'), dto);
+  }
+
+  checkEmail(email: string): Observable<ApiResult<boolean>> {
+    return this.http.post<ApiResult<boolean>>(this.buildUrl('Auth', 'check-email'), { email });
+  }
+
+  checkUsername(username: string): Observable<ApiResult<boolean>> {
+    return this.http.post<ApiResult<boolean>>(this.buildUrl('Auth', 'check-username'), { username });
   }
 
   /**
@@ -208,6 +248,22 @@ export class Auth {
         }
       })
     );
+  }
+
+  changePassword(dto: ChangePasswordDto): Observable<ApiResult<boolean>> {
+    return this.http.post<ApiResult<boolean>>(this.buildUrl('Auth', 'change-password'), dto);
+  }
+
+  forgotPassword(dto: ForgotPasswordDto): Observable<ApiResult<boolean>> {
+    return this.http.post<ApiResult<boolean>>(this.buildUrl('Auth', 'forgot-password'), dto);
+  }
+
+  verifyOtp(dto: VerifyOtpDto): Observable<ApiResult<boolean>> {
+    return this.http.post<ApiResult<boolean>>(this.buildUrl('Auth', 'verify-otp'), dto);
+  }
+
+  resetPassword(dto: ResetPasswordDto): Observable<ApiResult<boolean>> {
+    return this.http.post<ApiResult<boolean>>(this.buildUrl('Auth', 'reset-password'), dto);
   }
 
   /**
