@@ -1,9 +1,13 @@
 <div class="p-4 md:p-6">
   <div class="flex flex-column md:flex-row md:align-items-center md:justify-content-between mb-4">
-    <div>
+    <div class="flex align-items-center gap-3">
       <h1 class="text-3xl font-bold m-0">Dashboard</h1>
+      <p-datepicker [(ngModel)]="localDate" view="month" dateFormat="mm/yy" (ngModelChange)="onDateChange($event)"
+        placeholder="Select Month" [showIcon]="true"></p-datepicker>
     </div>
-    <div class="mt-3 md:mt-0">
+    <div class="mt-3 md:mt-0 flex gap-2">
+      <p-button label="Bulk Transaction Add" icon="pi pi-table" routerLink="/app/bulk-transaction-add"
+        styleClass="p-button-success"></p-button>
       <p-button label="View Accounts" icon="pi pi-wallet" routerLink="/app/accounts"></p-button>
     </div>
   </div>
@@ -32,14 +36,14 @@
     </div>
   </div>
 
-  <!-- Pie Chart Card -->
+  <!-- Pie Chart Card and New Insights Row -->
   <div class="grid">
-    <div class="col-12 md:col-6">
-      <p-card header="Spending by Category">
+    <div class="col-12 md:col-4">
+      <p-card header="Spending by Category" styleClass="h-full">
         @if(hasChartData()) {
         <div style="position: relative; height: 350px" class="flex justify-content-center">
           @defer (on viewport) {
-          <p-chart type="pie" [data]="spendingChartData()" [options]="spendingChartOptions"></p-chart>
+          <p-chart type="doughnut" [data]="spendingChartData()" [options]="spendingChartOptions"></p-chart>
           } @placeholder {
           <div class="flex justify-content-center p-4">
             <p-progressSpinner></p-progressSpinner>
@@ -50,6 +54,143 @@
         <div class="text-center p-4">
           <i class="pi pi-chart-pie text-5xl text-gray-400"></i>
           <p class="mt-3 text-gray-500">No expense data to display for this month.</p>
+        </div>
+        }
+      </p-card>
+    </div>
+
+    <!-- Deep Insights Panel -->
+    <div class="col-12 md:col-8">
+      <p-card header="Deep Insights" styleClass="glass-insights-card h-full">
+        @if (insights()) {
+        <div class="flex flex-wrap gap-2 mb-4">
+          <p-button label="💸 Amount Spends" (click)="toggleInsight('amount')" [outlined]="insightType() !== 'amount'"
+            [severity]="insightType() === 'amount' ? 'primary' : 'secondary'"></p-button>
+          <p-button label="🕒 Timeline Activity" (click)="toggleInsight('timeline')"
+            [outlined]="insightType() !== 'timeline'"
+            [severity]="insightType() === 'timeline' ? 'primary' : 'secondary'"></p-button>
+          <p-button label="📊 Category Extremes" (click)="toggleInsight('category')"
+            [outlined]="insightType() !== 'category'"
+            [severity]="insightType() === 'category' ? 'primary' : 'secondary'"></p-button>
+          <p-button label="🏦 Account Extremes" (click)="toggleInsight('account')"
+            [outlined]="insightType() !== 'account'"
+            [severity]="insightType() === 'account' ? 'primary' : 'secondary'"></p-button>
+        </div>
+
+        <div class="insight-content-area border-round p-3 surface-ground">
+          @switch (insightType()) {
+          @case ('amount') {
+          <div class="flex justify-content-between align-items-center mb-3">
+            <h3 class="m-0 text-xl font-semibold">{{ isAscending() ? 'Lowest 5 Transactions' : 'Highest 5 Transactions'
+              }}</h3>
+            <span class="text-500 text-sm"><i class="pi pi-info-circle mr-1"></i>Click tab again to flip</span>
+          </div>
+          @for (tx of (isAscending() ? insights()?.lowestAmountTransactions : insights()?.highestAmountTransactions);
+          track tx.id) {
+          <div class="flex justify-content-between align-items-center py-2 border-bottom-1 surface-border">
+            <div>
+              <span class="font-medium">{{ tx.description }}</span>
+              <div class="text-sm text-500">{{ tx.date | date:'mediumDate' }} &bull; {{ tx.categoryName }}</div>
+            </div>
+            <div class="font-bold whitespace-nowrap" [ngClass]="tx.type === 1 ? 'text-green-500' : 'text-red-500'">
+              {{ tx.type === 1 ? '+' : '-' }}{{ tx.amount | currency:'INR' }}
+            </div>
+          </div>
+          } @empty {
+          <p class="text-500 w-full text-center py-4">No data available.</p>
+          }
+          }
+          @case ('timeline') {
+          <div class="flex justify-content-between align-items-center mb-3">
+            <h3 class="m-0 text-xl font-semibold">{{ isAscending() ? 'Oldest 5 Transactions' : 'Latest 5 Transactions'
+              }}</h3>
+            <span class="text-500 text-sm"><i class="pi pi-info-circle mr-1"></i>Click tab again to flip</span>
+          </div>
+          @for (tx of (isAscending() ? insights()?.oldestTransactions : insights()?.latestTransactions); track tx.id) {
+          <div class="flex justify-content-between align-items-center py-2 border-bottom-1 surface-border">
+            <div>
+              <span class="font-medium">{{ tx.description }}</span>
+              <div class="text-sm text-500">{{ tx.date | date:'mediumDate' }} &bull; {{ tx.categoryName }}</div>
+            </div>
+            <div class="font-bold whitespace-nowrap" [ngClass]="tx.type === 1 ? 'text-green-500' : 'text-red-500'">
+              {{ tx.type === 1 ? '+' : '-' }}{{ tx.amount | currency:'INR' }}
+            </div>
+          </div>
+          } @empty {
+          <p class="text-500 w-full text-center py-4">No data available.</p>
+          }
+          }
+          @case ('category') {
+          <div class="flex justify-content-between align-items-center mb-3">
+            <h3 class="m-0 text-xl font-semibold">Category Extremes</h3>
+            <span class="text-500 text-sm">Max & Min transactions per category</span>
+          </div>
+          @for (grp of insights()?.categoryExtremes; track grp.groupName) {
+          <div class="py-2 border-bottom-1 surface-border">
+            <div class="font-bold text-lg mb-2 text-primary">{{ grp.groupName }}</div>
+            <div class="grid grid-nogutter gap-3">
+              <div class="col border-round surface-section p-2">
+                <div class="text-xs text-500 mb-1 uppercase font-semibold tracking-wide">Max</div>
+                @if (grp.maxTransaction) {
+                <div class="font-medium">{{ grp.maxTransaction.description }}</div>
+                <div class="text-sm font-bold mt-1"
+                  [ngClass]="grp.maxTransaction.type === 1 ? 'text-green-500' : 'text-red-500'">{{
+                  grp.maxTransaction.type === 1 ? '+' : '-' }}{{ grp.maxTransaction.amount | currency:'INR' }}</div>
+                } @else { <span class="text-500 text-sm">-</span> }
+              </div>
+              <div class="col border-round surface-section p-2">
+                <div class="text-xs text-500 mb-1 uppercase font-semibold tracking-wide">Min</div>
+                @if (grp.minTransaction) {
+                <div class="font-medium">{{ grp.minTransaction.description }}</div>
+                <div class="text-sm font-bold mt-1"
+                  [ngClass]="grp.minTransaction.type === 1 ? 'text-green-500' : 'text-red-500'">{{
+                  grp.minTransaction.type === 1 ? '+' : '-' }}{{ grp.minTransaction.amount | currency:'INR' }}</div>
+                } @else { <span class="text-500 text-sm">-</span> }
+              </div>
+            </div>
+          </div>
+          } @empty {
+          <p class="text-500 w-full text-center py-4">No data available.</p>
+          }
+          }
+          @case ('account') {
+          <div class="flex justify-content-between align-items-center mb-3">
+            <h3 class="m-0 text-xl font-semibold">Account Extremes</h3>
+            <span class="text-500 text-sm">Max & Min transactions per account</span>
+          </div>
+          @for (grp of insights()?.accountExtremes; track grp.groupName) {
+          <div class="py-2 border-bottom-1 surface-border">
+            <div class="font-bold text-lg mb-2 text-primary">{{ grp.groupName }}</div>
+            <div class="grid grid-nogutter gap-3">
+              <div class="col border-round surface-section p-2">
+                <div class="text-xs text-500 mb-1 uppercase font-semibold tracking-wide">Max</div>
+                @if (grp.maxTransaction) {
+                <div class="font-medium">{{ grp.maxTransaction.description }}</div>
+                <div class="text-sm font-bold mt-1"
+                  [ngClass]="grp.maxTransaction.type === 1 ? 'text-green-500' : 'text-red-500'">{{
+                  grp.maxTransaction.type === 1 ? '+' : '-' }}{{ grp.maxTransaction.amount | currency:'INR' }}</div>
+                } @else { <span class="text-500 text-sm">-</span> }
+              </div>
+              <div class="col border-round surface-section p-2">
+                <div class="text-xs text-500 mb-1 uppercase font-semibold tracking-wide">Min</div>
+                @if (grp.minTransaction) {
+                <div class="font-medium">{{ grp.minTransaction.description }}</div>
+                <div class="text-sm font-bold mt-1"
+                  [ngClass]="grp.minTransaction.type === 1 ? 'text-green-500' : 'text-red-500'">{{
+                  grp.minTransaction.type === 1 ? '+' : '-' }}{{ grp.minTransaction.amount | currency:'INR' }}</div>
+                } @else { <span class="text-500 text-sm">-</span> }
+              </div>
+            </div>
+          </div>
+          } @empty {
+          <p class="text-500 w-full text-center py-4">No data available.</p>
+          }
+          }
+          }
+        </div>
+        } @else {
+        <div class="flex justify-content-center p-4">
+          <p-progressSpinner></p-progressSpinner>
         </div>
         }
       </p-card>

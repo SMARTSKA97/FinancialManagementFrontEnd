@@ -1,31 +1,9 @@
 import { Routes } from '@angular/router';
-import { Layout } from './core/layout/layout/layout';
 import { publicGuard } from './core/guards/public-guard';
 import { authGuard } from './core/guards/auth-guard';
-import { Login } from './features/login/login';
-import { Register } from './features/register/register';
-import { ResourcePage } from './features/shared/resource-page/resource-page';
-import { AccountForm } from './features/accounts/account-form/account-form';
-import { TransactionList } from './features/transactions/transaction-list/transaction-list';
-import { CategoryForm } from './features/categories/category-form/category-form';
-import { Support } from './features/support/support';
 import { ColumnDefinition } from './shared/components/data-table/data-table';
-import { Dashboard } from './features/dashboard/dashboard/dashboard';
-import { ChangePasswordComponent } from './features/auth/change-password/change-password.component';
-import { ForgotPasswordComponent } from './features/auth/forgot-password/forgot-password.component';
-import { ResetPasswordComponent } from './features/auth/reset-password/reset-password.component';
 
-import { PublicLayout } from './core/layout/public-layout/public-layout';
-import { Home } from './features/public/home/home';
-import { Features } from './features/public/features/features';
-import { Pricing } from './features/public/pricing/pricing';
-import { About } from './features/public/about/about';
-import { Blog } from './features/public/blog/blog';
-import { Contact } from './features/public/contact/contact';
-import { Settings } from './features/settings/settings/settings';
-
-
-// --- Column Definitions ---
+// --- Column Definitions (kept static — they are tiny plain objects, not components) ---
 const accountColumns: ColumnDefinition[] = [
   { field: 'name', header: 'Name', isLink: true, linkPath: '/app/accounts/:id/transactions' },
   { field: 'accountCategoryName', header: 'Category' },
@@ -35,88 +13,129 @@ const categoryColumns: ColumnDefinition[] = [
   { field: 'name', header: 'Name' }
 ];
 
-// --- Final Application Routes ---
+// --- Lazily Loaded Application Routes ---
 export const routes: Routes = [
-  // Auth pages (no layout)
-  { path: 'login', component: Login, canActivate: [publicGuard] },
-  { path: 'register', component: Register, canActivate: [publicGuard] },
-  { path: 'forgot-password', component: ForgotPasswordComponent, canActivate: [publicGuard] },
-  { path: 'reset-password', component: ResetPasswordComponent },
 
-  // Public pages (PublicLayout with navbar + footer)
+  // Auth pages — loaded lazily, no layout shell
+  {
+    path: 'login',
+    canActivate: [publicGuard],
+    loadComponent: () => import('./features/login/login').then(m => m.Login)
+  },
+  {
+    path: 'register',
+    canActivate: [publicGuard],
+    loadComponent: () => import('./features/register/register').then(m => m.Register)
+  },
+  {
+    path: 'forgot-password',
+    canActivate: [publicGuard],
+    loadComponent: () => import('./features/auth/forgot-password/forgot-password.component').then(m => m.ForgotPasswordComponent)
+  },
+  {
+    path: 'reset-password',
+    loadComponent: () => import('./features/auth/reset-password/reset-password.component').then(m => m.ResetPasswordComponent)
+  },
+
+  // Public pages — PublicLayout shell loaded lazily, children also lazy
   {
     path: '',
-    component: PublicLayout,
+    loadComponent: () => import('./core/layout/public-layout/public-layout').then(m => m.PublicLayout),
     children: [
-      { path: '', component: Home, pathMatch: 'full' },
-      { path: 'features', component: Features },
-      { path: 'pricing', component: Pricing },
-      { path: 'about', component: About },
-      { path: 'blog', component: Blog },
-      { path: 'contact', component: Contact }
+      {
+        path: '',
+        pathMatch: 'full',
+        loadComponent: () => import('./features/public/home/home').then(m => m.Home)
+      },
+      {
+        path: 'features',
+        loadComponent: () => import('./features/public/features/features').then(m => m.Features)
+      },
+      {
+        path: 'about',
+        loadComponent: () => import('./features/public/about/about').then(m => m.About)
+      },
+      {
+        path: 'blog',
+        loadComponent: () => import('./features/public/blog/blog').then(m => m.Blog)
+      },
+      {
+        path: 'blog/:id',
+        loadComponent: () => import('./features/public/blog-post/blog-post').then(m => m.BlogPost)
+      },
+      {
+        path: 'contact',
+        loadComponent: () => import('./features/public/contact/contact').then(m => m.Contact)
+      }
     ]
   },
 
-  // Authenticated pages (Dashboard Layout with sidebar)
+  // Authenticated pages — Layout shell lazy, every child feature also lazy
   {
     path: 'app',
-    component: Layout,
     canActivate: [authGuard],
+    loadComponent: () => import('./core/layout/layout/layout').then(m => m.Layout),
     children: [
       {
         path: 'accounts',
-        component: ResourcePage,
+        loadComponent: () => import('./features/shared/resource-page/resource-page').then(m => m.ResourcePage),
         data: {
           title: 'Accounts',
           endpoint: 'Accounts',
           columns: accountColumns,
-          formComponent: AccountForm
+          loadFormComponent: () => import('./features/accounts/account-form/account-form').then(m => m.AccountForm)
         }
       },
       {
         path: 'accounts/:id/transactions',
-        component: TransactionList,
+        loadComponent: () => import('./features/transactions/transaction-list/transaction-list').then(m => m.TransactionList)
+      },
+      {
+        path: 'bulk-transaction-add',
+        loadComponent: () => import('./features/transactions/bulk-transaction-add/bulk-transaction-add').then(m => m.BulkTransactionAdd)
       },
       {
         path: 'account-categories',
-        component: ResourcePage,
+        loadComponent: () => import('./features/shared/resource-page/resource-page').then(m => m.ResourcePage),
         data: {
           title: 'Account Categories',
           endpoint: 'AccountCategories',
           columns: categoryColumns,
-          formComponent: CategoryForm,
-          formConfig: { endpoint: 'AccountCategories' }
+          formConfig: { endpoint: 'AccountCategories' },
+          loadFormComponent: () => import('./features/categories/category-form/category-form').then(m => m.CategoryForm)
         }
       },
       {
         path: 'transaction-categories',
-        component: ResourcePage,
+        loadComponent: () => import('./features/shared/resource-page/resource-page').then(m => m.ResourcePage),
         data: {
           title: 'Transaction Categories',
           endpoint: 'TransactionCategories',
           columns: categoryColumns,
-          formComponent: CategoryForm,
-          formConfig: { endpoint: 'TransactionCategories' }
+          formConfig: { endpoint: 'TransactionCategories' },
+          loadFormComponent: () => import('./features/categories/category-form/category-form').then(m => m.CategoryForm)
         }
       },
       {
         path: 'dashboard',
-        component: Dashboard
+        loadComponent: () => import('./features/dashboard/dashboard/dashboard').then(m => m.Dashboard)
       },
       {
         path: 'support',
-        component: Support
+        loadComponent: () => import('./features/support/support').then(m => m.Support)
       },
       {
         path: 'settings',
-        component: Settings
+        loadComponent: () => import('./features/settings/settings/settings').then(m => m.Settings)
       },
       {
         path: 'change-password',
-        component: ChangePasswordComponent
+        loadComponent: () => import('./features/auth/change-password/change-password.component').then(m => m.ChangePasswordComponent)
       },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   },
+
   { path: '**', redirectTo: '', pathMatch: 'full' }
 ];
+

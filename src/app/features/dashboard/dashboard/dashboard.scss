@@ -1,0 +1,16 @@
+:host {
+    display: block;
+}
+
+.glass-insights-card {
+    background: color-mix(in srgb, var(--surface-card) 60%, transparent) !important;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid color-mix(in srgb, var(--surface-border) 40%, transparent) !important;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.05);
+}
+
+.insight-content-area {
+    background: color-mix(in srgb, var(--surface-ground) 40%, transparent) !important;
+    border: 1px solid color-mix(in srgb, var(--surface-border) 40%, transparent);
+}

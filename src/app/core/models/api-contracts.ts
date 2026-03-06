@@ -33,3 +33,24 @@ export interface UpsertCategoryRequest {
     name: string;
     isTransferCategory?: boolean; // Only for TransactionCategory
 }
+
+export interface BulkTransactionEntry {
+    accountId: number;
+    destinationAccountId?: number;
+    transaction: UpsertTransactionRequest;
+}
+
+export interface BulkTransactionPayload {
+    transactions: BulkTransactionEntry[];
+}
+
+export interface BulkInsertFailure {
+    index: number;
+    errors: string[];
+}
+
+export interface BulkInsertResponse {
+    successfulCount: number;
+    failedCount: number;
+    failedTransactions: BulkInsertFailure[];
+}

@@ -1,59 +1,53 @@
-# AngularApp
+# 💰 Financial Planner — Frontend
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.3.2.
+> A modern, production-grade Angular 18+ personal finance tracking application with glassmorphism UI, Angular Signals state management, and deep integration with a .NET 8 backend.
 
-## Development server
+## Tech Stack
 
-To start a local development server, run:
+| Technology | Purpose |
+|------------|---------|
+| **Angular 18+** | Frontend framework (Standalone Components, OnPush, Signals) |
+| **PrimeNG** | UI component library (tables, forms, charts, datepicker, dialogs) |
+| **PrimeFlex** | Responsive CSS utility grid |
+| **Chart.js** | Dashboard doughnut chart |
+| **XLSX / CSV** | Excel import for bulk transaction entry |
 
-```bash
-ng serve
+## Architecture
+
+Standalone components everywhere — no NgModules. The app is split into:
+
+```
+src/app/
+├── core/           # Guards, interceptors, layout shells, services, state
+├── features/       # All page-level components, organized by domain
+│   ├── public/     # Landing pages (home, blog, features, about, contact)
+│   ├── auth/       # Forgot/reset/change password flows
+│   ├── dashboard/  # Dashboard page + DashboardStateService
+│   ├── accounts/   # Account list + form
+│   ├── categories/ # Category form (reused for both category types)
+│   ├── transactions/ # Transaction list + Bulk Add page
+│   ├── settings/   # Settings page
+│   └── support/    # Feedback/support form
+└── shared/         # Reusable data-table component, column definitions
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
-
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+## Running Locally
 
 ```bash
-ng generate component component-name
+npm install
+npx ng serve -o
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+The app proxies API calls to `http://localhost:5000` (configurable in `proxy.conf.json`).
 
-```bash
-ng generate --help
-```
+## Key Design Patterns
 
-## Building
+- **Signals** for all reactive state — no RxJS Subjects in components
+- **OnPush** change detection on every component
+- **GenericCrudService** — one service handles all CRUD for any entity
+- **ResourcePage** — one generic list page component driven by route `data` config
+- **HTTP Interceptor** — silently attaches Bearer token, auto-refreshes on 401
 
-To build the project run:
+## Environment
 
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+Copy `src/environments/environment.template.ts` to `environment.ts` and fill in the API base URL.

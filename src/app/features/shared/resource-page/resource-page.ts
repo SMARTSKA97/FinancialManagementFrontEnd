@@ -50,8 +50,14 @@ export class ResourcePage<T extends { id: number }> implements OnInit {
 
     this.title = routeData['title'];
     this.columns = routeData['columns'];
-    this.formComponent = routeData['formComponent'];
     this.backLinkPath = routeData['backLinkPath'];
+
+    // Support lazy loadFormComponent (new) or static formComponent (legacy)
+    if (typeof routeData['loadFormComponent'] === 'function') {
+      this.formComponent = await routeData['loadFormComponent']();
+    } else {
+      this.formComponent = routeData['formComponent'];
+    }
 
     let endpoint = routeData['endpoint'];
     if (params.has('id')) {

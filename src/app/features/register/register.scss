@@ -4,3 +4,27 @@
     display: block;
     font-family: 'Outfit', sans-serif;
 }
+
+::ng-deep .glass-container {
+    max-width: 700px !important;
+}
+
+::ng-deep .p-step-list {
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+    scrollbar-width: thin;
+
+    &::-webkit-scrollbar {
+        height: 4px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 4px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 4px;
+    }
+}

@@ -64,6 +64,21 @@ export class Transaction {
   }
 
   /**
+   * Bulk upserts multiple transactions across potentially multiple accounts.
+   * @param payload The bulk transaction payload.
+   * @returns An Observable of the bulk insert response containing success and failure counts.
+   */
+  bulkUpsertTransactions(payload: any): Observable<any> {
+    const endpoint = `Transactions/bulk-upsert`;
+    return this.apiService.post<any>(endpoint, payload).pipe(
+      map(response => {
+        if (!response.isSuccess) throw response;
+        return response.value;
+      })
+    );
+  }
+
+  /**
    * Deletes a transaction.
    * @param accountId The ID of the account.
    * @param transactionId The ID of the transaction to delete.
