@@ -154,9 +154,12 @@ export class BulkTransactionAdd {
             if (match) row.accountId = match;
         }
         if (typeof row.transactionCategoryId === 'string' && row.transactionCategoryId.trim().length > 0) {
-            const query = (row.transactionCategoryId as string).trim().toLowerCase();
-            const match = this.categories().find(c => c.name.trim().toLowerCase() === query);
+            let query = (row.transactionCategoryId as string).trim();
+            // Capitalize first letter
+            query = query.charAt(0).toUpperCase() + query.slice(1);
+            const match = this.categories().find(c => c.name.trim().toLowerCase() === query.toLowerCase());
             if (match) row.transactionCategoryId = match;
+            else row.transactionCategoryId = query; // Keep as string for now, will be created on save
         }
         if (typeof row.destinationAccountId === 'string' && row.destinationAccountId.trim().length > 0) {
             const query = (row.destinationAccountId as string).trim().toLowerCase();
@@ -168,13 +171,20 @@ export class BulkTransactionAdd {
     onRowChange(row: BulkTransactionRow) {
         this.resolveStringsToObject(row);
 
+        // Auto-detect type if amount is negative
+        if (row.amount !== null && row.amount < 0) {
+            row.amount = Math.abs(row.amount);
+            // Flip type if it was default
+            row.type = row.type === TransactionType.Expense ? TransactionType.Income : TransactionType.Expense;
+        }
+
         // Validation check happens here
         row.status = this.isValid(row) ? 'valid' : 'invalid';
 
         // Check if the last row is no longer empty, add a new one
         const active = this.activeRows;
         const lastRow = active[active.length - 1];
-        if (lastRow && (lastRow.amount !== null || lastRow.description || lastRow.accountId)) {
+        if (lastRow && (lastRow.amount !== null || (lastRow.description && lastRow.description.trim()) || lastRow.accountId)) {
             this.addEmptyRow();
         }
 
@@ -202,9 +212,10 @@ export class BulkTransactionAdd {
 
         const isTransfer = this.isTransferCategory(row.transactionCategoryId);
         const hasValidDest = isTransfer ? !!(row.destinationAccountId && typeof row.destinationAccountId === 'object' && row.destinationAccountId.id) : true;
-        const hasValidType = isTransfer ? true : !!row.type;
+        const hasValidType = isTransfer ? true : (row.type !== undefined && row.type !== null);
 
-        return !!(row.date && hasValidAccount && hasValidCategory && row.amount && row.amount > 0 && row.description && hasValidDest && hasValidType);
+        const amountValue = row.amount !== null ? Math.abs(row.amount) : 0;
+        return !!(row.date && hasValidAccount && hasValidCategory && amountValue > 0 && row.description && hasValidDest && hasValidType);
     }
 
     filterAccounts(event: any) {

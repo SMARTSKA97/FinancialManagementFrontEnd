@@ -65,7 +65,10 @@ export class AccountState {
     async addAccount(accountData: UpsertAccountRequest): Promise<void> {
         this._isLoading.set(true);
         try {
-            await firstValueFrom(this.api.upsert<Account>(this.endpoint, accountData));
+            const response = await firstValueFrom(this.api.upsert<Account>(this.endpoint, accountData));
+            if (!response.isSuccess) {
+                throw new Error(response.error?.description || 'Failed to save account');
+            }
             // Refresh list to get updated IDs and calculation
             await Promise.all([
                 this.loadAccounts(),

@@ -59,8 +59,18 @@
       </p-card>
     </div>
 
+    <!-- Financial Health Gauge -->
+    <div class="col-12 md:col-4">
+      <app-financial-health-widget></app-financial-health-widget>
+    </div>
+
+    <!-- Budgets Widget -->
+    <div class="col-12 md:col-4">
+      <app-budget-progress-widget></app-budget-progress-widget>
+    </div>
+
     <!-- Deep Insights Panel -->
-    <div class="col-12 md:col-8">
+    <div class="col-12 md:col-4">
       <p-card header="Deep Insights" styleClass="glass-insights-card h-full">
         @if (insights()) {
         <div class="flex flex-wrap gap-2 mb-4">

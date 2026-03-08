@@ -1,0 +1,10 @@
+:host {
+    display: block;
+    width: 100%;
+}
+
+.p-fluid {
+    .p-dropdown, .p-inputnumber, .p-datepicker {
+        width: 100%;
+    }
+}

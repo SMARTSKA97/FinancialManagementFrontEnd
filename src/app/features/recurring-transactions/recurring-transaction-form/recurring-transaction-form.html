@@ -1,0 +1,71 @@
+<form [formGroup]="recurringForm" (ngSubmit)="onSubmit()" class="flex flex-column gap-3 p-fluid">
+    <app-form-field label="Description" inputId="description" [control]="recurringForm.get('description')">
+        <input id="description" type="text" pInputText formControlName="description"
+            placeholder="e.g. Netflix Subscription" />
+    </app-form-field>
+
+    <div class="grid">
+        <div class="col-12 md:col-6">
+            <app-form-field label="Account" inputId="accountId" [control]="recurringForm.get('accountId')">
+                <p-select formControlName="accountId" [options]="accounts()" optionLabel="name" optionValue="id"
+                    placeholder="Select Account" appendTo="body" id="accountId">
+                </p-select>
+            </app-form-field>
+        </div>
+        <div class="col-12 md:col-6">
+            <app-form-field label="Category" inputId="transactionCategoryId"
+                [control]="recurringForm.get('transactionCategoryId')">
+                <p-select formControlName="transactionCategoryId" [options]="categories()" optionLabel="name"
+                    optionValue="id" placeholder="Select Category" appendTo="body" id="transactionCategoryId">
+                </p-select>
+            </app-form-field>
+        </div>
+    </div>
+
+    <div class="grid">
+        <div class="col-12 md:col-6">
+            <app-form-field label="Amount" inputId="amount" [control]="recurringForm.get('amount')">
+                <p-inputNumber formControlName="amount" mode="currency" currency="INR" locale="en-IN" placeholder="0.00"
+                    id="amount">
+                </p-inputNumber>
+            </app-form-field>
+        </div>
+        <div class="col-12 md:col-6">
+            <app-form-field label="Type" inputId="type" [control]="recurringForm.get('type')">
+                <p-select formControlName="type" [options]="types" optionLabel="label" optionValue="value" id="type">
+                </p-select>
+            </app-form-field>
+        </div>
+    </div>
+
+    <app-form-field label="Frequency" inputId="frequency" [control]="recurringForm.get('frequency')">
+        <p-select formControlName="frequency" [options]="frequencies" optionLabel="label" optionValue="value"
+            id="frequency">
+        </p-select>
+    </app-form-field>
+
+    <div class="grid">
+        <div class="col-12 md:col-6">
+            <app-form-field label="Start Date" inputId="startDate" [control]="recurringForm.get('startDate')">
+                <p-datepicker formControlName="startDate" [showIcon]="true" appendTo="body" id="startDate">
+                </p-datepicker>
+            </app-form-field>
+        </div>
+        <div class="col-12 md:col-6">
+            <app-form-field label="End Date (Optional)" inputId="endDate" [control]="recurringForm.get('endDate')">
+                <p-datepicker formControlName="endDate" [showIcon]="true" appendTo="body" id="endDate">
+                </p-datepicker>
+            </app-form-field>
+        </div>
+    </div>
+
+    <div class="flex align-items-center gap-2">
+        <p-checkbox formControlName="isActive" [binary]="true" inputId="isActive"></p-checkbox>
+        <label for="isActive">Active</label>
+    </div>
+
+    <div class="flex justify-content-end gap-2 mt-1">
+        <p-button label="Cancel" icon="pi pi-times" severity="secondary" type="button" (click)="ref.close()"></p-button>
+        <p-button label="Save Schedule" icon="pi pi-check" type="submit" [loading]="isSubmitting()"></p-button>
+    </div>
+</form>

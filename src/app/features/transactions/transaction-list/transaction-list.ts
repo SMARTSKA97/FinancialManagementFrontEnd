@@ -40,38 +40,64 @@ export class TransactionList implements OnInit {
   accountId: number | null = null;
   ref: DynamicDialogRef | undefined;
   summary: AccountSummary | null = null;
+  totalRecords = 0;
+  rows = 10;
+  lastLazyLoadEvent: any;
+  ready = false;
 
   transactionColumns: ColumnDefinition[] = [
-    { field: 'date', header: 'Date', isDate: true },
-    { field: 'description', header: 'Description' },
-    { field: 'categoryName', header: 'Category' },
-    { field: 'amount', header: 'Amount', isCurrency: true, isTransaction: true },
+    { field: 'date', header: 'Date', isDate: true, sortable: true },
+    { field: 'description', header: 'Description', sortable: true },
+    { field: 'categoryName', header: 'Category', sortable: true },
+    { field: 'amount', header: 'Amount', isCurrency: true, isTransaction: true, sortable: true },
   ];
 
-  ngOnInit(): void {
-    this.loadData();
+  async ngOnInit(): Promise<void> {
+    const params = await firstValueFrom(this.route.paramMap);
+    const id = Number(params.get('id'));
+    if (!id || isNaN(id)) {
+      console.error('Invalid account ID from URL.');
+      return;
+    }
+    this.accountId = id;
+    this.ready = true;
+    this.cdr.markForCheck();
   }
 
-  async loadData(): Promise<void> {
+  async loadData(event?: any): Promise<void> {
     this.isLoading = true;
-    try {
-      const params = await firstValueFrom(this.route.paramMap);
-      const id = Number(params.get('id'));
+    if (event) this.lastLazyLoadEvent = event;
 
-      if (!id || isNaN(id)) {
-        console.error('Invalid account ID from URL.');
-        this.transactions = [];
-        return;
+    try {
+      if (this.accountId === null) {
+        const params = await firstValueFrom(this.route.paramMap);
+        const id = Number(params.get('id'));
+        if (!id || isNaN(id)) {
+          console.error('Invalid account ID from URL.');
+          this.transactions = [];
+          return;
+        }
+        this.accountId = id;
       }
-      this.accountId = id;
+
+      const pageNumber = event ? (event.first / event.rows + 1) : 1;
+      const pageSize = event ? event.rows : this.rows;
+      const sortBy = event?.sortField || 'date';
+      const sortOrder = event?.sortOrder === 1 ? 'asc' : 'desc';
 
       // --- FETCH BOTH DATASETS IN PARALLEL ---
       const [paginatedResult, summaryData] = await Promise.all([
-        firstValueFrom(this.transactionService.getTransactionsForAccount(this.accountId, { pageNumber: 1, pageSize: 50 })),
+        firstValueFrom(this.transactionService.getTransactionsForAccount(this.accountId, {
+          pageNumber,
+          pageSize,
+          sortBy,
+          sortOrder
+        })),
         firstValueFrom(this.dashboardService.getAccountSummary(this.accountId))
       ]);
 
       this.transactions = paginatedResult.data;
+      this.totalRecords = paginatedResult.totalRecords;
       this.summary = summaryData;
 
       // Sync balance with AccountState (Single Source of Truth)
@@ -86,6 +112,11 @@ export class TransactionList implements OnInit {
       this.isLoading = false;
       this.cdr.markForCheck();
     }
+  }
+
+  onLazyLoad(event: any): void {
+    if (this.accountId === null) return; // Guard against early calls
+    this.loadData(event);
   }
 
   async showTransactionForm(transactionToEdit?: Transaction): Promise<void> {

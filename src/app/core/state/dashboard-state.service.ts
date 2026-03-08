@@ -3,6 +3,7 @@ import { GenericApi } from '../services/generic-api';
 import { firstValueFrom } from 'rxjs';
 import { DashboardSummary, SpendingByCategory } from '../../features/dashboard/dashboard';
 import { DashboardInsightsDto } from '../models/dashboard-insights';
+import { FinancialHealth } from '../models/financial-health.model';
 
 @Injectable({
     providedIn: 'root'
@@ -15,6 +16,8 @@ export class DashboardState {
     private _summary = signal<DashboardSummary | null>(null);
     private _spending = signal<SpendingByCategory[]>([]);
     private _insights = signal<DashboardInsightsDto | null>(null);
+    private _budgets = signal<any[]>([]);
+    private _financialHealth = signal<FinancialHealth | null>(null);
     private _isLoading = signal<boolean>(false);
 
     // Global Filter Date (Defaults to current Month/Year)
@@ -24,6 +27,8 @@ export class DashboardState {
     public summary = this._summary.asReadonly();
     public spending = this._spending.asReadonly();
     public insights = this._insights.asReadonly();
+    public budgets = this._budgets.asReadonly();
+    public financialHealth = this._financialHealth.asReadonly();
     public isLoading = this._isLoading.asReadonly();
     public selectedDate = this._selectedDate.asReadonly();
 
@@ -44,16 +49,22 @@ export class DashboardState {
             const summaryReq = this.api.get<DashboardSummary>(`${this.endpoint}/summary${params}`);
             const spendingReq = this.api.get<SpendingByCategory[]>(`${this.endpoint}/spending-by-category${params}`);
             const insightsReq = this.api.get<DashboardInsightsDto>(`${this.endpoint}/insights${params}`);
+            const budgetsReq = this.api.get<any[]>(`Budgets/progress${params.replace('startDate', 'date')}`); // Budget API expects 'date'
+            const healthReq = this.api.get<FinancialHealth>(`${this.endpoint}/financial-health`);
 
-            const [summaryRes, spendingRes, insightsRes] = await Promise.all([
+            const [summaryRes, spendingRes, insightsRes, budgetsRes, healthRes] = await Promise.all([
                 firstValueFrom(summaryReq),
                 firstValueFrom(spendingReq),
-                firstValueFrom(insightsReq)
+                firstValueFrom(insightsReq),
+                firstValueFrom(budgetsReq),
+                firstValueFrom(healthReq)
             ]);
 
             this._summary.set(summaryRes.value);
             this._spending.set(spendingRes.value || []);
             this._insights.set(insightsRes.value);
+            this._budgets.set(budgetsRes.value || []);
+            this._financialHealth.set(healthRes.value);
 
         } catch (err) {
             console.error('Failed to load dashboard state', err);

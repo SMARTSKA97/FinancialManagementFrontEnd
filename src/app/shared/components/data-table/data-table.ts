@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ContentChild, Input, TemplateRef } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ContentChild, EventEmitter, Input, Output, TemplateRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { TableModule } from 'primeng/table';
@@ -12,6 +12,7 @@ export interface ColumnDefinition {
   isTransaction?: boolean; // For coloring income/expense
   isLink?: boolean; // To make the cell a link
   linkPath?: string; // e.g., 'accounts' or 'transactions'
+  sortable?: boolean; // Whether the column can be sorted
 }
 
 @Component({
@@ -24,8 +25,12 @@ export interface ColumnDefinition {
 })
 export class DataTable {
   @Input() data: any[] | null = [];
-  @Input() columns: ColumnDefinition[] = [];
+  @Input() columns: ColumnDefinition[] | null | undefined = [];
   @Input() loading: boolean | null = false;
+  @Input() lazy: boolean = false;
+  @Input() totalRecords: number | null = 0;
+  @Input() rows: number = 10;
+  @Output() onLazyLoad = new EventEmitter<any>();
   @ContentChild('actions') actionsTemplate!: TemplateRef<any>;
 
   constructLink(path: string, item: any): string[] {

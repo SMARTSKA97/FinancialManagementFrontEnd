@@ -1,66 +1,59 @@
-@if (loading) {
-  <p-table [value]="[1,2,3,4,5]" [tableStyle]="{'min-width': '50rem'}">
-    <ng-template pTemplate="header">
-      <tr>
-        @for (col of columns; track col.field) {
-          <th>{{ col.header }}</th>
+<p-table [value]="data || []" [tableStyle]="{'min-width': '50rem'}" [lazy]="lazy" (onLazyLoad)="onLazyLoad.emit($event)"
+  [totalRecords]="totalRecords || 0" [rows]="rows" [paginator]="true" [showCurrentPageReport]="true"
+  [rowsPerPageOptions]="[10, 25, 50]" [loading]="loading || false">
+  <ng-template pTemplate="header">
+    <tr>
+      @for (col of columns; track col.field) {
+      <th [pSortableColumn]="col.sortable ? col.field : undefined">
+        {{ col.header }}
+        @if (col.sortable) {
+        <p-sortIcon [field]="col.field"></p-sortIcon>
         }
-        <th style="width: 8rem">Actions</th>
-      </tr>
-    </ng-template>
-    <ng-template pTemplate="body">
-      <tr>
-        @for (col of columns; track col.field) {
-          <td><p-skeleton></p-skeleton></td>
+      </th>
+      }
+      <th style="width: 8rem">Actions</th>
+    </tr>
+  </ng-template>
+  <ng-template pTemplate="body" let-item>
+    <tr>
+      @for (col of columns; track col.field) {
+      <td>
+        @if (col.isLink && col.linkPath) {
+        <a [routerLink]="constructLink(col.linkPath, item)" class="text-primary hover:underline font-bold">
+          {{ item[col.field] }}
+        </a>
+        } @else if (col.isTransaction) {
+        <span [ngClass]="item['type'] === 0 ? 'text-green-500' : 'text-red-500'">
+          {{ (item['type'] === 0 ? '+' : '-') + (item[col.field] | currency:'INR') }}
+        </span>
+        } @else if (col.isDate) {
+        <span>{{ item[col.field] | date:'mediumDate' }}</span>
+        } @else if (col.isCurrency) {
+        <span>{{ item[col.field] | currency:'INR' }}</span>
+        } @else {
+        <span>{{ item[col.field] }}</span>
         }
-        <td><p-skeleton width="4rem"></p-skeleton></td>
-      </tr>
-    </ng-template>
-  </p-table>
-} @else if (data && columns) {
-  <p-table [value]="data" [tableStyle]="{'min-width': '50rem'}">
-    <ng-template pTemplate="header">
-      <tr>
-        @for (col of columns; track col.field) {
-          <th>{{ col.header }}</th>
+      </td>
+      }
+      <td>
+        <ng-container [ngTemplateOutlet]="actionsTemplate" [ngTemplateOutletContext]="{ $implicit: item }">
+        </ng-container>
+      </td>
+    </tr>
+  </ng-template>
+  <ng-template pTemplate="emptymessage">
+    <tr>
+      <td [attr.colspan]="(columns?.length || 0) + 1">
+        @if (loading) {
+        <div class="flex flex-column gap-2">
+          <p-skeleton width="100%" height="2rem"></p-skeleton>
+          <p-skeleton width="100%" height="2rem"></p-skeleton>
+          <p-skeleton width="100%" height="2rem"></p-skeleton>
+        </div>
+        } @else {
+        No data found.
         }
-        <th style="width: 8rem">Actions</th> 
-      </tr>
-    </ng-template>
-    <ng-template pTemplate="body" let-item>
-      <tr>
-        @for (col of columns; track col.field) {
-          <td>
-            @if (col.isLink && col.linkPath) {
-              <!-- This link will now be correctly activated -->
-              <a [routerLink]="constructLink(col.linkPath, item)" class="text-primary hover:underline font-bold">
-                {{ item[col.field] }}
-              </a>
-            } @else if (col.isTransaction) {
-              <span [ngClass]="item['type'] === 0 ? 'text-green-500' : 'text-red-500'">
-                {{ (item['type'] === 0 ? '+' : '-') + (item[col.field] | currency:'INR') }}
-              </span>
-            } @else if (col.isDate) {
-              <span>{{ item[col.field] | date:'mediumDate' }}</span>
-            } @else if (col.isCurrency) {
-              <span>{{ item[col.field] | currency:'INR' }}</span>
-            } @else {
-              <span>{{ item[col.field] }}</span>
-            }
-          </td>
-        }
-        <td>
-          <ng-container
-            [ngTemplateOutlet]="actionsTemplate"
-            [ngTemplateOutletContext]="{ $implicit: item }">
-          </ng-container>
-        </td>
-      </tr>
-    </ng-template>
-    <ng-template pTemplate="emptymessage">
-      <tr>
-        <td [attr.colspan]="columns.length + 1">No data found.</td>
-      </tr>
-    </ng-template>
-  </p-table>
-}
+      </td>
+    </tr>
+  </ng-template>
+</p-table>

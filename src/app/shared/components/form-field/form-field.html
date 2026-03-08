@@ -1,9 +1,9 @@
-<div class="field flex flex-column gap-2">
+<div class="field flex flex-column gap-1">
     @if (label) {
-    <label [for]="inputId">{{ label }}</label>
+    <label [for]="inputId" class="font-medium text-sm text-secondary">{{ label }}</label>
     }
     <ng-content></ng-content>
-    <small class="p-error block mt-1" style="min-height: 1.25rem;">
+    <small class="p-error block" style="min-height: 1rem; line-height: 1rem;">
         {{ errorMessage }}
     </small>
 </div>

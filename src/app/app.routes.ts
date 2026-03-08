@@ -5,12 +5,27 @@ import { ColumnDefinition } from './shared/components/data-table/data-table';
 
 // --- Column Definitions (kept static — they are tiny plain objects, not components) ---
 const accountColumns: ColumnDefinition[] = [
-  { field: 'name', header: 'Name', isLink: true, linkPath: '/app/accounts/:id/transactions' },
-  { field: 'accountCategoryName', header: 'Category' },
-  { field: 'balance', header: 'Balance', isCurrency: true },
+  { field: 'name', header: 'Name', isLink: true, linkPath: '/app/accounts/:id/transactions', sortable: true },
+  { field: 'accountCategoryName', header: 'Category', sortable: true },
+  { field: 'balance', header: 'Balance', isCurrency: true, sortable: true },
 ];
 const categoryColumns: ColumnDefinition[] = [
-  { field: 'name', header: 'Name' }
+  { field: 'name', header: 'Name', sortable: true }
+];
+
+const budgetColumns: ColumnDefinition[] = [
+  { field: 'categoryName', header: 'Category', sortable: true },
+  { field: 'amount', header: 'Amount', isCurrency: true, sortable: true },
+  { field: 'period', header: 'Period', sortable: true },
+  { field: 'startDate', header: 'Start Date', isDate: true, sortable: true },
+];
+
+const recurringTransactionColumns: ColumnDefinition[] = [
+  { field: 'description', header: 'Description', sortable: true },
+  { field: 'accountName', header: 'Account', sortable: true },
+  { field: 'amount', header: 'Amount', isCurrency: true, sortable: true },
+  { field: 'frequency', header: 'Frequency', sortable: true },
+  { field: 'nextProcessDate', header: 'Next Process', isDate: true, sortable: true },
 ];
 
 // --- Lazily Loaded Application Routes ---
@@ -119,6 +134,26 @@ export const routes: Routes = [
       {
         path: 'dashboard',
         loadComponent: () => import('./features/dashboard/dashboard/dashboard').then(m => m.Dashboard)
+      },
+      {
+        path: 'budgets',
+        loadComponent: () => import('./features/shared/resource-page/resource-page').then(m => m.ResourcePage),
+        data: {
+          title: 'Budgets',
+          endpoint: 'Budgets',
+          columns: budgetColumns,
+          loadFormComponent: () => import('./features/budgets/budget-form/budget-form').then(m => m.BudgetForm)
+        }
+      },
+      {
+        path: 'recurring-transactions',
+        loadComponent: () => import('./features/shared/resource-page/resource-page').then(m => m.ResourcePage),
+        data: {
+          title: 'Recurring Transactions',
+          endpoint: 'RecurringTransactions',
+          columns: recurringTransactionColumns,
+          loadFormComponent: () => import('./features/recurring-transactions/recurring-transaction-form/recurring-transaction-form').then(m => m.RecurringTransactionForm)
+        }
       },
       {
         path: 'support',

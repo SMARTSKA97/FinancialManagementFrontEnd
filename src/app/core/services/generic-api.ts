@@ -37,9 +37,10 @@ export class GenericApi {
   /**
    * Builds a safe, clean URL by joining segments.
    */
-  private buildUrl(...segments: string[]): string {
+  private buildUrl(...segments: (string | undefined)[]): string {
     const fullPath = [this.apiBaseUrl, ...segments]
-      .map(segment => segment.replace(/^\/+|\/+$/g, '')) // Remove leading/trailing slashes
+      .filter(s => !!s) // Remove undefined/null segments
+      .map(segment => segment!.replace(/^\/+|\/+$/g, '')) // Remove leading/trailing slashes
       .join('/');
     return fullPath;
   }

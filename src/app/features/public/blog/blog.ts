@@ -4,6 +4,39 @@ import { RouterLink } from '@angular/router';
 export const BLOG_POSTS = [
   // ─── LATEST ─────────────────────────────────────────────────────────────────
   {
+    id: 'v4-2-0-release',
+    tag: 'v4.2.0',
+    tagColor: '#38bdf8',
+    title: 'v4.2.0 — Budgets, Recurring Transactions & Sorting Fixes',
+    excerpt: 'A major stability and feature update: server-side paging/sorting for Budgets and Recurring Transactions, fixed category sorting, and bulk entry refinements.',
+    date: 'Mar 8, 2026',
+    _dateValue: new Date('2026-03-08'),
+    content: `
+      <h2>What Ships in v4.2.0</h2>
+      <p>Version 4.2.0 is now live across the entire stack. This release focuses on bringing the new Budget and Recurring Transaction modules to parity with the rest of the application, while resolving critical UI and sorting bugs reported by the community.</p>
+
+      <h2>Budgets & Recurring Transactions Maturity</h2>
+      <p>The Budgets and Recurring Transactions modules now support full server-side pagination, global search, and dynamic sorting. This ensures that even with hundreds of budget templates or recurring entries, the interface remains lightning fast.</p>
+      <ul>
+        <li><strong>Paginated Search:</strong> Both modules now use the <code>[HttpPost("search")]</code> pattern, allowing for efficient backend filtering.</li>
+        <li><strong>Dynamic Sorting:</strong> Sort by Category, Account, Amount, or Next Process Date directly from the column headers.</li>
+      </ul>
+
+      <h2>The Sorting Fix</h2>
+      <p>We addressed a common point of friction where sorting by "Category" or "Account" in the main tables wasn\\'t responding correctly. This was due to a field name mismatch between the frontend (<code>accountCategoryName</code>, <code>categoryName</code>) and the backend (<code>category</code>). The backend services for Accounts and Transactions have been updated to explicitly handle these frontend-driven field names.</p>
+
+      <h2>Bulk Entry Reliability</h2>
+      <p>A critical bug in the <strong>Bulk Transaction Add</strong> page was resolved. Previously, transactions marked as "Income" (internal value 0) were occasionally flagged as invalid during the pre-save check. The validation logic has been updated to correctly handle falsy numeric values, ensuring all valid entries persist on the first click.</p>
+
+      <h2>UI & UX Refinements</h2>
+      <ul>
+        <li><strong>Compact Layouts:</strong> Vertical spacing and gaps in popup forms (Budgets, Recurring Transactions) have been reduced by 25% for a more premium, minimalistic feel.</li>
+        <li><strong>Accounts API Fix:</strong> Resolved a 404 error during form initialization by adding a dedicated <code>GET /api/Accounts</code> endpoint to fetch all active accounts for dropdowns.</li>
+        <li><strong>Z-Index Harmony:</strong> Success toasts and confirmation modals now layer correctly above all other elements.</li>
+      </ul>
+    `
+  },
+  {
     id: 'dashboard-deep-insights',
     tag: 'v4.0.0',
     tagColor: '#38bdf8',

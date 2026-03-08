@@ -43,6 +43,7 @@ export class ResourcePage<T extends { id: number }> implements OnInit {
   isLoading$ = this.crudService.isLoading$;
 
   ref: DynamicDialogRef | undefined;
+  ready = false;
 
   async ngOnInit(): Promise<void> {
     const routeData = await firstValueFrom(this.route.data);
@@ -65,17 +66,38 @@ export class ResourcePage<T extends { id: number }> implements OnInit {
     }
     this.endpoint = endpoint;
 
-    this.crudService.search(this.endpoint, { pageNumber: 1, pageSize: 10 });
+    // Initial load will be handled by datatable's onLazyLoad if lazy=true,
+    // but we can also trigger a default load here if needed.
+    // this.loadData({ first: 0, rows: 10 }); 
+    this.ready = true;
     this.cdr.markForCheck();
+  }
+
+  onLazyLoad(event: any): void {
+    if (!this.endpoint) return; // Guard against early calls
+
+    const pageNumber = event.first / event.rows + 1;
+    const pageSize = event.rows;
+    const sortBy = event.sortField;
+    const sortOrder = event.sortOrder === 1 ? 'asc' : 'desc';
+
+    this.crudService.search(this.endpoint, {
+      pageNumber,
+      pageSize,
+      sortBy,
+      sortOrder
+    });
   }
 
   async showForm(itemToEdit?: T): Promise<void> {
     const isEditMode = !!itemToEdit;
     this.ref = this.dialogService.open(this.formComponent, {
       header: `${isEditMode ? 'Edit' : 'New'} ${this.title.slice(0, -1)}`,
-      width: '400px',
+      width: '450px',
       modal: true,
-
+      closable: true,
+      closeOnEscape: true,
+      dismissableMask: false,
       data: {
         itemToEdit: itemToEdit,
         endpoint: this.endpoint

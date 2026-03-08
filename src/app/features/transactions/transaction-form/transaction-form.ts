@@ -132,8 +132,10 @@ export class TransactionForm implements OnInit {
   }
 
   async addNewCategory(): Promise<void> {
-    const newCategoryName = this.currentFilter.trim();
+    let newCategoryName = this.currentFilter.trim();
     if (newCategoryName) {
+      // Capitalize first letter
+      newCategoryName = newCategoryName.charAt(0).toUpperCase() + newCategoryName.slice(1);
       try {
         const newCategory = await firstValueFrom(this.categoryService.upsertTransactionCategory({ name: newCategoryName }));
         this.categories = [...this.categories, newCategory];

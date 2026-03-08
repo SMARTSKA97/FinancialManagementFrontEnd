@@ -42,7 +42,10 @@ export class Transaction {
     const endpoint = `Transactions`;
     const payload = { accountId, queryParameters: queryParams };
     return this.apiService.search<Transaction>(endpoint, payload).pipe(
-      map(response => response.value)
+      map(response => {
+        if (!response.isSuccess) throw response.error;
+        return response.value;
+      })
     );
   }
 
@@ -59,7 +62,10 @@ export class Transaction {
     const endpoint = `Transactions`;
     const payload = { accountId, transaction: transactionData };
     return this.apiService.upsert<Transaction>(endpoint, payload).pipe(
-      map(response => response.value)
+      map(response => {
+        if (!response.isSuccess) throw response.error;
+        return response.value;
+      })
     );
   }
 
@@ -94,7 +100,10 @@ export class Transaction {
     const endpoint = `Transactions/delete`;
     const payload = { accountId, transactionId };
     return this.apiService.post<boolean>(endpoint, payload).pipe(
-      map(response => response.value)
+      map(response => {
+        if (!response.isSuccess) throw response.error;
+        return response.value;
+      })
     );
   }
 
@@ -111,7 +120,10 @@ export class Transaction {
     const endpoint = `Transactions/transfer`;
     const payload = { accountId: sourceAccountId, transfer: transferData };
     return this.apiService.post<boolean>(endpoint, payload).pipe(
-      map(response => response.value)
+      map(response => {
+        if (!response.isSuccess) throw response.error;
+        return response.value;
+      })
     );
   }
 
@@ -132,7 +144,10 @@ export class Transaction {
     const endpoint = `Transactions/switch-account`;
     const payload = { transactionId, destinationAccountId };
     return this.apiService.post<boolean>(endpoint, payload).pipe(
-      map(response => response.value)
+      map(response => {
+        if (!response.isSuccess) throw response.error;
+        return response.value;
+      })
     );
   }
 }

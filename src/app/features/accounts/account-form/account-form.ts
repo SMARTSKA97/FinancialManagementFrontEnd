@@ -73,8 +73,9 @@ export class AccountForm {
   }
 
   async addNewCategory(): Promise<void> {
-    const newCategoryName = this.currentFilter().trim();
+    let newCategoryName = this.currentFilter().trim();
     if (newCategoryName) {
+      newCategoryName = newCategoryName.charAt(0).toUpperCase() + newCategoryName.slice(1);
       try {
         const newCategory = await firstValueFrom(this.categoryService.upsertAccountCategory({ name: newCategoryName }));
         if (newCategory) {

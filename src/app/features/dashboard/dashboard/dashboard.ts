@@ -11,10 +11,12 @@ import { ButtonModule } from 'primeng/button';
 import { RouterLink } from '@angular/router';
 import { DatePickerModule } from 'primeng/datepicker';
 import { FormsModule } from '@angular/forms';
+import { BudgetProgressWidget } from '../../budgets/budget-progress-widget/budget-progress-widget';
+import { FinancialHealthWidget } from '../financial-health-widget/financial-health-widget';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [CardModule, ChartModule, ProgressSpinnerModule, CurrencyPipe, DatePipe, NgClass, ButtonModule, RouterLink, DatePickerModule, FormsModule],
+  imports: [CardModule, ChartModule, ProgressSpinnerModule, CurrencyPipe, DatePipe, NgClass, ButtonModule, RouterLink, DatePickerModule, FormsModule, BudgetProgressWidget, FinancialHealthWidget],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
