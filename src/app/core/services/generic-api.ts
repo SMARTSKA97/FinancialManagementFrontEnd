@@ -29,8 +29,8 @@ export class GenericApi {
   private apiBaseUrl = environment.apiBaseUrl;
 
   constructor(private http: HttpClient) {
-    if (!this.apiBaseUrl) {
-      console.error("API Base URL is not set in environment file!");
+    if (!environment.apiBaseUrl) {
+      throw new Error("API Base URL is not set in environment file!");
     }
   }
 

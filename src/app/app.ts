@@ -5,16 +5,19 @@ import { ToastModule } from 'primeng/toast';
 import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
 import { SessionSyncService } from './core/services/session-sync.service';
+import { BackendStatusService } from './core/services/backend-status.service';
+import { ProgressBarModule } from 'primeng/progressbar';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, ToastModule, DialogModule, ButtonModule],
+  imports: [RouterOutlet, ToastModule, DialogModule, ButtonModule, ProgressBarModule],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
 export class App {
   private themeService = inject(Theme);
   private sessionSync = inject(SessionSyncService);
+  protected backendStatus = inject(BackendStatusService);
   protected readonly title = signal('Financial Management App');
 
   isSessionLocked = signal(false);

@@ -1,3 +1,36 @@
+@if (backendStatus.isWakingUp()) {
+<div class="fixed top-0 left-0 w-full z-50">
+    <p-progressBar mode="indeterminate" [style]="{height: '4px'}"></p-progressBar>
+    <div class="bg-gray-900/80 backdrop-blur-sm text-white text-xs px-3 py-1 flex items-center gap-2">
+        <span class="inline-block w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+        Backend is warming up... Please wait a moment.
+    </div>
+</div>
+}
+<p-dialog header="Server Connection Required" [visible]="backendStatus.isFailed()" [modal]="true" [closable]="false"
+    [style]="{width: '450px'}">
+    <div class="flex flex-col items-center gap-4 py-4">
+        <i class="pi pi-exclamation-triangle text-orange-500 text-5xl"></i>
+        <div class="text-center">
+            <p class="font-bold text-xl mb-2">Backend server is not responding</p>
+            <p class="text-gray-600 dark:text-gray-400">
+                The application could not establish a connection with the server. If this is the first time today, it
+                might be warming up.
+            </p>
+            @if (backendStatus.lastError()) {
+            <div
+                class="mt-4 p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-xs rounded border border-red-100 dark:border-red-900/30 font-mono">
+                {{ backendStatus.lastError() }}
+            </div>
+            }
+        </div>
+    </div>
+    <ng-template pTemplate="footer">
+        <p-button icon="pi pi-refresh" (click)="backendStatus.retry()" label="Retry Connection"
+            severity="primary"></p-button>
+    </ng-template>
+</p-dialog>
+
 <p-toast position="top-right"></p-toast>
 <router-outlet></router-outlet>
 

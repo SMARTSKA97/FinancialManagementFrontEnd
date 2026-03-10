@@ -67,7 +67,6 @@ export class DashboardState {
             this._financialHealth.set(healthRes.value);
 
         } catch (err) {
-            console.error('Failed to load dashboard state', err);
         } finally {
             this._isLoading.set(false);
         }

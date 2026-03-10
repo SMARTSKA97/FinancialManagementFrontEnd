@@ -84,7 +84,6 @@ export class AccountForm {
           this.currentFilter.set('');
         }
       } catch (err) {
-        console.error("Failed to create new category", err);
       }
     }
   }
@@ -92,10 +91,6 @@ export class AccountForm {
   async onSubmit(): Promise<void> {
     if (this.accountForm.valid && !this.isSubmitting()) {
       this.isSubmitting.set(true);
-      // accountForm.value might need processing?
-      // existing logic: this.ref.close(this.accountForm.value);
-      // So value structure is correct.
-
       const payload = this.accountForm.value;
       const endpoint = this.config.data.endpoint;
 

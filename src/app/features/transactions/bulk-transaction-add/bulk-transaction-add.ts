@@ -544,7 +544,6 @@ export class BulkTransactionAdd {
 
             this.parseExcelData(data);
         } catch (e) {
-            console.error('Error reading excel file', e);
             this.messageService.add({ severity: 'error', summary: 'Parse Error', detail: 'Failed to read the excel file format.' });
         } finally {
             event.target.value = ''; // Reset input

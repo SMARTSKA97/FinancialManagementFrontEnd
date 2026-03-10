@@ -77,7 +77,6 @@ export class Login {
 
         // Check for Concurrent Login Error
         if (err.status === 400) {
-          // console.error('Login Error Response:', err.error); // Debugging
           const errorBody = err.error;
 
           // Robust check for ConcurrentLogin flag

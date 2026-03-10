@@ -117,7 +117,6 @@ export class Auth {
 
     // GUARD: valid tokens
     if (!accessToken || !refreshToken) {
-      console.error('[Auth] Attempted to store invalid tokens.');
       return;
     }
 
@@ -148,7 +147,6 @@ export class Auth {
       };
       this._currentUserDetails.set(userDetails);
     } catch (e) {
-      console.warn('[Auth] Token decoding failed', e);
       this.clearTokens();
     }
   }
@@ -173,10 +171,7 @@ export class Auth {
     // If token is already expired or expires in < 1 min, refresh immediately (next tick) or soon
     const delay = Math.max(0, refreshTime);
 
-    // console.log(`[Auth] Silent refresh scheduled in ${Math.round(delay / 1000)} seconds.`);
-
     this.refreshTimer = setTimeout(() => {
-      // console.log('[Auth] Executing silent refresh...');
       this.refreshToken().subscribe();
     }, delay);
   }

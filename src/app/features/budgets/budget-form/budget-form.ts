@@ -63,7 +63,6 @@ export class BudgetForm implements OnInit {
                 this.categories.set(cats);
             }
         } catch (err) {
-            console.error('Failed to load categories', err);
         }
 
         if (this.config.data?.itemToEdit) {

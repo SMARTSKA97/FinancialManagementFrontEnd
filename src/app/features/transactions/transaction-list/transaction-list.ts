@@ -16,6 +16,7 @@ import { AccountSummary } from '../../dashboard/dashboard';
 import { DashboardService } from '../../dashboard/dashboard';
 import { TransactionSwitchForm } from '../transaction-switch-form/transaction-switch-form';
 import { AccountState } from '../../../core/state/account-state.service';
+import { NotificationService } from '../../../core/services/notification.service';
 
 @Component({
   selector: 'app-transaction-list',
@@ -34,6 +35,7 @@ export class TransactionList implements OnInit {
   private dialogService = inject(DialogService);
   private confirmationService = inject(ConfirmationService);
   private accountState = inject(AccountState);
+  private notificationService = inject(NotificationService);
 
   transactions: Transaction[] = [];
   isLoading = false;
@@ -56,7 +58,6 @@ export class TransactionList implements OnInit {
     const params = await firstValueFrom(this.route.paramMap);
     const id = Number(params.get('id'));
     if (!id || isNaN(id)) {
-      console.error('Invalid account ID from URL.');
       return;
     }
     this.accountId = id;
@@ -73,8 +74,7 @@ export class TransactionList implements OnInit {
         const params = await firstValueFrom(this.route.paramMap);
         const id = Number(params.get('id'));
         if (!id || isNaN(id)) {
-          console.error('Invalid account ID from URL.');
-          this.transactions = [];
+          this.notificationService.showError('Invalid account.');
           return;
         }
         this.accountId = id;
@@ -105,9 +105,7 @@ export class TransactionList implements OnInit {
       if (accountInState && this.summary) {
         this.summary.currentBalance = accountInState.balance;
       }
-
     } catch (err) {
-      console.error('Failed to load data', err);
     } finally {
       this.isLoading = false;
       this.cdr.markForCheck();
@@ -151,8 +149,7 @@ export class TransactionList implements OnInit {
           await this.accountState.refresh();
           await this.loadData();
         } catch (err) {
-          console.error('Failed to delete transaction', err);
-          this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to delete transaction' });
+          this.notificationService.showError('Failed to delete transaction');
         }
       }
     });
@@ -176,9 +173,9 @@ export class TransactionList implements OnInit {
         await this.accountState.refresh();
         await this.loadData();
       } catch (err: any) {
-        console.error('Failed to switch transaction', err);
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Failed to switch transaction' });
+        this.notificationService.showError('Failed to switch transaction target');
       }
     }
   }
 }
+

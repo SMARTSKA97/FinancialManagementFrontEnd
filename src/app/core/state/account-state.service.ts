@@ -45,12 +45,10 @@ export class AccountState {
             if (Array.isArray(result.value.data)) {
                 this._accounts.set(result.value.data);
             } else {
-                console.warn('[AccountState] API returned non-array data', result.value);
                 this._accounts.set([]);
             }
 
         } catch (err) {
-            console.error('Failed to load accounts', err);
             // On error, perhaps keep previous state or empty? Keeping previous for now.
         } finally {
             this._isLoading.set(false);

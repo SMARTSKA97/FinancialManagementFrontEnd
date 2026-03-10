@@ -21,7 +21,6 @@ export class Account {
    * Fetches a paginated list of accounts using the new '/search' endpoint.
    */
   getAccounts(queryParams: any): Observable<PaginatedResult<Account>> {
-    // console.log(`Calling search endpoint for: ${this.endpoint}`);
     // Use the 'search' method and map the result from the ApiResult
     return this.apiService.search<Account>(this.endpoint, queryParams).pipe(
       map(response => response.value)

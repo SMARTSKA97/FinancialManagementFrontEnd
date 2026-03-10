@@ -61,7 +61,6 @@ export class Settings {
   }
 
   saveProfile() {
-    console.log('Save profile:', this.profile);
   }
 
   logout() {

@@ -4,6 +4,32 @@ import { RouterLink } from '@angular/router';
 export const BLOG_POSTS = [
   // ─── LATEST ─────────────────────────────────────────────────────────────────
   {
+    id: 'v4-3-0-release',
+    tag: 'v4.3.0',
+    tagColor: '#38bdf8',
+    title: 'v4.3.0 — Robust Backend Wake-up & Console Cleanup',
+    excerpt: 'Improving infrastructure resilience with a robust backend retry mechanism, a premium splash screen hint system, and a complete cleanup of frontend logs.',
+    date: 'Mar 10, 2026',
+    _dateValue: new Date('2026-03-10'),
+    content: `
+      <h2>The Render Cold Start Challenge</h2>
+      <p>Deploying on Render\\'s free tier brings a unique challenge: the backend spins down after inactivity and can take up to 60 seconds to wake up. Version 4.3.0 introduces a robust "holding" pattern to ensure a smooth transition for users during these cold starts.</p>
+
+      <h2>Robust Infrastructure Resilience</h2>
+      <ul>
+        <li><strong>Smart Retry Mechanism:</strong> The application now performs up to 15 health check attempts with a 3-second delay, providing a full minute of coverage for server initialization.</li>
+        <li><strong>Connection Guard:</strong> A new "Server Connection Required" dialog prevents the application from loading into a broken state if the backend is persistently unavailable, offering a manual Retry option.</li>
+        <li><strong>Informative Loading:</strong> Added a delayed hint to the initial splash screen that appears after 20 seconds, explaining the cold start process to manage user expectations perfectly.</li>
+      </ul>
+
+      <h2>Runtime Responsiveness</h2>
+      <p>It\\'s not just about the initial load. Our new <strong>Status Interceptor</strong> monitors HTTP response times during active sessions. If a request takes more than 2 seconds (indicating a backend spin-up), a "Backend is warming up" progress bar appears at the top of the interface.</p>
+
+      <h2>Code Professionalism: Console Cleanup</h2>
+      <p>To provide a more production-ready experience, we have conducted a full sweep of the frontend codebase, removing all <code>console.log</code>, <code>console.warn</code>, and <code>console.error</code> calls. Debugging focus has been shifted to the server-side logs, resulting in a perfectly clean and professional developer console in the browser.</p>
+    `
+  },
+  {
     id: 'v4-2-0-release',
     tag: 'v4.2.0',
     tagColor: '#38bdf8',

@@ -26,7 +26,6 @@ export class IdleTimerService {
       document.addEventListener(event, () => this.resetTimer(), { passive: true });
     });
 
-    // console.log('[IdleTimer] Started monitoring - 15 min inactivity timeout');
   }
 
   private resetTimer() {
@@ -43,8 +42,6 @@ export class IdleTimerService {
   }
 
   private handleTimeout() {
-    console.warn('[IdleTimer] User inactive for 15 minutes - auto logout');
-
     // Call backend logout API
     this.authService.logout();
 
@@ -60,6 +57,5 @@ export class IdleTimerService {
       clearTimeout(this.timeoutId);
       this.timeoutId = undefined;
     }
-    // console.log('[IdleTimer] Stopped monitoring');
   }
 }

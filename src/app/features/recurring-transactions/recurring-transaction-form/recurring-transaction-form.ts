@@ -76,7 +76,9 @@ export class RecurringTransactionForm implements OnInit {
             if (categoriesRes.isSuccess) this.categories.set(categoriesRes.value.data);
             this.cdr.markForCheck();
         } catch (err) {
-            console.error('Failed to load form data', err);
+            this.notificationService.showError('Failed to prepare form.');
+            // The original instruction had `this.notifService.showError` but the injected service is `this.notificationService`.
+            // Assuming `notificationService` is the correct one based on the imports and injection.
         }
 
         if (this.config.data?.itemToEdit) {

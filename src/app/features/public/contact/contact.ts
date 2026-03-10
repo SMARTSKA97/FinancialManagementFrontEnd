@@ -19,7 +19,6 @@ export class Contact {
   };
 
   onSubmit() {
-    console.log('Contact form submitted:', this.form);
     // Future: hook up to a backend endpoint or email service
   }
 }

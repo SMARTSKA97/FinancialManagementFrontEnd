@@ -28,7 +28,146 @@
 </head>
 
 <body>
-  <app-root></app-root>
+  <app-root>
+    <style>
+      .app-loading {
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: radial-gradient(circle at 50% 50%, #1a1a1a 0%, #0a0a0a 100%);
+        color: #ffffff;
+        font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        margin: 0;
+      }
+
+      .loader-container {
+        position: relative;
+        width: 120px;
+        height: 120px;
+        margin-bottom: 2rem;
+      }
+
+      .loader-rings {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border: 4px solid transparent;
+        border-top-color: #3b82f6;
+        border-radius: 50%;
+        animation: spin 1.5s linear infinite;
+      }
+
+      .loader-rings:before {
+        content: "";
+        position: absolute;
+        top: 8px;
+        left: 8px;
+        right: 8px;
+        bottom: 8px;
+        border: 4px solid transparent;
+        border-top-color: #8b5cf6;
+        border-radius: 50%;
+        animation: spin 2s linear infinite;
+      }
+
+      .loader-rings:after {
+        content: "";
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        right: 20px;
+        bottom: 20px;
+        border: 4px solid transparent;
+        border-top-color: #ec4899;
+        border-radius: 50%;
+        animation: spin 2.5s linear infinite;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .loading-text {
+        font-size: 1.5rem;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+        background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: pulse 2s ease-in-out infinite;
+      }
+
+      .loading-subtext {
+        margin-top: 0.5rem;
+        font-size: 0.875rem;
+        color: #94a3b8;
+        font-weight: 400;
+        max-width: 250px;
+        text-align: center;
+        line-height: 1.5;
+      }
+
+      @keyframes pulse {
+
+        0%,
+        100% {
+          opacity: 0.8;
+        }
+
+        50% {
+          opacity: 1;
+        }
+      }
+
+      .render-hint {
+        margin-top: 2rem;
+        padding: 0.5rem 1rem;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+        font-size: 0.75rem;
+        color: #64748b;
+        max-width: 300px;
+        text-align: center;
+        opacity: 0;
+        animation: fadeInDelayed 5s ease-in forwards;
+        animation-delay: 20s;
+      }
+
+      @keyframes fadeInDelayed {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    </style>
+    <div class="app-loading">
+      <div class="loader-container">
+        <div class="loader-rings"></div>
+      </div>
+      <div class="loading-text">Waking up server</div>
+      <div class="loading-subtext">The backend is taking a quick nap. Hang tight while we warm things up...</div>
+      <div class="render-hint">
+        <strong>Note:</strong> Free hosting (Render) pings can take up to 60 seconds to respond if the server has spun
+        down.
+      </div>
+    </div>
+  </app-root>
 </body>
 
 </html>

@@ -100,12 +100,10 @@ export class TransactionForm implements OnInit {
   }
 
   checkIfTransfer(categoryId: number | null): void {
-    // console.log(categoryId);
 
     const category = this.categories.find(c => c.id === categoryId);
     this.isTransfer = category?.isTransferCategory || false;
 
-    // console.log(category, this.isTransfer);
 
 
     const typeControl = this.transactionForm.get('type');
@@ -141,8 +139,8 @@ export class TransactionForm implements OnInit {
         this.categories = [...this.categories, newCategory];
         this.transactionForm.get('transactionCategoryId')?.setValue(newCategory.id);
         this.currentFilter = '';
-      } catch (err) {
-        console.error("Failed to create new category", err);
+      } catch (err: any) {
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Failed to create new category' });
       }
     }
   }
@@ -186,7 +184,6 @@ export class TransactionForm implements OnInit {
       await this.accountState.refresh();
       this.ref.close(true); // Close the dialog and signal success
     } catch (err: any) {
-      console.error('Failed to save', err);
       this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Failed to save transaction' });
     }
   }
