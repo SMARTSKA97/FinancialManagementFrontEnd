@@ -4,6 +4,37 @@ import { RouterLink } from '@angular/router';
 export const BLOG_POSTS = [
   // ─── LATEST ─────────────────────────────────────────────────────────────────
   {
+    id: 'v4-5-0-release',
+    tag: 'v4.5.0',
+    tagColor: '#10b981',
+    title: 'v4.5.0 — Unified Transactions, Bulk Entry & Advanced Security',
+    excerpt: 'Our biggest update yet: a unified transactions engine with smart filtering, an advanced bulk entry grid with Excel support, and a complete security overhaul.',
+    date: 'Mar 18, 2026',
+    _dateValue: new Date('2026-03-18'),
+    content: `
+      <h2>A New Way to View Your Finances</h2>
+      <p>Version 4.5.0 introduces the <strong>Unified Transactions Page</strong>. No more clicking through individual accounts to see your spending. Our new engine queries your entire financial history in a single pass, providing a comprehensive month-by-month view with advanced category filtering.</p>
+
+      <h2>Power Features in v4.5.0</h2>
+      <ul>
+        <li><strong>Unified Dashboard:</strong> Real-time summary cards for Balance Brought Forward, Total Income, Total Expenditure, Monthly Savings, and <strong>Closing Balance</strong> — all calculated across all your accounts and respecting your current filters.</li>
+        <li><strong>Direct Row Actions:</strong> Edit or Delete transactions directly from the unified list without leaving the page.</li>
+        <li><strong>Bulk Add Entry:</strong> A new entry point in the toolbar lets you jump straight into the advanced bulk entry grid.</li>
+        <li><strong>Excel-Grade Bulk Entry:</strong> The Bulk Transaction Add page now supports direct Excel/CSV imports with intelligent matching.</li>
+        <li><strong>Soft Delete Engine:</strong> Deleting accounts or transactions now uses a "soft delete" pattern, preserving your historical financial integrity.</li>
+      </ul>
+
+      <h2>Security First: The v16 Upgrade</h2>
+      <p>Infrastructure security is our top priority. In this release, we have upgraded the backend to <strong>AutoMapper v16.1.1</strong>, resolving high-severity vulnerabilities (NU1903) and ensuring your data orchestration is handled by the safest possible libraries.</p>
+
+      <h2>Lightning Fast Performance</h2>
+      <p>We\'ve refactored the entire frontend to use <strong>Full Lazy-Loading</strong>. Every feature module, from Transactions to Settings, now loads only when you need it. This significantly reduces the initial bundle size and makes the application feel snappier than ever.</p>
+
+      <h2>Development Resilience</h2>
+      <p>Finally, we\'ve made the development environment more robust. The backend now supports a <strong>Resilient Caching Fallback</strong>. If Redis is unavailable (common in local setups), the system automatically degrades to in-process Memory Caching without crashing, ensuring a smooth "out of the box" experience for contributors.</p>
+    `
+  },
+  {
     id: 'v4-3-0-release',
     tag: 'v4.3.0',
     tagColor: '#38bdf8',
@@ -13,7 +44,7 @@ export const BLOG_POSTS = [
     _dateValue: new Date('2026-03-10'),
     content: `
       <h2>The Render Cold Start Challenge</h2>
-      <p>Deploying on Render\\'s free tier brings a unique challenge: the backend spins down after inactivity and can take up to 60 seconds to wake up. Version 4.3.0 introduces a robust "holding" pattern to ensure a smooth transition for users during these cold starts.</p>
+      <p>Deploying on Render\'s free tier brings a unique challenge: the backend spins down after inactivity and can take up to 60 seconds to wake up. Version 4.3.0 introduces a robust "holding" pattern to ensure a smooth transition for users during these cold starts.</p>
 
       <h2>Robust Infrastructure Resilience</h2>
       <ul>
@@ -23,7 +54,7 @@ export const BLOG_POSTS = [
       </ul>
 
       <h2>Runtime Responsiveness</h2>
-      <p>It\\'s not just about the initial load. Our new <strong>Status Interceptor</strong> monitors HTTP response times during active sessions. If a request takes more than 2 seconds (indicating a backend spin-up), a "Backend is warming up" progress bar appears at the top of the interface.</p>
+      <p>It\'s not just about the initial load. Our new <strong>Status Interceptor</strong> monitors HTTP response times during active sessions. If a request takes more than 2 seconds (indicating a backend spin-up), a "Backend is warming up" progress bar appears at the top of the interface.</p>
 
       <h2>Code Professionalism: Console Cleanup</h2>
       <p>To provide a more production-ready experience, we have conducted a full sweep of the frontend codebase, removing all <code>console.log</code>, <code>console.warn</code>, and <code>console.error</code> calls. Debugging focus has been shifted to the server-side logs, resulting in a perfectly clean and professional developer console in the browser.</p>
@@ -49,7 +80,7 @@ export const BLOG_POSTS = [
       </ul>
 
       <h2>The Sorting Fix</h2>
-      <p>We addressed a common point of friction where sorting by "Category" or "Account" in the main tables wasn\\'t responding correctly. This was due to a field name mismatch between the frontend (<code>accountCategoryName</code>, <code>categoryName</code>) and the backend (<code>category</code>). The backend services for Accounts and Transactions have been updated to explicitly handle these frontend-driven field names.</p>
+      <p>We addressed a common point of friction where sorting by "Category" or "Account" in the main tables wasn\'t responding correctly. This was due to a field name mismatch between the frontend (<code>accountCategoryName</code>, <code>categoryName</code>) and the backend (<code>category</code>). The backend services for Accounts and Transactions have been updated to explicitly handle these frontend-driven field names.</p>
 
       <h2>Bulk Entry Reliability</h2>
       <p>A critical bug in the <strong>Bulk Transaction Add</strong> page was resolved. Previously, transactions marked as "Income" (internal value 0) were occasionally flagged as invalid during the pre-save check. The validation logic has been updated to correctly handle falsy numeric values, ensuring all valid entries persist on the first click.</p>

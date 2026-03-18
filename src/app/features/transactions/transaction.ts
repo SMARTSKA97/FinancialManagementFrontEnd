@@ -15,19 +15,46 @@ export interface Transaction {
   date: Date;
   type: TransactionType;
   accountId: number;
+  accountName?: string;
   categoryName?: string;
+}
+
+export interface TransactionPageResult {
+  transactions: PaginatedResult<Transaction>;
+  balanceBroughtForward: number;
+  totalIncome: number;
+  totalExpenses: number;
+  totalSavings: number;
+  availableCategories: string[];
+}
+
+export interface TransactionQueryParams {
+  pageNumber: number;
+  pageSize: number;
+  globalSearch?: string;
+  filters: { [key: string]: string };
 }
 
 
 @Injectable({
   providedIn: 'root'
 })
-export class Transaction {
+export class TransactionService {
   constructor(private apiService: GenericApi) { }
 
-  // --- Transaction Methods ---
+  // --- Unified Transaction Methods ---
 
-  // --- Transaction Methods ---
+  /**
+   * Retrieves paginated transactions across ALL accounts for the logged-in user.
+   */
+  getAllTransactions(queryParams: TransactionQueryParams): Observable<TransactionPageResult> {
+    const endpoint = 'AllTransactions';
+    return this.apiService.search<TransactionPageResult>(endpoint, queryParams).pipe(
+      map(response => response.value as any as TransactionPageResult)
+    );
+  }
+
+  // --- Per-Account Transaction Methods ---
 
   /**
    * Retrieves paginated transactions for a specific account.

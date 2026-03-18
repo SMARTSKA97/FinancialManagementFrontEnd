@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
-import { Transaction } from '../transaction';
+import { Transaction, TransactionService } from '../transaction';
 import { ColumnDefinition, DataTable } from '../../../shared/components/data-table/data-table';
 import { asyncScheduler, filter, finalize, firstValueFrom, observeOn, switchMap, tap } from 'rxjs';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -28,7 +28,7 @@ import { NotificationService } from '../../../core/services/notification.service
 })
 export class TransactionList implements OnInit {
   private route = inject(ActivatedRoute);
-  private transactionService = inject(Transaction);
+  private transactionService = inject(TransactionService);
   private dashboardService = inject(DashboardService);
   private cdr = inject(ChangeDetectorRef);
   private messageService = inject(MessageService);

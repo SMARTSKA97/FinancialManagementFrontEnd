@@ -40,6 +40,7 @@ export class Layout {
           { label: 'Home', icon: 'pi pi-globe', routerLink: '/', command: () => { this.sidebarVisible = false; } },
           { label: 'Dashboard', icon: 'pi pi-home', routerLink: '/app/dashboard', command: () => { this.sidebarVisible = false; } },
           { label: 'Accounts', icon: 'pi pi-wallet', routerLink: '/app/accounts', command: () => { this.sidebarVisible = false; } },
+          { label: 'Transactions', icon: 'pi pi-list', routerLink: '/app/transactions', command: () => { this.sidebarVisible = false; } },
         ],
       },
       {

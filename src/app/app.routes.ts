@@ -132,6 +132,10 @@ export const routes: Routes = [
         }
       },
       {
+        path: 'transactions',
+        loadComponent: () => import('./features/transactions/transactions-page/transactions-page').then(m => m.TransactionsPage)
+      },
+      {
         path: 'dashboard',
         loadComponent: () => import('./features/dashboard/dashboard/dashboard').then(m => m.Dashboard)
       },
@@ -167,6 +171,14 @@ export const routes: Routes = [
         path: 'change-password',
         loadComponent: () => import('./features/auth/change-password/change-password.component').then(m => m.ChangePasswordComponent)
       },
+      {
+        path: 'issues',
+        loadChildren: () => import('./features/issues/issues.routes').then(m => m.ISSUES_ROUTES)
+      },
+      // {
+      //   path: 'about',
+      //   component: About
+      // },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   },

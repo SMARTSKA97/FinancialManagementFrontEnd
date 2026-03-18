@@ -1,0 +1,130 @@
+<div class="transactions-page p-4">
+
+  <!-- FILTER BAR -->
+  <div class="filter-bar mb-4 flex flex-wrap align-items-center gap-3">
+    <div class="flex align-items-center gap-2 mr-auto">
+      <p-button label="Bulk Add" icon="pi pi-plus-circle" severity="primary" (onClick)="goToBulkAdd()"></p-button>
+    </div>
+
+    <div class="flex align-items-center gap-2">
+      <label class="font-semibold text-sm">Month</label>
+      <p-select [options]="months" [(ngModel)]="selectedMonth" optionLabel="label" optionValue="value"
+        (onChange)="onMonthChange()" [style]="{'min-width': '10rem'}">
+      </p-select>
+    </div>
+
+    <div class="flex align-items-center gap-2">
+      <span class="p-input-icon-left ml-md-2">
+        <i class="pi pi-search"></i>
+        <input pInputText type="text" name="transactionSearch" autocomplete="off" [(ngModel)]="globalSearch" (input)="onSearch()" placeholder="Search transactions..." class="w-15rem" />
+      </span>
+    </div>
+
+    <div class="flex align-items-center gap-2">
+      <label class="font-semibold text-sm">Year</label>
+      <p-select [options]="years" [(ngModel)]="selectedYear" optionLabel="label" optionValue="value"
+        (onChange)="onYearChange()" [style]="{'min-width': '8rem'}">
+      </p-select>
+    </div>
+
+    <div class="flex align-items-center gap-2">
+      <label class="font-semibold text-sm">Category</label>
+      <p-select [options]="categoryOptions" [(ngModel)]="selectedCategory" optionLabel="label" optionValue="value"
+        placeholder="All Categories" [showClear]="true" (onChange)="onCategoryChange()"
+        [style]="{'min-width': '12rem'}">
+      </p-select>
+    </div>
+  </div>
+
+  <!-- SUMMARY CARDS -->
+  <div class="summary-cards-grid mb-4">
+    <div class="summary-card-wrapper">
+      <p-card>
+        <ng-template pTemplate="header">
+          <div class="summary-card-header">
+            <i class="pi pi-history summary-icon bf-icon"></i>
+            <span class="text-sm font-semibold text-color-secondary">Balance B/F</span>
+          </div>
+        </ng-template>
+        <p class="summary-value" [class.text-green-500]="balanceBF >= 0" [class.text-red-500]="balanceBF < 0">
+          {{ balanceBF | currency:'INR' }}
+        </p>
+      </p-card>
+    </div>
+    <div class="summary-card-wrapper">
+      <p-card>
+        <ng-template pTemplate="header">
+          <div class="summary-card-header">
+            <i class="pi pi-arrow-down summary-icon income-icon"></i>
+            <span class="text-sm font-semibold text-color-secondary">Total Income</span>
+          </div>
+        </ng-template>
+        <p class="summary-value text-green-500">
+          {{ totalIncome | currency:'INR' }}
+        </p>
+      </p-card>
+    </div>
+    <div class="summary-card-wrapper">
+      <p-card>
+        <ng-template pTemplate="header">
+          <div class="summary-card-header">
+            <i class="pi pi-arrow-up summary-icon expense-icon"></i>
+            <span class="text-sm font-semibold text-color-secondary">Total Expenditure</span>
+          </div>
+        </ng-template>
+        <p class="summary-value text-red-500">
+          {{ totalExpenses | currency:'INR' }}
+        </p>
+      </p-card>
+    </div>
+    <div class="summary-card-wrapper">
+      <p-card>
+        <ng-template pTemplate="header">
+          <div class="summary-card-header">
+            <i class="pi pi-wallet summary-icon savings-icon"></i>
+            <span class="text-sm font-semibold text-color-secondary">Total Savings</span>
+          </div>
+        </ng-template>
+        <p class="summary-value" [class.text-green-500]="totalSavings >= 0" [class.text-red-500]="totalSavings < 0">
+          {{ totalSavings | currency:'INR' }}
+        </p>
+      </p-card>
+    </div>
+    <div class="summary-card-wrapper">
+      <p-card>
+        <ng-template pTemplate="header">
+          <div class="summary-card-header">
+            <i class="pi pi-verified summary-icon closing-icon"></i>
+            <span class="text-sm font-semibold text-color-secondary">Closing Balance</span>
+          </div>
+        </ng-template>
+        <p class="summary-value" [class.text-green-500]="closingBalance >= 0" [class.text-red-500]="closingBalance < 0">
+          {{ closingBalance | currency:'INR' }}
+        </p>
+      </p-card>
+    </div>
+  </div>
+
+  <!-- TRANSACTIONS TABLE -->
+  <p-card header="Transactions">
+    <div class="glass-panel-inner p-1">
+      @if (isLoading) {
+      <div class="flex justify-content-center p-8">
+        <i class="pi pi-spin pi-spinner text-4xl text-primary"></i>
+      </div>
+      } @else {
+      <app-data-table [data]="transactions" [columns]="transactionColumns">
+        <ng-template #actions let-transaction>
+          <div class="flex gap-1">
+            <p-button icon="pi pi-pencil" [text]="true" severity="secondary" size="small" (onClick)="editTransaction(transaction)" pTooltip="Edit"></p-button>
+            <p-button icon="pi pi-trash" [text]="true" severity="danger" size="small" (onClick)="deleteTransaction(transaction)" pTooltip="Delete"></p-button>
+          </div>
+        </ng-template>
+      </app-data-table>
+      }
+    </div>
+  </p-card>
+</div>
+
+<p-toast></p-toast>
+<p-confirmDialog [style]="{width: '450px'}"></p-confirmDialog>

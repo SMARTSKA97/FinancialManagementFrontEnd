@@ -22,7 +22,7 @@
 .glass-footer {
     background: var(--surface-section) !important;
     border-color: color-mix(in srgb, var(--surface-border) 30%, transparent) !important;
-    z-index: 10;
+    z-index: 100; /* Increased from 10 to beat topbar */
 }
 
 .excel-grid-wrapper {

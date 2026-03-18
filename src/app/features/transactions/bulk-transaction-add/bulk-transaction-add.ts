@@ -13,7 +13,7 @@ import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { DatePickerModule } from 'primeng/datepicker';
 import { DialogModule } from 'primeng/dialog';
-import { Transaction } from '../transaction';
+import { Transaction, TransactionService } from '../transaction';
 import { TransactionType } from '../../../core/models/transaction-type';
 import { CategoryForm } from '../../categories/category-form/category-form';
 import { AccountForm } from '../../accounts/account-form/account-form';
@@ -57,7 +57,7 @@ interface BulkTransactionRow {
     providers: [MessageService, DialogService, ConfirmationService]
 })
 export class BulkTransactionAdd {
-    private transactionService = inject(Transaction);
+    private transactionService = inject(TransactionService);
     private messageService = inject(MessageService);
     private apiService = inject(GenericApi);
     private dialogService = inject(DialogService);
