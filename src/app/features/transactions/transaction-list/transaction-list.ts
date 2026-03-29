@@ -64,6 +64,7 @@ export class TransactionList implements OnInit {
   totalRecords = 0;
   rows = 10;
   lastLazyLoadEvent: any;
+  private lastQueryKey: string | null = null;
   ready = false;
 
   // Filter state
@@ -97,35 +98,48 @@ export class TransactionList implements OnInit {
   }
 
   async loadData(event?: any): Promise<void> {
+    if (this.isLoading) return;
+    if (this.accountId === null) return;
+
+    // 1. Determine current state
+    const pageNumber = event ? (event.first / event.rows + 1) : (this.lastLazyLoadEvent ? (this.lastLazyLoadEvent.first / this.lastLazyLoadEvent.rows + 1) : 1);
+    const pageSize = event ? event.rows : (this.lastLazyLoadEvent ? this.lastLazyLoadEvent.rows : this.rows);
+    const sortBy = event?.sortField || this.lastLazyLoadEvent?.sortField || 'date';
+    const sortOrder = event?.sortOrder === 1 ? 'asc' : (event?.sortOrder === -1 ? 'desc' : (this.lastLazyLoadEvent?.sortOrder === 1 ? 'asc' : 'desc'));
+
+    const filters: { [key: string]: string } = {
+      month: (this.selectedDate.getMonth() + 1).toString(),
+      year: this.selectedDate.getFullYear().toString(),
+    };
+    if (this.selectedCategory) {
+      filters['categoryName'] = this.selectedCategory;
+    }
+
+    const startOfMonth = new Date(this.selectedDate.getFullYear(), this.selectedDate.getMonth(), 1, 0, 0, 0);
+    const endOfMonth = new Date(this.selectedDate.getFullYear(), this.selectedDate.getMonth() + 1, 0, 23, 59, 59, 999);
+
+    // 2. Create a unique key for this query to prevent infinite loops
+    const currentQueryKey = JSON.stringify({
+      accountId: this.accountId,
+      pageNumber,
+      pageSize,
+      sortBy,
+      sortOrder,
+      filters,
+      globalSearch: this.globalSearch,
+      // Date range for summary is derived from selectedDate which is in filters
+    });
+
+    if (this.lastQueryKey === currentQueryKey && this.transactions.length > 0) {
+      return;
+    }
+
     this.isLoading = true;
-    if (event) this.lastLazyLoadEvent = event;
+    this.cdr.markForCheck();
 
     try {
-      if (this.accountId === null) {
-        const params = await firstValueFrom(this.route.paramMap);
-        const id = Number(params.get('id'));
-        if (!id || isNaN(id)) {
-          this.notificationService.showError('Invalid account.');
-          return;
-        }
-        this.accountId = id;
-      }
-
-      const pageNumber = event ? (event.first / event.rows + 1) : 1;
-      const pageSize = event ? event.rows : this.rows;
-      const sortBy = event?.sortField || 'date';
-      const sortOrder = event?.sortOrder === 1 ? 'asc' : 'desc';
-
-      const filters: { [key: string]: string } = {
-        month: (this.selectedDate.getMonth() + 1).toString(),
-        year: this.selectedDate.getFullYear().toString(),
-      };
-      if (this.selectedCategory) {
-        filters['categoryName'] = this.selectedCategory;
-      }
-
-      const startOfMonth = new Date(this.selectedDate.getFullYear(), this.selectedDate.getMonth(), 1, 0, 0, 0);
-      const endOfMonth = new Date(this.selectedDate.getFullYear(), this.selectedDate.getMonth() + 1, 0, 23, 59, 59, 999);
+      this.lastQueryKey = currentQueryKey;
+      if (event) this.lastLazyLoadEvent = event;
 
       // --- FETCH BOTH DATASETS IN PARALLEL ---
       const [paginatedResult, summaryData] = await Promise.all([
@@ -144,8 +158,9 @@ export class TransactionList implements OnInit {
       this.totalRecords = paginatedResult.totalRecords;
       this.summary = summaryData;
 
-      this.summary = summaryData;
     } catch (err) {
+      console.error('Failed to load account transactions', err);
+      this.lastQueryKey = null; // Allow retry on error
     } finally {
       this.isLoading = false;
       this.cdr.markForCheck();

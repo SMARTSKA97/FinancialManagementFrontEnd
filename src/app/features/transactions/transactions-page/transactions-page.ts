@@ -74,6 +74,7 @@ export class TransactionsPage implements OnInit {
   currentPage = 1;
   isLoading = false;
   lastLazyLoadEvent: any;
+  private lastQueryKey: string | null = null;
 
   // --- Summary ---
   balanceBF = 0;
@@ -121,43 +122,56 @@ export class TransactionsPage implements OnInit {
 
   onLazyLoad(event: any): void {
     if (this.isLoading) return;
-
-    const isSameEvent = this.lastLazyLoadEvent && 
-                       this.lastLazyLoadEvent.first === event.first && 
-                       this.lastLazyLoadEvent.rows === event.rows &&
-                       this.lastLazyLoadEvent.sortField === event.sortField &&
-                       this.lastLazyLoadEvent.sortOrder === event.sortOrder;
-
-    if (isSameEvent && this.transactions.length > 0) return;
-
     this.lastLazyLoadEvent = event;
-    this.currentPage = Math.floor(event.first / event.rows) + 1;
-    this.pageSize = event.rows;
-    this.fetchTransactions();
+    this.fetchTransactions(event);
   }
 
-  async fetchTransactions(): Promise<void> {
+  async fetchTransactions(event?: any): Promise<void> {
     if (this.isLoading) return;
+    
+    // 1. Determine current state
+    const pageNumber = event ? Math.floor(event.first / event.rows) + 1 : this.currentPage;
+    const pageSize = event ? event.rows : this.pageSize;
+    const sortBy = event?.sortField || this.lastLazyLoadEvent?.sortField || 'date';
+    const sortOrder = event?.sortOrder === 1 ? 'asc' : (event?.sortOrder === -1 ? 'desc' : (this.lastLazyLoadEvent?.sortOrder === 1 ? 'asc' : 'desc'));
+    
+    const filters: { [key: string]: string } = {
+      month: (this.selectedDate.getMonth() + 1).toString(),
+      year: this.selectedDate.getFullYear().toString(),
+    };
+    if (this.selectedCategory) {
+      filters['categoryName'] = this.selectedCategory;
+    }
+
+    // 2. Create a unique key for this query to prevent infinite loops
+    const currentQueryKey = JSON.stringify({
+      pageNumber,
+      pageSize,
+      sortBy,
+      sortOrder,
+      filters,
+      globalSearch: this.globalSearch
+    });
+
+    if (this.lastQueryKey === currentQueryKey && this.transactions.length > 0) {
+      return;
+    }
+
     this.isLoading = true;
     this.cdr.markForCheck();
 
     try {
-      const filters: { [key: string]: string } = {
-        month: (this.selectedDate.getMonth() + 1).toString(),
-        year: this.selectedDate.getFullYear().toString(),
-      };
-
-      if (this.selectedCategory) {
-        filters['categoryName'] = this.selectedCategory;
-      }
+      this.lastQueryKey = currentQueryKey;
+      this.currentPage = pageNumber;
+      this.pageSize = pageSize;
 
       const queryParams: TransactionQueryParams = {
-        pageNumber: this.currentPage,
-        pageSize: this.pageSize,
+        pageNumber,
+        pageSize,
         filters,
         globalSearch: this.globalSearch,
-        sortBy: this.lastLazyLoadEvent?.sortField || 'date',
-        sortOrder: this.lastLazyLoadEvent?.sortOrder === 1 ? 'asc' : 'desc'
+        sortBy,
+        sortOrder
       };
 
       const result = await firstValueFrom(this.transactionService.getAllTransactions(queryParams));
@@ -178,6 +192,7 @@ export class TransactionsPage implements OnInit {
 
     } catch (err) {
       console.error('Failed to load transactions', err);
+      this.lastQueryKey = null; // Allow retry on error
     } finally {
       this.isLoading = false;
       this.cdr.markForCheck();
