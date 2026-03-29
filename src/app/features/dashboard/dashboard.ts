@@ -54,8 +54,8 @@ export class DashboardService {
     );
   }
 
-  getAccountSummary(accountId: number): Observable<AccountSummary> {
-    return this.apiService.post<AccountSummary>(`${this.endpoint}/account-summary`, { accountId }).pipe(
+  getAccountSummary(accountId: number, startDate?: Date, endDate?: Date): Observable<AccountSummary> {
+    return this.apiService.post<AccountSummary>(`${this.endpoint}/account-summary`, { accountId, startDate, endDate }).pipe(
       map(response => response.value)
     );
   }

@@ -7,10 +7,11 @@ import { ButtonModule } from 'primeng/button';
 import { SessionSyncService } from './core/services/session-sync.service';
 import { BackendStatusService } from './core/services/backend-status.service';
 import { ProgressBarModule } from 'primeng/progressbar';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, ToastModule, DialogModule, ButtonModule, ProgressBarModule],
+  imports: [RouterOutlet, ToastModule, DialogModule, ButtonModule, ProgressBarModule, ConfirmDialogModule],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })

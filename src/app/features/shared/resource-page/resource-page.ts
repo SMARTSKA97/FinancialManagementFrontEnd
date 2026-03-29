@@ -3,7 +3,7 @@ import { ConfirmationService } from 'primeng/api';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { GenericCrud } from '../../../core/services/generic-crud';
 import { ColumnDefinition, DataTable } from '../../../shared/components/data-table/data-table';
-import { BehaviorSubject, firstValueFrom } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
@@ -13,10 +13,12 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ToastModule } from 'primeng/toast';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { NotificationService } from '../../../core/services/notification.service';
+import { FormsModule } from '@angular/forms';
+import { InputTextModule } from 'primeng/inputtext';
 
 @Component({
   selector: 'app-resource-page',
-  imports: [CommonModule, CardModule, ButtonModule, TableModule, DataTable, ProgressSpinnerModule, ConfirmDialogModule, ToastModule, RouterLink],
+  imports: [CommonModule, FormsModule, InputTextModule, CardModule, ButtonModule, TableModule, DataTable, ProgressSpinnerModule, ConfirmDialogModule, ToastModule, RouterLink],
   templateUrl: './resource-page.html',
   styleUrl: './resource-page.scss',
   providers: [DialogService, ConfirmationService, GenericCrud], // Removed MessageService to use root instance via NotificationService
@@ -34,6 +36,7 @@ export class ResourcePage<T extends { id: number }> implements OnInit {
   // ... rest of inputs ...
   @Input() title: string = '';
   @Input() backLinkPath?: string;
+  @Input() backLinkLabel?: string;
   @Input({ required: true }) endpoint!: string;
   @Input({ required: true }) columns!: ColumnDefinition[];
   @Input({ required: true }) formComponent!: Type<any>;
@@ -44,6 +47,8 @@ export class ResourcePage<T extends { id: number }> implements OnInit {
 
   ref: DynamicDialogRef | undefined;
   ready = false;
+  searchTerm = '';
+  lastLazyLoadEvent: any;
 
   async ngOnInit(): Promise<void> {
     const routeData = await firstValueFrom(this.route.data);
@@ -52,6 +57,7 @@ export class ResourcePage<T extends { id: number }> implements OnInit {
     this.title = routeData['title'];
     this.columns = routeData['columns'];
     this.backLinkPath = routeData['backLinkPath'];
+    this.backLinkLabel = routeData['backLinkLabel'];
 
     // Support lazy loadFormComponent (new) or static formComponent (legacy)
     if (typeof routeData['loadFormComponent'] === 'function') {
@@ -73,7 +79,18 @@ export class ResourcePage<T extends { id: number }> implements OnInit {
     this.cdr.markForCheck();
   }
 
+  onSearch(): void {
+    // Re-trigger lazy load with the new search term
+    this.onLazyLoad(this.lastLazyLoadEvent || { first: 0, rows: 10 });
+  }
+
+  clearSearch(): void {
+    this.searchTerm = '';
+    this.onSearch();
+  }
+
   onLazyLoad(event: any): void {
+    this.lastLazyLoadEvent = event;
     if (!this.endpoint) return; // Guard against early calls
 
     const pageNumber = event.first / event.rows + 1;
@@ -85,7 +102,8 @@ export class ResourcePage<T extends { id: number }> implements OnInit {
       pageNumber,
       pageSize,
       sortBy,
-      sortOrder
+      sortOrder,
+      globalSearch: this.searchTerm
     });
   }
 

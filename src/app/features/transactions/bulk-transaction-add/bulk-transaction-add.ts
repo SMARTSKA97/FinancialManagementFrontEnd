@@ -54,7 +54,7 @@ interface BulkTransactionRow {
     ],
     templateUrl: './bulk-transaction-add.html',
     styleUrls: ['./bulk-transaction-add.scss'],
-    providers: [MessageService, DialogService, ConfirmationService]
+    providers: [DialogService]
 })
 export class BulkTransactionAdd {
     private transactionService = inject(TransactionService);
@@ -143,8 +143,20 @@ export class BulkTransactionAdd {
         return this.rows().filter(r => !r.isDeleted);
     }
 
-    totalAmount = computed(() => {
-        return this.activeRows.reduce((sum, row) => sum + (row.amount || 0), 0);
+    totalIncome = computed(() => {
+        return this.activeRows
+            .filter(r => r.type === TransactionType.Income)
+            .reduce((sum, row) => sum + (row.amount || 0), 0);
+    });
+
+    totalExpenses = computed(() => {
+        return this.activeRows
+            .filter(r => r.type === TransactionType.Expense)
+            .reduce((sum, row) => sum + (row.amount || 0), 0);
+    });
+
+    netAmount = computed(() => {
+        return this.totalIncome() - this.totalExpenses();
     });
 
     resolveStringsToObject(row: BulkTransactionRow) {

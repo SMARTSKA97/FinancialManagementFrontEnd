@@ -98,6 +98,8 @@ export const routes: Routes = [
           title: 'Accounts',
           endpoint: 'Accounts',
           columns: accountColumns,
+          backLinkPath: '/app/dashboard',
+          backLinkLabel: 'Back to Dashboard',
           loadFormComponent: () => import('./features/accounts/account-form/account-form').then(m => m.AccountForm)
         }
       },

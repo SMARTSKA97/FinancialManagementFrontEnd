@@ -4,6 +4,30 @@ import { RouterLink } from '@angular/router';
 export const BLOG_POSTS = [
   // ─── LATEST ─────────────────────────────────────────────────────────────────
   {
+    id: 'v4-6-0-release',
+    tag: 'v4.6.0',
+    tagColor: '#10b981',
+    title: 'v4.6.0 — Seamless Navigation & Bulk Financial Insights',
+    excerpt: 'Enhancing the user experience with smarter navigation, optimized transaction performance, real-time financial summaries, and new account search capabilities.',
+    date: 'Mar 29, 2026',
+    _dateValue: new Date('2026-03-29'),
+    content: `
+      <h2>Navigation & Search: Faster, Fluid, Intuitive</h2>
+      <p>Version 4.6.0 focuses on the small details that make a big difference in daily usage. We have added <strong>"Back to Dashboard"</strong> navigation points directly within the Accounts and Transactions views, ensuring you are never more than a single click away from your financial high-level overview.</p>
+
+      <p>Managing multiple financial accounts is now easier than ever. We've introduced a <strong>Unified Month-Year Picker</strong> across all transaction views—from the global dashboard to individual account pages. This allows you to filter your entire financial history with a single, intuitive date selector. We've also extended our <strong>Advanced Filtering</strong> (Search, Month, Year, and Category) to individual account views, ensuring you have the same powerful tools whether viewing a unified global list or drilling down into a specific bank account.</p>
+
+      <h2>Performance: On-Demand Financial Intelligence</h2>
+      <p>To ensure peak performance, we've implemented <strong>On-Demand Search</strong>—simply press Enter or click the search icon to fetch results. This significantly reduces background API traffic and keeps the interface snappy even with thousands of records. We've also included a quick <strong>Reset</strong> button to clear your search and return to the full view instantly.</p>
+
+      <h2>Transactions: Stability & Comprehensive Summaries</h2>
+      <p>We have overhauled the <strong>Transactions engine</strong> to ensure a consistent experience. Whether you are on the main transactions page or viewing a specific account, the summary cards now dynamically recalculate to show the <strong>Total Income</strong>, <strong>Total Expenditure</strong>, and the new <strong>Closing Balance</strong> for your exact selected month and year. By implementing robust re-entrancy guards and smarter event-driven lazy loading, we have eliminated infinite loading cycles, ensuring your data loads instantly every time.</p>
+
+      <h2>Bulk Entry & UI Polish</h2>
+      <p>The <strong>Bulk Transaction Add page</strong> continues to evolve as a powerful analytical tool, with real-time session summaries for Income, Expenditure, and Net Amount. From fixing category dropdown bindings to refining the Excel-style grid responsiveness and ensuring <strong>Z-Index Harmony</strong> across all modals, v4.6.0 delivers our most polished and performant experience yet.</p>
+    `
+  },
+  {
     id: 'v4-5-0-release',
     tag: 'v4.5.0',
     tagColor: '#10b981',

@@ -1,0 +1,69 @@
+.transactions-page {
+  .filter-bar {
+    background: var(--p-surface-card);
+    border-radius: var(--p-border-radius);
+    padding: 1rem 1.25rem;
+    border: 1px solid var(--p-surface-border);
+  }
+
+  .summary-cards-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+
+    .summary-card-wrapper {
+      flex: 1 1 calc(20% - 1rem);
+      min-width: 200px;
+    }
+  }
+
+  .summary-card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 1.25rem 0 1.25rem;
+  }
+
+  .summary-icon {
+    font-size: 1.25rem;
+    width: 2rem;
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+  }
+
+  .bf-icon {
+    color: var(--p-primary-color);
+    background: var(--p-primary-100);
+  }
+
+  .income-icon {
+    color: var(--p-green-500);
+    background: var(--p-green-100);
+  }
+
+  .expense-icon {
+    color: var(--p-red-500);
+    background: var(--p-red-100);
+  }
+
+  .savings-icon {
+    color: var(--p-blue-500);
+    background: var(--p-blue-100);
+  }
+
+  .closing-icon {
+    color: var(--p-purple-500);
+    background: var(--p-purple-100);
+  }
+
+  .summary-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+    padding: 0.5rem 0;
+  }
+}

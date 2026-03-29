@@ -17,10 +17,29 @@ import { DashboardService } from '../../dashboard/dashboard';
 import { TransactionSwitchForm } from '../transaction-switch-form/transaction-switch-form';
 import { AccountState } from '../../../core/state/account-state.service';
 import { NotificationService } from '../../../core/services/notification.service';
+import { FormsModule } from '@angular/forms';
+import { DatePickerModule } from 'primeng/datepicker';
+import { SelectModule } from 'primeng/select';
+import { InputTextModule } from 'primeng/inputtext';
+import { TooltipModule } from 'primeng/tooltip';
 
 @Component({
   selector: 'app-transaction-list',
-  imports: [CommonModule, RouterLink, CardModule, ButtonModule, ProgressSpinnerModule, DataTable, ToastModule, ConfirmDialogModule],
+  imports: [
+    CommonModule, 
+    FormsModule,
+    RouterLink, 
+    CardModule, 
+    ButtonModule, 
+    ProgressSpinnerModule, 
+    DataTable, 
+    ToastModule, 
+    ConfirmDialogModule,
+    DatePickerModule,
+    SelectModule,
+    InputTextModule,
+    TooltipModule
+  ],
   templateUrl: './transaction-list.html',
   styleUrl: './transaction-list.scss',
   providers: [DialogService, MessageService, ConfirmationService],
@@ -47,6 +66,12 @@ export class TransactionList implements OnInit {
   lastLazyLoadEvent: any;
   ready = false;
 
+  // Filter state
+  selectedDate: Date = new Date();
+  selectedCategory: string | null = null;
+  globalSearch: string = '';
+  categoryOptions: { label: string; value: string }[] = [];
+
   transactionColumns: ColumnDefinition[] = [
     { field: 'date', header: 'Date', isDate: true, sortable: true },
     { field: 'description', header: 'Description', sortable: true },
@@ -55,12 +80,18 @@ export class TransactionList implements OnInit {
   ];
 
   async ngOnInit(): Promise<void> {
+    this.selectedDate.setDate(1); // canonical start of month
     const params = await firstValueFrom(this.route.paramMap);
     const id = Number(params.get('id'));
     if (!id || isNaN(id)) {
       return;
     }
     this.accountId = id;
+    
+    // Load categories
+    const result = await firstValueFrom(this.transactionService.getAllTransactions({ pageNumber: 1, pageSize: 1, filters: {} }));
+    this.categoryOptions = result.availableCategories.map(c => ({ label: c, value: c }));
+
     this.ready = true;
     this.cdr.markForCheck();
   }
@@ -85,31 +116,60 @@ export class TransactionList implements OnInit {
       const sortBy = event?.sortField || 'date';
       const sortOrder = event?.sortOrder === 1 ? 'asc' : 'desc';
 
+      const filters: { [key: string]: string } = {
+        month: (this.selectedDate.getMonth() + 1).toString(),
+        year: this.selectedDate.getFullYear().toString(),
+      };
+      if (this.selectedCategory) {
+        filters['categoryName'] = this.selectedCategory;
+      }
+
+      const startOfMonth = new Date(this.selectedDate.getFullYear(), this.selectedDate.getMonth(), 1, 0, 0, 0);
+      const endOfMonth = new Date(this.selectedDate.getFullYear(), this.selectedDate.getMonth() + 1, 0, 23, 59, 59, 999);
+
       // --- FETCH BOTH DATASETS IN PARALLEL ---
       const [paginatedResult, summaryData] = await Promise.all([
         firstValueFrom(this.transactionService.getTransactionsForAccount(this.accountId, {
           pageNumber,
           pageSize,
           sortBy,
-          sortOrder
+          sortOrder,
+          filters,
+          globalSearch: this.globalSearch || ''
         })),
-        firstValueFrom(this.dashboardService.getAccountSummary(this.accountId))
+        firstValueFrom(this.dashboardService.getAccountSummary(this.accountId, startOfMonth, endOfMonth))
       ]);
 
       this.transactions = paginatedResult.data;
       this.totalRecords = paginatedResult.totalRecords;
       this.summary = summaryData;
 
-      // Sync balance with AccountState (Single Source of Truth)
-      const accountInState = this.accountState.accounts().find(a => a.id === this.accountId);
-      if (accountInState && this.summary) {
-        this.summary.currentBalance = accountInState.balance;
-      }
+      this.summary = summaryData;
     } catch (err) {
     } finally {
       this.isLoading = false;
       this.cdr.markForCheck();
     }
+  }
+
+  onDateChange(event: any): void {
+    if (event) {
+      this.selectedDate = event;
+      this.loadData();
+    }
+  }
+
+  onCategoryChange(): void {
+    this.loadData();
+  }
+
+  onSearch(): void {
+    this.loadData();
+  }
+
+  clearSearch(): void {
+    this.globalSearch = '';
+    this.onSearch();
   }
 
   onLazyLoad(event: any): void {

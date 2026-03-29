@@ -5,14 +5,27 @@
     @if (backLinkPath) {
     <div class="mb-4">
         <a [routerLink]="backLinkPath" class="no-underline">
-            <p-button [label]="'Back to ' + title.replace('s', '')" icon="pi pi-arrow-left"
+            <p-button [label]="backLinkLabel || ('Back to ' + title.replace('s', ''))" icon="pi pi-arrow-left"
                 class="p-button-text"></p-button>
         </a>
     </div>
     }
     <p-card [header]="title">
         <ng-template pTemplate="header">
-            <div class="flex justify-content-end gap-2">
+            <div class="flex justify-content-between align-items-center w-full px-4 pt-4">
+                <div class="flex align-items-center gap-1">
+                    <span class="p-input-icon-left">
+                        <i class="pi pi-search"></i>
+                        <input pInputText type="text" [(ngModel)]="searchTerm" (keyup.enter)="onSearch()"
+                            placeholder="Search..." class="p-inputtext-sm" />
+                    </span>
+                    <p-button icon="pi pi-search" [text]="true" severity="primary" size="small" (onClick)="onSearch()"
+                        pTooltip="Run Search"></p-button>
+                    @if (searchTerm) {
+                    <p-button icon="pi pi-times" [text]="true" severity="secondary" size="small" (onClick)="clearSearch()"
+                        pTooltip="Clear Search"></p-button>
+                    }
+                </div>
                 <p-button [label]="'New ' + title.slice(0, -1)" icon="pi pi-plus" (onClick)="showForm()"></p-button>
             </div>
         </ng-template>

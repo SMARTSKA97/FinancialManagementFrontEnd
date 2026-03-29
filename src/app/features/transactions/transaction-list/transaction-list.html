@@ -1,29 +1,83 @@
 <p-confirmDialog></p-confirmDialog>
 <p-toast></p-toast>
 
-<div class="p-4">
-  <div class="mb-4">
-    <a routerLink="/app/accounts" class="no-underline">
-      <p-button label="Back to Accounts" icon="pi pi-arrow-left" class="p-button-text"></p-button>
-    </a>
+<div class="transactions-page p-4">
+  <!-- FILTER BAR -->
+  <div class="filter-bar mb-4 flex flex-wrap align-items-center gap-3">
+    <div class="flex align-items-center gap-2 mr-auto">
+      <p-button label="Back to Accounts" icon="pi pi-arrow-left" severity="secondary" outlined="true" routerLink="/app/accounts"></p-button>
+      <p-button label="New Transaction" icon="pi pi-plus" (onClick)="showTransactionForm()"></p-button>
+    </div>
+
+    <div class="flex align-items-center gap-2">
+      <label class="font-semibold text-sm">Period</label>
+      <p-datepicker [(ngModel)]="selectedDate" view="month" dateFormat="mm/yy" (ngModelChange)="onDateChange($event)"
+        placeholder="Select Month" [showIcon]="true" [style]="{'width': '12rem'}"></p-datepicker>
+    </div>
+
+    <div class="flex align-items-center gap-1">
+      <span class="p-input-icon-left">
+        <i class="pi pi-search"></i>
+        <input pInputText type="text" name="transactionSearch" autocomplete="off" [(ngModel)]="globalSearch"
+          (keyup.enter)="onSearch()" placeholder="Search..." class="w-15rem" />
+      </span>
+      <p-button icon="pi pi-search" [text]="true" severity="primary" size="small" (onClick)="onSearch()"
+        pTooltip="Run Search"></p-button>
+      @if (globalSearch) {
+      <p-button icon="pi pi-times" [text]="true" severity="secondary" size="small" (onClick)="clearSearch()"
+        pTooltip="Clear Search"></p-button>
+      }
+    </div>
+
+    <div class="flex align-items-center gap-2">
+      <label class="font-semibold text-sm">Category</label>
+      <p-select [options]="categoryOptions" [(ngModel)]="selectedCategory" optionLabel="label" optionValue="value"
+        placeholder="All Categories" [showClear]="true" (onChange)="onCategoryChange()"
+        [style]="{'min-width': '12rem'}">
+      </p-select>
+    </div>
   </div>
 
-  <!-- SUMMARY CARDS (Feature 2) -->
+  <!-- SUMMARY CARDS -->
   @if(summary) {
-  <div class="grid mb-4">
-    <div class="col-12 md:col-4">
-      <p-card header="Current Balance">
-        <p class="text-2xl font-bold">{{ summary.currentBalance | currency:'INR' }}</p>
+  <div class="summary-cards-grid mb-4">
+    <div class="summary-card-wrapper">
+      <p-card>
+        <ng-template pTemplate="header">
+          <div class="summary-card-header">
+            <i class="pi pi-wallet summary-icon closing-icon"></i>
+            <span class="text-sm font-semibold text-color-secondary">Closing Balance</span>
+          </div>
+        </ng-template>
+        <p class="summary-value" [class.text-green-500]="summary.currentBalance >= 0" [class.text-red-500]="summary.currentBalance < 0">
+          {{ summary.currentBalance | currency:'INR' }}
+        </p>
       </p-card>
     </div>
-    <div class="col-12 md:col-4">
-      <p-card header="Total Income (This Month)">
-        <p class="text-2xl font-bold text-green-500">{{ summary.totalIncome | currency:'INR' }}</p>
+    <div class="summary-card-wrapper">
+      <p-card>
+        <ng-template pTemplate="header">
+          <div class="summary-card-header">
+            <i class="pi pi-arrow-down summary-icon income-icon"></i>
+            <span class="text-sm font-semibold text-color-secondary">Total Income</span>
+          </div>
+        </ng-template>
+        <p class="summary-value text-green-500">
+          {{ summary.totalIncome | currency:'INR' }}
+        </p>
       </p-card>
     </div>
-    <div class="col-12 md:col-4">
-      <p-card header="Total Expenses (This Month)">
-        <p class="text-2xl font-bold text-red-500">{{ summary.totalExpenses | currency:'INR' }}</p>
+    <div class="summary-card-wrapper">
+      <p-card>
+        <ng-template pTemplate="header">
+          <div class="summary-card-header">
+            <i class="pi pi-arrow-up summary-icon expense-icon"></i>
+            <span class="text-sm font-semibold text-color-secondary">Total Expenditure</span>
+          </div>
+        </ng-template>
+        <p class="summary-value text-red-500">
+          {{ summary.totalExpenses | currency:'INR' }}
+        </p>
       </p-card>
     </div>
   </div>
@@ -31,9 +85,7 @@
 
   <p-card header="Transactions">
     <ng-template pTemplate="header">
-      <div class="flex justify-content-end">
-        <p-button label="New Transaction" icon="pi pi-plus" (onClick)="showTransactionForm()"></p-button>
-      </div>
+      <!-- Removed redundant button as it is present in filter bar -->
     </ng-template>
 
     @if (ready) {

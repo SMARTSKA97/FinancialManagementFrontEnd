@@ -32,6 +32,8 @@ export interface TransactionQueryParams {
   pageNumber: number;
   pageSize: number;
   globalSearch?: string;
+  sortBy?: string;
+  sortOrder?: string;
   filters: { [key: string]: string };
 }
 

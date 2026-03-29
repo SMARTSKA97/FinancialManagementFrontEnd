@@ -10,7 +10,7 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
 import { providePrimeNG } from 'primeng/config';
 import Aura from '@primeuix/themes/aura';
 import { DialogService } from 'primeng/dynamicdialog';
-import { MessageService } from 'primeng/api';
+import { MessageService, ConfirmationService } from 'primeng/api';
 import { Auth } from './core/services/auth';
 import { firstValueFrom } from 'rxjs';
 
@@ -72,12 +72,19 @@ export const appConfig: ApplicationConfig = {
     provideAnimationsAsync(),
     MessageService,
     DialogService,
+    ConfirmationService,
     providePrimeNG({
       theme: {
         preset: Aura,
         options: {
           darkModeSelector: '.my-app-dark'
         }
+      },
+      zIndex: {
+        modal: 2000,
+        overlay: 2000,
+        menu: 2000,
+        tooltip: 2000
       }
     }),
     {
