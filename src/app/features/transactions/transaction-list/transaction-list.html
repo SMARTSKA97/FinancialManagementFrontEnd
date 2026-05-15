@@ -1,52 +1,76 @@
 <p-confirmDialog></p-confirmDialog>
 <p-toast></p-toast>
 
-<div class="p-4">
-  <div class="mb-4">
-    <a routerLink="/app/accounts" class="no-underline">
-      <p-button label="Back to Accounts" icon="pi pi-arrow-left" class="p-button-text"></p-button>
-    </a>
+<div class="px-3 md:px-5">
+  <div class="flex flex-column md:flex-row md:align-items-center md:justify-content-between mb-4">
+    <div class="flex align-items-center gap-3">
+      <h1 class="text-3xl font-bold m-0">Transactions</h1>
+      <p-datepicker [ngModel]="selectedDate()" view="month" dateFormat="mm/yy" [showIcon]="true"
+        (ngModelChange)="selectedDate.set($event); onFilterChange()" placeholder="Select Month"></p-datepicker>
+    </div>
+    <div class="mt-3 md:mt-0">
+      <p-button label="New Transaction" icon="pi pi-plus" (onClick)="showTransactionForm()"
+        severity="primary"></p-button>
+    </div>
   </div>
 
   <!-- SUMMARY CARDS (Feature 2) -->
-  @if(summary) {
+  @if(summary()) {
   <div class="grid mb-4">
-    <div class="col-12 md:col-4">
-      <p-card header="Current Balance">
-        <p class="text-2xl font-bold">{{ summary.currentBalance | currency:'INR' }}</p>
-      </p-card>
+    <div class="col-12 sm:col-6 lg:col-3">
+      <app-stat-card label="B/F Amount" [value]="((summary()?.broughtForwardAmount || 0) | currency:'INR')!"
+        icon="pi pi-history" iconColor="var(--orange-500)" secondaryValue="Opening balance for this month">
+      </app-stat-card>
     </div>
-    <div class="col-12 md:col-4">
-      <p-card header="Total Income (This Month)">
-        <p class="text-2xl font-bold text-green-500">{{ summary.totalIncome | currency:'INR' }}</p>
-      </p-card>
+    <div class="col-12 sm:col-6 lg:col-3">
+      <app-stat-card label="Current Balance" [value]="(summary()?.currentBalance | currency:'INR')!" icon="pi pi-wallet"
+        iconColor="var(--blue-500)"></app-stat-card>
     </div>
-    <div class="col-12 md:col-4">
-      <p-card header="Total Expenses (This Month)">
-        <p class="text-2xl font-bold text-red-500">{{ summary.totalExpenses | currency:'INR' }}</p>
-      </p-card>
+    <div class="col-12 sm:col-6 lg:col-3">
+      <app-stat-card label="Monthly Income" [value]="(summary()?.totalIncome | currency:'INR')!" icon="pi pi-arrow-up"
+        iconColor="var(--green-500)"></app-stat-card>
+    </div>
+    <div class="col-12 sm:col-6 lg:col-3">
+      <app-stat-card label="Monthly Expenses" [value]="(summary()?.totalExpenses | currency:'INR')!"
+        icon="pi pi-arrow-down" iconColor="var(--red-500)"></app-stat-card>
     </div>
   </div>
   }
 
-  <p-card header="Transactions">
+  <p-card>
     <ng-template pTemplate="header">
-      <div class="flex justify-content-end">
-        <p-button label="New Transaction" icon="pi pi-plus" (onClick)="showTransactionForm()"></p-button>
+      <div
+        class="flex flex-wrap align-items-center justify-content-between gap-3 px-3 py-2 border-bottom-1 surface-border">
+        <div class="flex flex-wrap gap-2 text-sm">
+          <p-iconfield class="w-full md:w-30rem">
+            <p-inputicon class="pi pi-search"></p-inputicon>
+            <input type="text" pInputText [ngModel]="searchTerm()"
+              (ngModelChange)="searchTerm.set($event); onFilterChange()" placeholder="Search transactions..."
+              class="w-full" />
+          </p-iconfield>
+
+          <p-datepicker [ngModel]="selectedDate()" view="month" dateFormat="mm/yy" [showIcon]="true"
+            (ngModelChange)="selectedDate.set($event); onFilterChange()" placeholder="Select Month"
+            class="w-12rem"></p-datepicker>
+        </div>
+
+        <div class="flex gap-2">
+          <p-button label="New Transaction" icon="pi pi-plus" (onClick)="showTransactionForm()"
+            severity="primary"></p-button>
+        </div>
       </div>
     </ng-template>
 
-    @if (ready) {
-    <app-data-table [data]="transactions" [columns]="transactionColumns" [lazy]="true" [totalRecords]="totalRecords"
-      [rows]="rows" [loading]="isLoading" (onLazyLoad)="onLazyLoad($event)">
-      <ng-template #actions let-transaction>
+    @if (ready()) {
+    <app-data-table [data]="transactions()" [columns]="transactionColumns" [loading]="isLoading()" [lazy]="true"
+      [totalRecords]="totalRecords()" [rows]="rows()" (onLazyLoad)="onLazyLoad($event)">
+      <ng-template #actions let-item>
         <div class="flex gap-2">
-          <p-button icon="pi pi-pencil" class="p-button-text p-button-rounded"
-            (onClick)="showTransactionForm(transaction)"></p-button>
-          <p-button icon="pi pi-trash" class="p-button-text p-button-rounded p-button-danger"
-            (onClick)="deleteTransaction(transaction)"></p-button>
-          <p-button icon="pi pi-sync" class="p-button-text p-button-rounded"
-            (onClick)="showSwitchAccountForm(transaction)" pTooltip="Switch Account" tooltipPosition="top"></p-button>
+          <p-button icon="pi pi-pencil" [text]="true" [rounded]="true" (onClick)="showTransactionForm(item)"></p-button>
+          <p-button icon="pi pi-trash" [text]="true" [rounded]="true" severity="danger"
+            (onClick)="deleteTransaction(item)"></p-button>
+          <p-button icon="pi pi-sync" [text]="true" [rounded]="true" (onClick)="showSwitchAccountForm(item)"
+            pTooltip="Switch Account" tooltipPosition="top"></p-button>
         </div>
       </ng-template>
     </app-data-table>

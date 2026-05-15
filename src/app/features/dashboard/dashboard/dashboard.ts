@@ -1,22 +1,27 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, computed, signal, OnInit } from '@angular/core';
-import { Account } from '../../accounts/account';
-import { DashboardState } from '../../../core/state/dashboard-state.service';
-import { DashboardSummary, SpendingByCategory } from '../dashboard';
-import { CardModule } from 'primeng/card';
-import { ChartModule } from 'primeng/chart';
-import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { CurrencyPipe, DatePipe, NgClass } from '@angular/common';
-
-import { ButtonModule } from 'primeng/button';
 import { RouterLink } from '@angular/router';
-import { DatePickerModule } from 'primeng/datepicker';
 import { FormsModule } from '@angular/forms';
+import { DashboardState } from '../../../core/state/dashboard-state.service';
 import { BudgetProgressWidget } from '../../budgets/budget-progress-widget/budget-progress-widget';
 import { FinancialHealthWidget } from '../financial-health-widget/financial-health-widget';
+import { sharedPrimeModules } from '../../../shared/prime-imports';
+import { StatCard } from '../../../shared/components/stat-card/stat-card';
+import { BreadcrumbService } from '../../../core/layout/breadcrumb.service';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [CardModule, ChartModule, ProgressSpinnerModule, CurrencyPipe, DatePipe, NgClass, ButtonModule, RouterLink, DatePickerModule, FormsModule, BudgetProgressWidget, FinancialHealthWidget],
+  imports: [
+    ...sharedPrimeModules,
+    CurrencyPipe,
+    DatePipe,
+    NgClass,
+    RouterLink,
+    FormsModule,
+    BudgetProgressWidget,
+    FinancialHealthWidget,
+    StatCard
+  ],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -41,38 +46,25 @@ export class Dashboard implements OnInit {
   // Compute chart data from the state signal
   spendingChartData = computed(() => {
     const data = this.state.spending();
-    const documentStyle = getComputedStyle(document.documentElement);
+    if (!data) return { labels: [], datasets: [] };
 
-    // Premium curated aesthetic colors for the doughnut chart
     const colors = [
-      '#3B82F6', // blue-500
-      '#8B5CF6', // purple-500
-      '#14B8A6', // teal-500
-      '#F97316', // orange-500
-      '#EC4899', // pink-500
-      '#06B6D4', // cyan-500
-      '#6366F1'  // indigo-500
+      '#3B82F6', '#8B5CF6', '#14B8A6', '#F97316', '#EC4899', '#06B6D4', '#6366F1'
     ];
 
     const hoverColors = [
-      '#60A5FA', // blue-400
-      '#A78BFA', // purple-400
-      '#2DD4BF', // teal-400
-      '#FB923C', // orange-400
-      '#F472B6', // pink-400
-      '#22D3EE', // cyan-400
-      '#818CF8'  // indigo-400
+      '#60A5FA', '#A78BFA', '#2DD4BF', '#FB923C', '#F472B6', '#22D3EE', '#818CF8'
     ];
 
     return {
-      labels: data?.map(item => item.categoryName) || [],
+      labels: data.map((item: any) => item.categoryName),
       datasets: [
         {
-          data: data?.map(item => item.totalAmount) || [],
+          data: data.map((item: any) => item.totalAmount),
           backgroundColor: colors,
           hoverBackgroundColor: hoverColors,
           borderWidth: 0,
-          borderRadius: 6, // Smooth edges for doughnut slices
+          borderRadius: 6,
         }
       ]
     };
@@ -88,6 +80,17 @@ export class Dashboard implements OnInit {
   constructor() {
     this.localDate = this.selectedGlobalDate();
     this.state.refresh();
+
+    // Breadcrumbs
+    const breadcrumbService = inject(BreadcrumbService);
+    breadcrumbService.setItems([
+      { label: 'Dashboard', icon: 'pi pi-home' }
+    ]);
+
+    // Soft Reset Subscription
+    breadcrumbService.refresh$.subscribe(() => {
+      this.state.refresh();
+    });
   }
 
   ngOnInit() {
@@ -98,8 +101,8 @@ export class Dashboard implements OnInit {
     }, 50);
   }
 
-  onDateChange(newDate: Date) {
-    if (newDate) {
+  onDateChange(newDate: any) {
+    if (newDate instanceof Date) {
       this.state.updateDate(newDate);
     }
   }

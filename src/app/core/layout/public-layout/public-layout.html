@@ -22,22 +22,20 @@
 
             <!-- Right Side Actions -->
             <div class="flex align-items-center gap-3">
-                <p-button [icon]="themeService.getCurrentTheme() === 'light' ? 'pi pi-moon' : 'pi pi-sun'"
-                    styleClass="p-button-text p-button-rounded" (onClick)="themeService.toggleTheme()">
+                <p-button [icon]="themeService.getCurrentTheme() === 'light' ? 'pi pi-moon' : 'pi pi-sun'" [text]="true"
+                    [rounded]="true" (onClick)="themeService.toggleTheme()">
                 </p-button>
 
                 @if(isLoggedIn()) {
                 <a routerLink="/app/dashboard" class="no-underline hidden sm:block">
-                    <p-button label="Go to Dashboard" icon="pi pi-arrow-right" iconPos="right"
-                        styleClass="p-button-sm"></p-button>
+                    <p-button label="Go to Dashboard" icon="pi pi-arrow-right" iconPos="right" size="small"></p-button>
                 </a>
                 } @else {
                 <a routerLink="/login" class="no-underline hidden sm:block">
-                    <p-button label="Log In" styleClass="p-button-text p-button-sm"></p-button>
+                    <p-button label="Log In" [text]="true" size="small"></p-button>
                 </a>
                 <a routerLink="/register" class="no-underline hidden sm:block">
-                    <p-button label="Get Started" icon="pi pi-arrow-right" iconPos="right"
-                        styleClass="p-button-sm"></p-button>
+                    <p-button label="Get Started" icon="pi pi-arrow-right" iconPos="right" size="small"></p-button>
                 </a>
                 }
             </div>

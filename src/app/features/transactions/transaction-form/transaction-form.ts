@@ -1,24 +1,19 @@
-import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal, computed } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { Transaction } from '../transaction';
 import { TransactionType } from '../../../core/models/transaction-type';
-
-import { InputTextModule } from 'primeng/inputtext';
-import { InputNumberModule } from 'primeng/inputnumber';
-import { ButtonModule } from 'primeng/button';
-import { DatePickerModule } from 'primeng/datepicker';
-import { SelectModule } from 'primeng/select';
 import { Category, TransactionCategory } from '../../categories/category';
 import { firstValueFrom } from 'rxjs';
 import { Account } from '../../accounts/account';
 import { MessageService } from 'primeng/api';
-import { ToastModule } from 'primeng/toast';
 import { AccountState } from '../../../core/state/account-state.service';
+import { sharedPrimeModules } from '../../../shared/prime-imports';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-transaction-form',
-  imports: [ReactiveFormsModule, InputTextModule, InputNumberModule, ButtonModule, DatePickerModule, SelectModule, ToastModule],
+  imports: [CommonModule, ReactiveFormsModule, ...sharedPrimeModules],
   templateUrl: './transaction-form.html',
   styleUrl: './transaction-form.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -34,19 +29,26 @@ export class TransactionForm implements OnInit {
 
   transactionForm: FormGroup;
   transactionTypes: any[];
-  categories: TransactionCategory[] = [];
-  accounts: Account[] = []; // For the transfer dropdown
-  currentFilter: string = '';
+  categories = signal<TransactionCategory[]>([]);
+  accounts = signal<Account[]>([]);
+  currentFilter = signal<string>('');
 
-  isEditMode = false;
-  isTransfer = false;
+  isEditMode = signal(false);
+  isTransfer = signal(false);
   currentAccountId: number;
+  isSubmitting = signal<boolean>(false);
+
+  isNewCategory = computed(() => {
+    const filter = this.currentFilter().trim().toLowerCase();
+    if (!filter) return false;
+    return !this.categories().some(c => c.name.toLowerCase() === filter);
+  });
 
   constructor() {
     // Get data passed from the parent component
     this.currentAccountId = this.config.data.currentAccountId;
     const transactionData = this.config.data.transaction;
-    this.isEditMode = !!transactionData;
+    this.isEditMode.set(!!transactionData);
 
     this.transactionForm = this.fb.group({
       id: [null],
@@ -64,7 +66,7 @@ export class TransactionForm implements OnInit {
     ];
 
     // Patch form if we are in edit mode
-    if (this.isEditMode) {
+    if (this.isEditMode()) {
       this.transactionForm.patchValue(transactionData);
       this.transactionForm.patchValue({ date: new Date(transactionData.date) });
     }
@@ -77,15 +79,15 @@ export class TransactionForm implements OnInit {
   async loadInitialData(): Promise<void> {
     // Fetch categories
     const categories = await firstValueFrom(this.categoryService.getTransactionCategories());
-    this.categories = categories;
+    this.categories.set(categories);
 
     // Use state for accounts
-    this.accounts = this.accountState.accounts().filter(a => a.id !== this.currentAccountId);
+    this.accounts.set(this.accountState.accounts().filter(a => a.id !== this.currentAccountId));
 
     // After data is loaded, check if we are editing a transfer
-    if (this.isEditMode) {
+    if (this.isEditMode()) {
       const transactionData = this.config.data.transaction;
-      const category = this.categories.find(c => c.name === transactionData.categoryName);
+      const category = this.categories().find(c => c.name === transactionData.categoryName);
       if (category) {
         this.transactionForm.patchValue({ transactionCategoryId: category.id });
         // Manually trigger the check
@@ -101,15 +103,15 @@ export class TransactionForm implements OnInit {
 
   checkIfTransfer(categoryId: number | null): void {
 
-    const category = this.categories.find(c => c.id === categoryId);
-    this.isTransfer = category?.isTransferCategory || false;
+    const category = this.categories().find(c => c.id === categoryId);
+    this.isTransfer.set(category?.isTransferCategory || false);
 
 
 
     const typeControl = this.transactionForm.get('type');
     const destAccountControl = this.transactionForm.get('destinationAccountId');
 
-    if (this.isTransfer) {
+    if (this.isTransfer()) {
       // If it's a transfer, force type to Expense and make "Transfer to" required
       typeControl?.setValue(TransactionType.Expense);
       typeControl?.disable();
@@ -123,22 +125,18 @@ export class TransactionForm implements OnInit {
   }
 
   // --- (Add-on-the-fly category logic) ---
-  isNewCategory(): boolean {
-    const filter = this.currentFilter.trim().toLowerCase();
-    if (!filter) return false;
-    return !this.categories.some(c => c.name.toLowerCase() === filter);
-  }
+  // isNewCategory is now a computed signal
 
   async addNewCategory(): Promise<void> {
-    let newCategoryName = this.currentFilter.trim();
+    let newCategoryName = this.currentFilter().trim();
     if (newCategoryName) {
       // Capitalize first letter
       newCategoryName = newCategoryName.charAt(0).toUpperCase() + newCategoryName.slice(1);
       try {
         const newCategory = await firstValueFrom(this.categoryService.upsertTransactionCategory({ name: newCategoryName }));
-        this.categories = [...this.categories, newCategory];
+        this.categories.update(cats => [...cats, newCategory]);
         this.transactionForm.get('transactionCategoryId')?.setValue(newCategory.id);
-        this.currentFilter = '';
+        this.currentFilter.set('');
       } catch (err: any) {
         this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Failed to create new category' });
       }
@@ -146,26 +144,28 @@ export class TransactionForm implements OnInit {
   }
 
   filterCategories(event: { filter: string }): void {
-    this.currentFilter = event.filter;
+    this.currentFilter.set(event.filter);
   }
 
   // --- UPDATED SUBMIT LOGIC ---
   async onSubmit(): Promise<void> {
-    if (this.transactionForm.invalid) {
+    if (this.transactionForm.invalid || this.isSubmitting()) {
       this.transactionForm.markAllAsTouched();
       return;
     }
 
+    this.isSubmitting.set(true);
     const formValue = this.transactionForm.getRawValue();
 
     try {
-      if (this.isTransfer) {
+      if (this.isTransfer()) {
         // --- Call the new TRANSFER service method ---
         const transferData = {
           amount: formValue.amount,
           date: formValue.date.toISOString(),
           destinationAccountId: formValue.destinationAccountId,
-          description: formValue.description
+          description: formValue.description,
+          transactionCategoryId: formValue.transactionCategoryId
         };
         await firstValueFrom(this.transactionService.createTransfer(this.currentAccountId, transferData));
       } else {
@@ -185,6 +185,7 @@ export class TransactionForm implements OnInit {
       this.ref.close(true); // Close the dialog and signal success
     } catch (err: any) {
       this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Failed to save transaction' });
+      this.isSubmitting.set(false);
     }
   }
 }

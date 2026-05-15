@@ -1,5 +1,10 @@
-@import "primeicons/primeicons.css";
-@import 'primeflex/primeflex.css';
+@use "primeicons/primeicons.css";
+@use "primeflex/primeflex.css";
+
+/* Fix Toast Z-Index */
+.p-toast {
+  z-index: 999999 !important;
+}
 
 /* --- Application CSS Variables --- */
 :root {
@@ -394,6 +399,16 @@ button[aria-label="Close"] {
   }
 }
 
+/* Fix DatePicker Border/Shadow Artifact */
+.p-datepicker-input {
+  box-shadow: none !important;
+}
+
+.p-datepicker:not(.p-datepicker-inline) {
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: var(--glass-shadow) !important;
+}
+
 .auth-background .p-inputtext,
 .auth-background .p-password input {
   padding: 1rem !important;
@@ -412,7 +427,11 @@ label {
   font-weight: 500;
   font-size: 0.95rem;
   display: block;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.field {
+  margin-bottom: 0.75rem !important;
 }
 
 .p-error {
@@ -614,4 +633,8 @@ body.compact-view {
   .grid>[class*="col"] {
     padding: 0.25rem;
   }
+}
+
+.p-toast {
+  z-index: 10002 !important;
 }

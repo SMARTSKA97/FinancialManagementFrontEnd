@@ -1,21 +1,15 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { ButtonModule } from 'primeng/button';
-import { CardModule } from 'primeng/card';
-import { InputTextModule } from 'primeng/inputtext';
-import { PasswordModule } from 'primeng/password';
-import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { Auth, ChangePasswordDto } from '../../../core/services/auth';
 import { HttpErrorResponse } from '@angular/common/http';
-
 import { CommonModule } from '@angular/common';
+import { sharedPrimeModules } from '../../../shared/prime-imports';
 
 @Component({
   selector: 'app-change-password',
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, CardModule, InputTextModule, PasswordModule, ButtonModule, ToastModule],
+  imports: [CommonModule, ReactiveFormsModule, ...sharedPrimeModules],
   templateUrl: './change-password.component.html',
   styles: [`
     :host {

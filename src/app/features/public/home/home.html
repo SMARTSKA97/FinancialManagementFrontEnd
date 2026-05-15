@@ -51,21 +51,26 @@
         </div>
     </div>
 
-    <!-- Real Stats Section -->
     <div class="text-center py-6 mb-6">
-        <div class="grid max-w-4xl mx-auto">
-            <div class="col-4">
-                <h2 class="text-4xl font-bold m-0" style="color: #10b981;">{{ stats().totalUsers | number }}+</h2>
+        <div class="grid max-w-5xl mx-auto">
+            <div class="col-6 md:col-3 mb-4 md:mb-0">
+                <h2 class="text-4xl font-bold m-0" style="color: #10b981;">{{ formatValue(stats().totalUsers) }}+</h2>
                 <p style="color: var(--text-muted);">Active Users</p>
             </div>
-            <div class="col-4">
-                <h2 class="text-4xl font-bold m-0" style="color: #38bdf8;">{{ stats().totalAccounts | number }}+</h2>
+            <div class="col-6 md:col-3 mb-4 md:mb-0">
+                <h2 class="text-4xl font-bold m-0" style="color: #38bdf8;">{{ formatValue(stats().totalAccounts) }}+
+                </h2>
                 <p style="color: var(--text-muted);">Accounts Managed</p>
             </div>
-            <div class="col-4">
-                <h2 class="text-4xl font-bold m-0" style="color: #818cf8;">{{ stats().totalTransactions | number }}+
+            <div class="col-6 md:col-3">
+                <h2 class="text-4xl font-bold m-0" style="color: #818cf8;">{{ formatValue(stats().totalTransactions) }}+
                 </h2>
                 <p style="color: var(--text-muted);">Transactions Tracked</p>
+            </div>
+            <div class="col-6 md:col-3">
+                <h2 class="text-4xl font-bold m-0" style="color: #f59e0b;">{{
+                    formatValue(stats().totalTransactionVolume) }}+</h2>
+                <p style="color: var(--text-muted);">Volume Handled (₹)</p>
             </div>
         </div>
     </div>

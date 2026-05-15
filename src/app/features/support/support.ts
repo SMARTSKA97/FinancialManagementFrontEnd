@@ -1,21 +1,14 @@
 import { Component, inject } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { AccountCategory, Category } from '../categories/category';
 import { firstValueFrom } from 'rxjs';
-import { CardModule } from 'primeng/card';
-import { ButtonModule } from 'primeng/button';
-import { SelectModule } from "primeng/select";
-import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
-
 import { EditorModule } from 'primeng/editor';
-import { InputTextModule } from 'primeng/inputtext';
 import { GenericApi } from '../../core/services/generic-api';
+import { sharedPrimeModules } from '../../shared/prime-imports';
 
 @Component({
   selector: 'app-support',
-  imports: [CardModule, ButtonModule, SelectModule, ToastModule, ReactiveFormsModule, EditorModule, InputTextModule],
+  imports: [ReactiveFormsModule, EditorModule, ...sharedPrimeModules],
   templateUrl: './support.html',
   styleUrl: './support.scss',
   providers: [MessageService]

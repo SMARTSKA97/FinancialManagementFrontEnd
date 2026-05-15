@@ -1,9 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ButtonModule } from 'primeng/button';
-import { SelectModule } from 'primeng/select';
-import { InputNumberModule } from 'primeng/inputnumber';
-import { DatePickerModule } from 'primeng/datepicker';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { ValidationService } from '../../../core/services/validation.service';
 import { GenericCrud } from '../../../core/services/generic-crud';
@@ -13,10 +9,11 @@ import { NotificationService } from '../../../core/services/notification.service
 import { FormField } from '../../../shared/components/form-field/form-field';
 import { BudgetPeriod } from '../../../core/models/budget.model';
 import { CommonModule } from '@angular/common';
+import { sharedPrimeModules } from '../../../shared/prime-imports';
 
 @Component({
     selector: 'app-budget-form',
-    imports: [CommonModule, ReactiveFormsModule, ButtonModule, SelectModule, InputNumberModule, DatePickerModule, FormField],
+    imports: [CommonModule, ReactiveFormsModule, FormField, ...sharedPrimeModules],
     templateUrl: './budget-form.html',
     styleUrl: './budget-form.scss',
     changeDetection: ChangeDetectionStrategy.OnPush

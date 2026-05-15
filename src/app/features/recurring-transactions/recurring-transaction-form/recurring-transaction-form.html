@@ -26,7 +26,7 @@
         <div class="col-12 md:col-6">
             <app-form-field label="Amount" inputId="amount" [control]="recurringForm.get('amount')">
                 <p-inputNumber formControlName="amount" mode="currency" currency="INR" locale="en-IN" placeholder="0.00"
-                    id="amount">
+                    id="amount" class="w-full">
                 </p-inputNumber>
             </app-form-field>
         </div>
@@ -65,7 +65,9 @@
     </div>
 
     <div class="flex justify-content-end gap-2 mt-1">
-        <p-button label="Cancel" icon="pi pi-times" severity="secondary" type="button" (click)="ref.close()"></p-button>
-        <p-button label="Save Schedule" icon="pi pi-check" type="submit" [loading]="isSubmitting()"></p-button>
+        <p-button label="Cancel" icon="pi pi-times" severity="secondary" type="button" (onClick)="ref.close()"
+            [disabled]="isSubmitting()"></p-button>
+        <p-button label="Save Schedule" icon="pi pi-check" type="submit"
+            [disabled]="recurringForm.invalid || isSubmitting()" [loading]="isSubmitting()"></p-button>
     </div>
 </form>

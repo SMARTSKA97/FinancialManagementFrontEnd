@@ -4,7 +4,10 @@
 }
 
 .p-fluid {
-    .p-dropdown, .p-inputnumber, .p-datepicker {
+
+    .p-select,
+    .p-inputnumber,
+    .p-datepicker {
         width: 100%;
     }
 }

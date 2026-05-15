@@ -9,10 +9,13 @@ import { environment } from '../../../../environments/environment';
 import { AvatarModule } from 'primeng/avatar';
 import { PopoverModule } from 'primeng/popover';
 import { Theme } from '../../services/theme';
+import { BreadcrumbService } from '../breadcrumb.service';
+import { BreadcrumbModule } from 'primeng/breadcrumb';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-layout',
-  imports: [RouterOutlet, DrawerModule, ButtonModule, MenuModule, AvatarModule, PopoverModule],
+  imports: [RouterOutlet, DrawerModule, ButtonModule, MenuModule, AvatarModule, PopoverModule, BreadcrumbModule, CommonModule],
   templateUrl: './layout.html',
   styleUrl: './layout.scss'
 })
@@ -20,6 +23,7 @@ import { Theme } from '../../services/theme';
 export class Layout {
   public authService = inject(Auth);
   public themeService = inject(Theme);
+  public breadcrumbService = inject(BreadcrumbService);
   private router = inject(Router);
 
   sidebarVisible = false;
@@ -40,6 +44,8 @@ export class Layout {
           { label: 'Home', icon: 'pi pi-globe', routerLink: '/', command: () => { this.sidebarVisible = false; } },
           { label: 'Dashboard', icon: 'pi pi-home', routerLink: '/app/dashboard', command: () => { this.sidebarVisible = false; } },
           { label: 'Accounts', icon: 'pi pi-wallet', routerLink: '/app/accounts', command: () => { this.sidebarVisible = false; } },
+          { label: 'Budgets', icon: 'pi pi-chart-line', routerLink: '/app/budgets', command: () => { this.sidebarVisible = false; } },
+          { label: 'Recurring', icon: 'pi pi-sync', routerLink: '/app/recurring-transactions', command: () => { this.sidebarVisible = false; } },
         ],
       },
       {

@@ -1,4 +1,4 @@
-import { Component, inject, Input, OnInit, Type, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, inject, Input, OnInit, Type, ChangeDetectionStrategy, ChangeDetectorRef, signal } from '@angular/core';
 import { ConfirmationService } from 'primeng/api';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { GenericCrud } from '../../../core/services/generic-crud';
@@ -13,13 +13,20 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ToastModule } from 'primeng/toast';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { NotificationService } from '../../../core/services/notification.service';
+import { BreadcrumbService } from '../../../core/layout/breadcrumb.service';
+import { SelectModule } from 'primeng/select';
+import { InputTextModule } from 'primeng/inputtext';
+import { FormsModule } from '@angular/forms';
+import { GenericApi } from '../../../core/services/generic-api';
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
 
 @Component({
   selector: 'app-resource-page',
-  imports: [CommonModule, CardModule, ButtonModule, TableModule, DataTable, ProgressSpinnerModule, ConfirmDialogModule, ToastModule, RouterLink],
+  imports: [CommonModule, CardModule, ButtonModule, TableModule, DataTable, ProgressSpinnerModule, ConfirmDialogModule, ToastModule, RouterLink, SelectModule, InputTextModule, FormsModule, IconFieldModule, InputIconModule],
   templateUrl: './resource-page.html',
   styleUrl: './resource-page.scss',
-  providers: [DialogService, ConfirmationService, GenericCrud], // Removed MessageService to use root instance via NotificationService
+  providers: [DialogService, ConfirmationService, GenericCrud],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ResourcePage<T extends { id: number }> implements OnInit {
@@ -30,6 +37,14 @@ export class ResourcePage<T extends { id: number }> implements OnInit {
   private notificationService = inject(NotificationService); // Injected wrapper
   private route = inject(ActivatedRoute);
   private cdr = inject(ChangeDetectorRef);
+  private breadcrumbService = inject(BreadcrumbService);
+  private apiService = inject(GenericApi);
+
+  // Filters
+  searchTerm = signal<string>('');
+  selectedCategoryId = signal<number | null>(null);
+  categories = signal<any[]>([]);
+  showCategoryFilter = signal<boolean>(false);
 
   // ... rest of inputs ...
   @Input() title: string = '';
@@ -66,11 +81,36 @@ export class ResourcePage<T extends { id: number }> implements OnInit {
     }
     this.endpoint = endpoint;
 
-    // Initial load will be handled by datatable's onLazyLoad if lazy=true,
-    // but we can also trigger a default load here if needed.
-    // this.loadData({ first: 0, rows: 10 }); 
+    // Show category filter only for Accounts
+    if (this.title === 'Accounts') {
+      this.showCategoryFilter.set(true);
+      this.fetchCategories();
+    }
+
+    // Set Breadcrumbs
+    this.breadcrumbService.setItems([
+      { label: this.title }
+    ]);
+
+    // Handle Soft Reset
+    this.breadcrumbService.refresh$.subscribe(() => {
+      this.refreshData();
+    });
+
     this.ready = true;
     this.cdr.markForCheck();
+  }
+
+  async fetchCategories() {
+    const response = await firstValueFrom(this.apiService.get<any[]>('AccountCategories'));
+    if (response.isSuccess && response.value) {
+      this.categories.set(response.value);
+    }
+  }
+
+  refreshData() {
+    const event = { first: 0, rows: 10 }; // Default or use last event
+    this.onLazyLoad(event);
   }
 
   onLazyLoad(event: any): void {
@@ -85,8 +125,14 @@ export class ResourcePage<T extends { id: number }> implements OnInit {
       pageNumber,
       pageSize,
       sortBy,
-      sortOrder
+      sortOrder,
+      globalSearch: this.searchTerm(),
+      accountCategoryId: this.selectedCategoryId()
     });
+  }
+
+  onFilterChange() {
+    this.refreshData();
   }
 
   async showForm(itemToEdit?: T): Promise<void> {

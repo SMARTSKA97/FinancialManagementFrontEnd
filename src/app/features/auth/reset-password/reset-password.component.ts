@@ -1,31 +1,19 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { ButtonModule } from 'primeng/button';
-import { CardModule } from 'primeng/card';
-import { InputTextModule } from 'primeng/inputtext';
-import { PasswordModule } from 'primeng/password';
-import { ToastModule } from 'primeng/toast';
+import { ActivatedRoute, Router, RouterLink, RouterModule } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { Auth, ResetPasswordDto, VerifyOtpDto } from '../../../core/services/auth';
 import { HttpErrorResponse } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
-import { InputOtpModule } from 'primeng/inputotp';
-import { RouterModule } from '@angular/router';
+import { sharedPrimeModules } from '../../../shared/prime-imports';
 
 @Component({
     selector: 'app-reset-password',
-    standalone: true,
     imports: [
         CommonModule,
         ReactiveFormsModule,
-        CardModule,
-        InputTextModule,
-        ButtonModule,
         RouterModule,
-        PasswordModule,
-        ToastModule,
-        InputOtpModule
+        ...sharedPrimeModules
     ],
     templateUrl: './reset-password.component.html',
     styles: [`
@@ -48,6 +36,8 @@ export class ResetPasswordComponent implements OnInit {
     isSubmitting = false;
     email = '';
     step = 1;
+    resendCountdown = signal(0);
+    private timerInterval: any;
 
     constructor() {
         this.form = this.fb.group({
@@ -58,16 +48,50 @@ export class ResetPasswordComponent implements OnInit {
     }
 
     ngOnInit(): void {
-        // Clear any stale session to prevent interference
         this.authService.cleanSession();
-
         this.route.queryParams.subscribe(params => {
             this.email = params['email'] || '';
-
             if (!this.email) {
-                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Email missing. Please restart the password reset process.' });
+                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Email missing. Please restart.' });
             }
         });
+    }
+
+    onResendCode() {
+        if (this.resendCountdown() > 0 || !this.email || this.isSubmitting) return;
+
+        this.isSubmitting = true;
+        this.cdr.markForCheck();
+
+        this.authService.forgotPassword({ email: this.email }).subscribe({
+            next: (res) => {
+                this.isSubmitting = false;
+                if (res.isSuccess) {
+                    this.messageService.add({ severity: 'success', summary: 'Success', detail: 'A new code has been sent to your email.' });
+                    this.startResendTimer();
+                } else {
+                    this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to resend code.' });
+                }
+                this.cdr.markForCheck();
+            },
+            error: () => {
+                this.isSubmitting = false;
+                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'An error occurred while resending.' });
+                this.cdr.markForCheck();
+            }
+        });
+    }
+
+    private startResendTimer() {
+        this.resendCountdown.set(60);
+        if (this.timerInterval) clearInterval(this.timerInterval);
+        this.timerInterval = setInterval(() => {
+            this.resendCountdown.update(v => (v > 0 ? v - 1 : 0));
+            if (this.resendCountdown() === 0) {
+                clearInterval(this.timerInterval);
+            }
+            this.cdr.markForCheck();
+        }, 1000);
     }
 
     passwordMatchValidator(g: FormGroup) {

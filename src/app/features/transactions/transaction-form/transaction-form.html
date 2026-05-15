@@ -19,14 +19,14 @@
 
   <div class="field mt-3">
     <label for="category">Category</label>
-    <p-select id="category" [options]="categories" formControlName="transactionCategoryId" optionLabel="name"
+    <p-select id="category" [options]="categories()" formControlName="transactionCategoryId" optionLabel="name"
       optionValue="id" [showClear]="true" placeholder="Select or type to add" class="w-full" [filter]="true"
       appendTo="body" (onFilter)="filterCategories($event)" (onChange)="onCategoryChange($event)">
       <!-- Add change event -->
       <ng-template pTemplate="footer">
         @if (isNewCategory()) {
         <div class="p-2 border-top-1 surface-border">
-          <p-button label="Create '{{ currentFilter }}'" class="p-button-link" (onClick)="addNewCategory()"></p-button>
+          <p-button label="Create '{{ currentFilter() }}'" [link]="true" (onClick)="addNewCategory()"></p-button>
         </div>
         }
       </ng-template>
@@ -34,10 +34,10 @@
   </div>
 
   <!-- NEW: Show "Transfer to" only if it's a transfer category -->
-  @if(isTransfer) {
+  @if(isTransfer()) {
   <div class="field mt-3">
     <label for="destinationAccount">Transfer to</label>
-    <p-select id="destinationAccount" [options]="accounts" formControlName="destinationAccountId" optionLabel="name"
+    <p-select id="destinationAccount" [options]="accounts()" formControlName="destinationAccountId" optionLabel="name"
       optionValue="id" [showClear]="true" placeholder="Select destination account" class="w-full" [filter]="true"
       appendTo="body">
     </p-select>
@@ -45,7 +45,7 @@
   }
 
   <!-- NEW: Show "Type" only if it's NOT a transfer -->
-  @if(!isTransfer) {
+  @if(!isTransfer()) {
   <div class="field mt-3">
     <label for="type">Type</label>
     <p-select id="type" [options]="transactionTypes" formControlName="type" optionLabel="label" optionValue="value"
@@ -53,8 +53,10 @@
   </div>
   }
 
-  <div class="flex justify-content-end mt-4">
-    <p-button label="Cancel" class="p-button-secondary" (onClick)="ref.close()"></p-button>
-    <p-button label="Save" type="submit" class="ml-2" [disabled]="transactionForm.invalid"></p-button>
+  <!-- Footer -->
+  <div class="flex justify-content-end gap-2 mt-4 pt-3 border-top-1 surface-border">
+    <p-button label="Cancel" icon="pi pi-times" [text]="true" severity="secondary" (onClick)="ref.close()"></p-button>
+    <p-button label="Save Transaction" icon="pi pi-check" type="submit" [loading]="isSubmitting()"
+      [disabled]="transactionForm.invalid"></p-button>
   </div>
 </form>

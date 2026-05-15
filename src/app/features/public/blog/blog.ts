@@ -4,6 +4,35 @@ import { RouterLink } from '@angular/router';
 export const BLOG_POSTS = [
   // ─── LATEST ─────────────────────────────────────────────────────────────────
   {
+    id: 'v4-7-0-release',
+    tag: 'v4.7.0',
+    tagColor: '#10b981',
+    title: 'v4.7.0 — Redis "Utter Peace" & Infrastructure Stabilization',
+    excerpt: 'Drastically reducing Redis command overhead, fixing critical production migrations, and implementing robust service connectivity.',
+    date: 'May 15, 2026',
+    _dateValue: new Date('2026-05-15'),
+    content: `
+      <h2>The Redis Quota Challenge</h2>
+      <p>Managing serverless Redis on a free tier requires extreme efficiency. Version 4.7.0 introduces "Utter Peace" for our infrastructure, ensuring we stay well within the Upstash command limits without sacrificing functionality.</p>
+
+      <h2>Infrastructure & Performance</h2>
+      <ul>
+        <li><strong>Hangfire Memory Storage:</strong> Background jobs have been migrated from Redis to In-Memory storage, eliminating thousands of heartbeats and state-management commands per hour.</li>
+        <li><strong>Polled Worker Optimization:</strong> The Email Queue Worker has been tuned from a 1-second interval to 1-minute, reducing overhead by 98% while maintaining reliable delivery.</li>
+        <li><strong>Robust Connectivity:</strong> Implemented a resilient Redis URL parser supporting <code>rediss://</code> protocols and enforced 30-second timeouts for high-latency environments like Render.</li>
+      </ul>
+
+      <h2>Data & Security</h2>
+      <ul>
+        <li><strong>Migration Resilience:</strong> Resolved a critical foreign key violation in production migrations. The system now safely backfills legacy data before applying constraints, ensuring zero-downtime schema updates.</li>
+        <li><strong>Vulnerability Shield:</strong> Updated core dependencies, including <code>Newtonsoft.Json</code> to 13.0.3, to resolve high-severity security advisories.</li>
+      </ul>
+
+      <h2>The Road Ahead</h2>
+      <p>With a stable and cost-efficient foundation, we are now shifting focus back to feature expansion and advanced analytics. Stay tuned for deeper financial insights!</p>
+    `
+  },
+  {
     id: 'v4-3-0-release',
     tag: 'v4.3.0',
     tagColor: '#38bdf8',

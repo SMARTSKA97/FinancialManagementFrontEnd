@@ -1,11 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ButtonModule } from 'primeng/button';
-import { SelectModule } from 'primeng/select';
-import { InputNumberModule } from 'primeng/inputnumber';
-import { InputTextModule } from 'primeng/inputtext';
-import { DatePickerModule } from 'primeng/datepicker';
-import { CheckboxModule } from 'primeng/checkbox';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { firstValueFrom } from 'rxjs';
 import { GenericApi } from '../../../core/services/generic-api';
@@ -15,10 +9,11 @@ import { FormField } from '../../../shared/components/form-field/form-field';
 import { RecurrenceFrequency } from '../../../core/models/recurring-transaction.model';
 import { CommonModule } from '@angular/common';
 import { GenericCrud } from '../../../core/services/generic-crud';
+import { sharedPrimeModules } from '../../../shared/prime-imports';
 
 @Component({
     selector: 'app-recurring-transaction-form',
-    imports: [CommonModule, ReactiveFormsModule, ButtonModule, SelectModule, InputNumberModule, InputTextModule, DatePickerModule, CheckboxModule, FormField],
+    imports: [CommonModule, ReactiveFormsModule, FormField, ...sharedPrimeModules],
     templateUrl: './recurring-transaction-form.html',
     styleUrl: './recurring-transaction-form.scss',
     changeDetection: ChangeDetectionStrategy.OnPush

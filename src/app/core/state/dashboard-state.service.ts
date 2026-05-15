@@ -50,7 +50,9 @@ export class DashboardState {
             const spendingReq = this.api.get<SpendingByCategory[]>(`${this.endpoint}/spending-by-category${params}`);
             const insightsReq = this.api.get<DashboardInsightsDto>(`${this.endpoint}/insights${params}`);
             const budgetsReq = this.api.get<any[]>(`Budgets/progress${params.replace('startDate', 'date')}`); // Budget API expects 'date'
-            const healthReq = this.api.get<FinancialHealth>(`${this.endpoint}/financial-health`);
+            const month = current.getMonth() + 1;
+            const year = current.getFullYear();
+            const healthReq = this.api.get<FinancialHealth>(`${this.endpoint}/financial-health?month=${month}&year=${year}`);
 
             const [summaryRes, spendingRes, insightsRes, budgetsRes, healthRes] = await Promise.all([
                 firstValueFrom(summaryReq),

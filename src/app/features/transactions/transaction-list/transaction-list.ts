@@ -1,26 +1,31 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
-import { Transaction } from '../transaction';
-import { ColumnDefinition, DataTable } from '../../../shared/components/data-table/data-table';
-import { asyncScheduler, filter, finalize, firstValueFrom, observeOn, switchMap, tap } from 'rxjs';
-import { ActivatedRoute, RouterLink } from '@angular/router';
-import { ProgressSpinnerModule } from 'primeng/progressspinner';
-import { ButtonModule } from 'primeng/button';
-import { CardModule } from 'primeng/card';
-import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal, computed, ChangeDetectorRef } from '@angular/core';
+import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
+import { ActivatedRoute } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { firstValueFrom } from 'rxjs';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { Transaction } from '../transaction';
+import { ColumnDefinition, DataTable } from '../../../shared/components/data-table/data-table';
 import { TransactionForm } from '../transaction-form/transaction-form';
-import { ToastModule } from "primeng/toast";
-import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { TransactionSwitchForm } from '../transaction-switch-form/transaction-switch-form';
 import { AccountSummary } from '../../dashboard/dashboard';
 import { DashboardService } from '../../dashboard/dashboard';
-import { TransactionSwitchForm } from '../transaction-switch-form/transaction-switch-form';
 import { AccountState } from '../../../core/state/account-state.service';
 import { NotificationService } from '../../../core/services/notification.service';
+import { BreadcrumbService } from '../../../core/layout/breadcrumb.service';
+import { sharedPrimeModules } from '../../../shared/prime-imports';
+import { StatCard } from '../../../shared/components/stat-card/stat-card';
 
 @Component({
   selector: 'app-transaction-list',
-  imports: [CommonModule, RouterLink, CardModule, ButtonModule, ProgressSpinnerModule, DataTable, ToastModule, ConfirmDialogModule],
+  imports: [
+    CommonModule,
+    DataTable,
+    FormsModule,
+    StatCard,
+    ...sharedPrimeModules
+  ],
   templateUrl: './transaction-list.html',
   styleUrl: './transaction-list.scss',
   providers: [DialogService, MessageService, ConfirmationService],
@@ -30,22 +35,32 @@ export class TransactionList implements OnInit {
   private route = inject(ActivatedRoute);
   private transactionService = inject(Transaction);
   private dashboardService = inject(DashboardService);
-  private cdr = inject(ChangeDetectorRef);
   private messageService = inject(MessageService);
   private dialogService = inject(DialogService);
   private confirmationService = inject(ConfirmationService);
   private accountState = inject(AccountState);
   private notificationService = inject(NotificationService);
+  private breadcrumbService = inject(BreadcrumbService);
 
-  transactions: Transaction[] = [];
-  isLoading = false;
-  accountId: number | null = null;
+  transactions = signal<Transaction[]>([]);
+  isLoading = signal(false);
+  accountId = signal<number | null>(null);
   ref: DynamicDialogRef | undefined;
-  summary: AccountSummary | null = null;
-  totalRecords = 0;
-  rows = 10;
+  summary = signal<AccountSummary | null>(null);
+  totalRecords = signal(0);
+  rows = signal(10);
   lastLazyLoadEvent: any;
-  ready = false;
+  ready = signal(false);
+
+  // Filters
+  searchTerm = signal('');
+  selectedDate = signal(new Date());
+
+  constructor() {
+    this.breadcrumbService.refresh$.subscribe(() => {
+      this.loadData(this.lastLazyLoadEvent);
+    });
+  }
 
   transactionColumns: ColumnDefinition[] = [
     { field: 'date', header: 'Date', isDate: true, sortable: true },
@@ -60,61 +75,76 @@ export class TransactionList implements OnInit {
     if (!id || isNaN(id)) {
       return;
     }
-    this.accountId = id;
-    this.ready = true;
-    this.cdr.markForCheck();
+    this.accountId.set(id);
+    this.ready.set(true);
   }
 
   async loadData(event?: any): Promise<void> {
-    this.isLoading = true;
+    this.isLoading.set(true);
     if (event) this.lastLazyLoadEvent = event;
 
     try {
-      if (this.accountId === null) {
+      if (this.accountId() === null) {
         const params = await firstValueFrom(this.route.paramMap);
         const id = Number(params.get('id'));
         if (!id || isNaN(id)) {
           this.notificationService.showError('Invalid account.');
           return;
         }
-        this.accountId = id;
+        this.accountId.set(id);
       }
 
       const pageNumber = event ? (event.first / event.rows + 1) : 1;
-      const pageSize = event ? event.rows : this.rows;
+      const pageSize = event ? event.rows : this.rows();
       const sortBy = event?.sortField || 'date';
       const sortOrder = event?.sortOrder === 1 ? 'asc' : 'desc';
 
       // --- FETCH BOTH DATASETS IN PARALLEL ---
       const [paginatedResult, summaryData] = await Promise.all([
-        firstValueFrom(this.transactionService.getTransactionsForAccount(this.accountId, {
+        firstValueFrom(this.transactionService.getTransactionsForAccount(this.accountId()!, {
           pageNumber,
           pageSize,
           sortBy,
-          sortOrder
+          sortOrder,
+          globalSearch: this.searchTerm(),
+          month: this.selectedDate().getMonth() + 1,
+          year: this.selectedDate().getFullYear()
         })),
-        firstValueFrom(this.dashboardService.getAccountSummary(this.accountId))
+        firstValueFrom(this.dashboardService.getAccountSummary(this.accountId()!))
       ]);
 
-      this.transactions = paginatedResult.data;
-      this.totalRecords = paginatedResult.totalRecords;
-      this.summary = summaryData;
+      this.transactions.set(paginatedResult.data);
+      this.totalRecords.set(paginatedResult.totalRecords);
+      this.summary.set(summaryData);
+
+      // Update Breadcrumbs
+      const accountName = this.accountState.accounts().find(a => a.id === this.accountId())?.name || 'Account';
+      this.breadcrumbService.setItems([
+        { label: 'Accounts', routerLink: '/app/accounts' },
+        { label: accountName },
+        { label: 'Transactions' }
+      ]);
 
       // Sync balance with AccountState (Single Source of Truth)
-      const accountInState = this.accountState.accounts().find(a => a.id === this.accountId);
-      if (accountInState && this.summary) {
-        this.summary.currentBalance = accountInState.balance;
+      const accountInState = this.accountState.accounts().find(a => a.id === this.accountId());
+      const s = this.summary();
+      if (accountInState && s) {
+        s.currentBalance = accountInState.balance;
+        this.summary.set({ ...s });
       }
     } catch (err) {
     } finally {
-      this.isLoading = false;
-      this.cdr.markForCheck();
+      this.isLoading.set(false);
     }
   }
 
   onLazyLoad(event: any): void {
-    if (this.accountId === null) return; // Guard against early calls
+    if (this.accountId() === null) return; // Guard against early calls
     this.loadData(event);
+  }
+
+  onFilterChange(): void {
+    this.loadData(this.lastLazyLoadEvent);
   }
 
   async showTransactionForm(transactionToEdit?: Transaction): Promise<void> {
@@ -123,10 +153,10 @@ export class TransactionList implements OnInit {
       header: isEditMode ? 'Edit Transaction' : 'Add a New Transaction',
       width: '400px',
       modal: true,
-
+      closable: true,
       data: {
         transaction: transactionToEdit,
-        currentAccountId: this.accountId // Pass the current account ID to the form
+        currentAccountId: this.accountId() // Pass the current account ID to the form
       }
     });
 
@@ -144,7 +174,7 @@ export class TransactionList implements OnInit {
       icon: 'pi pi-exclamation-triangle',
       accept: async () => {
         try {
-          await firstValueFrom(this.transactionService.deleteTransaction(this.accountId!, transaction.id));
+          await firstValueFrom(this.transactionService.deleteTransaction(this.accountId()!, transaction.id));
           this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Transaction deleted' });
           await this.accountState.refresh();
           await this.loadData();
@@ -160,15 +190,14 @@ export class TransactionList implements OnInit {
       header: 'Switch Transaction Account',
       width: '400px',
       modal: true,
-
-      data: { currentAccountId: this.accountId }
+      data: { currentAccountId: this.accountId() }
     });
 
     const result = await firstValueFrom(this.ref.onClose);
 
     if (result && result.destinationAccountId) {
       try {
-        await firstValueFrom(this.transactionService.switchAccount(this.accountId!, transaction.id, result.destinationAccountId));
+        await firstValueFrom(this.transactionService.switchAccount(this.accountId()!, transaction.id, result.destinationAccountId));
         this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Transaction switched successfully' });
         await this.accountState.refresh();
         await this.loadData();

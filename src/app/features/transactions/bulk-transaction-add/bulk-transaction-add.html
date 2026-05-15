@@ -14,7 +14,7 @@
                 (onClick)="triggerFileInput()"></p-button>
             <p-button label="Clear Grid" icon="pi pi-refresh" outlined="true" severity="danger"
                 (onClick)="rows.set([]); addEmptyRow();"></p-button>
-            <p-button label="Go Back" icon="pi pi-arrow-left" outlined="true" severity="secondary"
+            <p-button label="Go to Dashboard" icon="pi pi-arrow-left" outlined="true" severity="secondary"
                 (onClick)="cancel()"></p-button>
         </div>
     </div>
@@ -62,7 +62,7 @@
                                 optionLabel="name" (completeMethod)="filterAccounts($event)"
                                 (onSelect)="onRowChange(row)" (ngModelChange)="onRowChange(row)" [dropdown]="false"
                                 placeholder="Search Account" appendTo="body" class="excel-dropdown block w-full h-full"
-                                inputStyleClass="excel-input p-inputtext p-component w-full h-full border-none border-round-none outline-none focus:shadow-none bg-transparent px-2">
+                                inputStyleClass="excel-input p-inputtext p-component w-full h-full border-none border-round-none outline-none focus:shadow-none bg-transparent pl-2 pr-5">
                                 <ng-template let-item pTemplate="item">
                                     <span>{{ item.name || item }}</span>
                                 </ng-template>
@@ -71,8 +71,7 @@
                                 </ng-template>
                             </p-autoComplete>
                             @if (isMissingItem(row.accountId)) {
-                            <p-button icon="pi pi-plus"
-                                styleClass="p-button-rounded p-button-sm absolute shadow-2 p-button-primary"
+                            <p-button icon="pi pi-plus" [rounded]="true" size="small" class="absolute"
                                 [style]="{'width': '2rem', 'height': '2rem', 'right': '0.5rem', 'top': '50%', 'transform': 'translateY(-50%)', 'z-index': '2'}"
                                 (onClick)="openAccountModal(row.index, row.accountId)" pTooltip="Add {{row.accountId}}"
                                 tooltipPosition="top"></p-button>
@@ -85,14 +84,13 @@
                                 field="name" optionLabel="name" (completeMethod)="filterCategories($event)"
                                 (onSelect)="onRowChange(row)" (ngModelChange)="onRowChange(row)" [dropdown]="false"
                                 placeholder="Search Category" appendTo="body" class="excel-dropdown block w-full h-full"
-                                inputStyleClass="excel-input p-inputtext p-component w-full h-full border-none border-round-none outline-none focus:shadow-none bg-transparent px-2">
+                                inputStyleClass="excel-input p-inputtext p-component w-full h-full border-none border-round-none outline-none focus:shadow-none bg-transparent pl-2 pr-5">
                                 <ng-template let-item pTemplate="item">
                                     <span>{{ item.name }}</span>
                                 </ng-template>
                             </p-autoComplete>
                             @if (isMissingItem(row.transactionCategoryId)) {
-                            <p-button icon="pi pi-plus"
-                                styleClass="p-button-rounded p-button-sm absolute shadow-2 p-button-primary"
+                            <p-button icon="pi pi-plus" [rounded]="true" size="small" class="absolute"
                                 [style]="{'width': '2rem', 'height': '2rem', 'right': '0.5rem', 'top': '50%', 'transform': 'translateY(-50%)', 'z-index': '2'}"
                                 (onClick)="openCategoryModal(row.index, row.transactionCategoryId)"
                                 pTooltip="Add {{row.transactionCategoryId}}" tooltipPosition="top"></p-button>
@@ -112,7 +110,7 @@
                                 field="name" optionLabel="name" (completeMethod)="filterAccounts($event)"
                                 (onSelect)="onRowChange(row)" (ngModelChange)="onRowChange(row)" [dropdown]="false"
                                 placeholder="To Account" appendTo="body" class="excel-dropdown block w-full h-full"
-                                inputStyleClass="excel-input p-inputtext p-component w-full h-full border-none border-round-none outline-none focus:shadow-none bg-transparent px-2">
+                                inputStyleClass="excel-input p-inputtext p-component w-full h-full border-none border-round-none outline-none focus:shadow-none bg-transparent pl-2 pr-5">
                                 <ng-template let-item pTemplate="item">
                                     <span>{{ item.name || item }}</span>
                                 </ng-template>
@@ -121,9 +119,7 @@
                                 </ng-template>
                             </p-autoComplete>
                             @if (isMissingItem(row.destinationAccountId)) {
-                            <p-button icon="pi pi-plus"
-                                styleClass="p-button-rounded p-button-sm absolute shadow-2 p-button-primary"
-                                [style]="{'width': '2rem', 'height': '2rem', 'right': '0.5rem', 'top': '50%', 'transform': 'translateY(-50%)', 'z-index': '2'}"
+                            <p-button icon="pi pi-plus" [rounded]="true" size="small" class="absolute"
                                 (onClick)="openAccountModal(row.index, row.destinationAccountId)"
                                 pTooltip="Add {{row.destinationAccountId}}" tooltipPosition="top"></p-button>
                             }
@@ -140,7 +136,7 @@
                             inputStyleClass="text-right w-full h-full border-none border-round-none outline-none focus:shadow-none bg-transparent"></p-inputNumber>
                     </td>
                     <td class="text-center pr-3">
-                        <p-button icon="pi pi-trash" class="p-button-danger p-button-text p-button-sm w-full"
+                        <p-button icon="pi pi-trash" severity="danger" [text]="true" size="small" class="w-full"
                             (onClick)="deleteRow(row.index)" pTooltip="Delete Row"></p-button>
                     </td>
                 </tr>

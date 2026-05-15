@@ -1,13 +1,10 @@
 
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ButtonModule } from 'primeng/button';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { InputNumberModule } from 'primeng/inputnumber';
-import { InputTextModule } from 'primeng/inputtext';
 import { AccountCategory, Category } from '../../categories/category';
 import { firstValueFrom } from 'rxjs';
-import { SelectModule } from 'primeng/select';
+import { sharedPrimeModules } from '../../../shared/prime-imports';
 import { ValidationService } from '../../../core/services/validation.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { FormField } from '../../../shared/components/form-field/form-field';
@@ -15,7 +12,7 @@ import { AccountState } from '../../../core/state/account-state.service';
 
 @Component({
   selector: 'app-account-form',
-  imports: [ReactiveFormsModule, InputTextModule, InputNumberModule, ButtonModule, SelectModule, FormField],
+  imports: [ReactiveFormsModule, ...sharedPrimeModules, FormField],
   templateUrl: './account-form.html',
   styleUrl: './account-form.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -33,6 +30,7 @@ export class AccountForm {
   accountCategories = signal<AccountCategory[]>([]);
   currentFilter = signal<string>('');
   isSubmitting = signal<boolean>(false);
+  isEditMode = false;
 
   constructor() {
     this.accountForm = this.fb.group({
@@ -51,6 +49,7 @@ export class AccountForm {
 
     const data = this.config.data;
     if (data && data.itemToEdit) {
+      this.isEditMode = true;
       const item = data.itemToEdit;
       const category = this.accountCategories().find(c => c.name === item.accountCategoryName);
       this.accountForm.patchValue({

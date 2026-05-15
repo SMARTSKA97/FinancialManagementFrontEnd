@@ -1,14 +1,14 @@
 import { Component, inject, OnInit, ChangeDetectionStrategy, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
-import { DecimalPipe } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 
-interface PublicStatsDto {
+export interface PublicStats {
   totalUsers: number;
   totalAccounts: number;
   totalTransactions: number;
+  totalTransactionVolume: number;
 }
 
 interface ApiResult<T> {
@@ -18,7 +18,7 @@ interface ApiResult<T> {
 
 @Component({
   selector: 'app-home',
-  imports: [RouterLink, ButtonModule, DecimalPipe],
+  imports: [RouterLink, ButtonModule],
   templateUrl: './home.html',
   styleUrl: './home.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -26,14 +26,15 @@ interface ApiResult<T> {
 export class Home implements OnInit {
   private http = inject(HttpClient);
 
-  stats = signal<PublicStatsDto>({
+  stats = signal<PublicStats>({
     totalUsers: 0,
     totalAccounts: 0,
-    totalTransactions: 0
+    totalTransactions: 0,
+    totalTransactionVolume: 0
   });
 
   ngOnInit() {
-    this.http.get<ApiResult<PublicStatsDto>>(
+    this.http.get<ApiResult<PublicStats>>(
       `${environment.apiBaseUrl}/Dashboard/public-stats`
     ).subscribe({
       next: (res) => {
@@ -45,5 +46,13 @@ export class Home implements OnInit {
         // Fallback to zeros — no fake data
       }
     });
+  }
+
+  formatValue(val: number): string {
+    if (!val) return '0';
+    if (val >= 10000000) return (val / 10000000).toFixed(2) + ' Cr';
+    if (val >= 100000) return (val / 100000).toFixed(2) + ' L';
+    if (val >= 1000) return (val / 1000).toFixed(2) + ' k';
+    return val.toString();
   }
 }

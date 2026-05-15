@@ -1,18 +1,9 @@
 import { Component, computed, ElementRef, inject, signal, viewChild } from '@angular/core';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ButtonModule } from 'primeng/button';
-import { InputTextModule } from 'primeng/inputtext';
-import { InputNumberModule } from 'primeng/inputnumber';
-import { SelectModule } from 'primeng/select';
-import { AutoCompleteModule } from 'primeng/autocomplete';
-import { ToastModule } from 'primeng/toast';
-import { TooltipModule } from 'primeng/tooltip';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { DatePickerModule } from 'primeng/datepicker';
-import { DialogModule } from 'primeng/dialog';
 import { Transaction } from '../transaction';
 import { TransactionType } from '../../../core/models/transaction-type';
 import { CategoryForm } from '../../categories/category-form/category-form';
@@ -20,6 +11,7 @@ import { AccountForm } from '../../accounts/account-form/account-form';
 import { Account } from '../../accounts/account';
 import { Observable } from 'rxjs';
 import { GenericApi, PaginatedResult } from '../../../core/services/generic-api';
+import { sharedPrimeModules } from '../../../shared/prime-imports';
 import * as XLSX from 'xlsx';
 
 interface BulkTransactionRow {
@@ -41,16 +33,7 @@ interface BulkTransactionRow {
     imports: [
         CommonModule,
         FormsModule,
-        ButtonModule,
-        InputTextModule,
-        InputNumberModule,
-        SelectModule,
-        AutoCompleteModule,
-        ToastModule,
-        TooltipModule,
-        ConfirmDialogModule,
-        DatePickerModule,
-        DialogModule
+        ...sharedPrimeModules
     ],
     templateUrl: './bulk-transaction-add.html',
     styleUrls: ['./bulk-transaction-add.scss'],
@@ -62,6 +45,7 @@ export class BulkTransactionAdd {
     private apiService = inject(GenericApi);
     private dialogService = inject(DialogService);
     private confirmationService = inject(ConfirmationService);
+    private router = inject(Router);
 
     rows = signal<BulkTransactionRow[]>([]);
     transactionTypes = [
@@ -193,7 +177,7 @@ export class BulkTransactionAdd {
     }
 
     cancel() {
-        history.back();
+        this.router.navigate(['/app/dashboard']);
     }
 
     isMissingItem(val: any): boolean {
@@ -339,12 +323,7 @@ export class BulkTransactionAdd {
 
                 if (failedCount === 0) {
                     this.messageService.add({ severity: 'success', summary: 'Saved', detail: `Successfully saved ${successfulCount} transactions.` });
-                    // Clear active rows and leave one empty
-                    this.rows.update(current => {
-                        current.forEach(r => r.isDeleted = true);
-                        return current;
-                    });
-                    this.addEmptyRow();
+                    this.router.navigate(['/app/dashboard']);
                 } else {
                     this.messageService.add({ severity: 'warn', summary: 'Partial Success', detail: `Saved ${successfulCount}, failed ${failedCount}. Please review highlighted rows.` });
 

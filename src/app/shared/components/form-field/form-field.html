@@ -3,7 +3,9 @@
     <label [for]="inputId" class="font-medium text-sm text-secondary">{{ label }}</label>
     }
     <ng-content></ng-content>
-    <small class="p-error block" style="min-height: 1rem; line-height: 1rem;">
+    @if (control?.invalid && (control?.touched || control?.dirty)) {
+    <small class="p-error block" style="line-height: inherit;">
         {{ errorMessage }}
     </small>
+    }
 </div>

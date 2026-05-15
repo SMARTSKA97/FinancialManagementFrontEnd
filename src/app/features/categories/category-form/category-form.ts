@@ -1,9 +1,9 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ButtonModule } from 'primeng/button';
-import { CheckboxModule } from 'primeng/checkbox';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { InputTextModule } from 'primeng/inputtext';
+import { Category } from '../../categories/category';
+import { firstValueFrom } from 'rxjs';
+import { sharedPrimeModules } from '../../../shared/prime-imports';
 import { ValidationService } from '../../../core/services/validation.service';
 import { GenericCrud } from '../../../core/services/generic-crud';
 import { NotificationService } from '../../../core/services/notification.service';
@@ -11,24 +11,24 @@ import { FormField } from '../../../shared/components/form-field/form-field';
 
 @Component({
   selector: 'app-category-form',
-  imports: [ReactiveFormsModule, InputTextModule, ButtonModule, CheckboxModule, FormField],
+  imports: [ReactiveFormsModule, FormField, ...sharedPrimeModules],
   templateUrl: './category-form.html',
-  styleUrl: './category-form.scss'
+  styleUrl: './category-form.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CategoryForm implements OnInit {
-  categoryForm: FormGroup;
-  isTransactionCategory = false; // To know when to show the checkbox
-  isSubmitting: boolean = false;
-
-  validationService = inject(ValidationService);
+  private fb = inject(FormBuilder);
+  public ref = inject(DynamicDialogRef);
+  public config = inject(DynamicDialogConfig);
+  public validationService = inject(ValidationService);
   private crudService = inject(GenericCrud<any>);
   private notificationService = inject(NotificationService);
 
-  constructor(
-    private fb: FormBuilder,
-    public ref: DynamicDialogRef,
-    public config: DynamicDialogConfig
-  ) {
+  categoryForm: FormGroup;
+  isTransactionCategory = signal(false); // To know when to show the checkbox
+  isSubmitting = signal<boolean>(false);
+
+  constructor() {
     this.categoryForm = this.fb.group({
       id: [null],
       name: ['', Validators.required],
@@ -39,7 +39,7 @@ export class CategoryForm implements OnInit {
   ngOnInit(): void {
     // Check if we are editing a Transaction Category
     if (this.config.data?.endpoint === 'TransactionCategories') {
-      this.isTransactionCategory = true;
+      this.isTransactionCategory.set(true);
     }
 
     // Patch the form if we are in edit mode
@@ -48,14 +48,14 @@ export class CategoryForm implements OnInit {
     }
 
     // If not a transaction category, disable the transfer checkbox
-    if (!this.isTransactionCategory) {
+    if (!this.isTransactionCategory()) {
       this.categoryForm.get('isTransferCategory')?.disable();
     }
   }
 
   async onSubmit(): Promise<void> {
-    if (this.categoryForm.valid && !this.isSubmitting) {
-      this.isSubmitting = true;
+    if (this.categoryForm.valid && !this.isSubmitting()) {
+      this.isSubmitting.set(true);
       const payload = this.categoryForm.getRawValue(); // Use getRawValue() to get disabled fields
       // Use endpoint from config, or default if missing? 
       // ResourcePage passes it.
@@ -63,7 +63,7 @@ export class CategoryForm implements OnInit {
 
       if (!endpoint) {
         this.notificationService.showError('Configuration Error: No endpoint provided', 'Error');
-        this.isSubmitting = false;
+        this.isSubmitting.set(false);
         return;
       }
 
@@ -73,7 +73,7 @@ export class CategoryForm implements OnInit {
         this.ref.close(true);
       } catch (err: any) {
         this.notificationService.showError(err.message || 'Failed to save category');
-        this.isSubmitting = false;
+        this.isSubmitting.set(false);
       }
     } else {
       this.categoryForm.markAllAsTouched();

@@ -1,17 +1,14 @@
 import { Component, inject, Inject, PLATFORM_ID } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
+import { isPlatformBrowser, CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { CardModule } from 'primeng/card';
-import { InputTextModule } from 'primeng/inputtext';
-import { ButtonModule } from 'primeng/button';
-import { ToggleButtonModule } from 'primeng/togglebutton';
 import { Theme } from '../../../core/services/theme';
 import { Auth } from '../../../core/services/auth';
+import { sharedPrimeModules } from '../../../shared/prime-imports';
 
 @Component({
   selector: 'app-settings',
-  imports: [FormsModule, RouterLink, CardModule, InputTextModule, ButtonModule, ToggleButtonModule],
+  imports: [CommonModule, FormsModule, RouterLink, ...sharedPrimeModules],
   templateUrl: './settings.html',
   styleUrl: './settings.scss'
 })
