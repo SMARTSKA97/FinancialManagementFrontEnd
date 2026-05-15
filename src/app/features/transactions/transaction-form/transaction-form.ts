@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal, computed } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { Transaction } from '../transaction';
+import { Transaction, TransactionService } from '../transaction';
 import { TransactionType } from '../../../core/models/transaction-type';
 import { Category, TransactionCategory } from '../../categories/category';
 import { firstValueFrom } from 'rxjs';
@@ -23,7 +23,7 @@ export class TransactionForm implements OnInit {
   public ref = inject(DynamicDialogRef);
   public config = inject(DynamicDialogConfig);
   private categoryService = inject(Category);
-  private transactionService = inject(Transaction);
+  private transactionService = inject(TransactionService);
   private accountState = inject(AccountState);
   private messageService = inject(MessageService);
 

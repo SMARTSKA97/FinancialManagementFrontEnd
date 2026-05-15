@@ -3,7 +3,7 @@ import { ConfirmationService } from 'primeng/api';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { GenericCrud } from '../../../core/services/generic-crud';
 import { ColumnDefinition, DataTable } from '../../../shared/components/data-table/data-table';
-import { BehaviorSubject, firstValueFrom } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
@@ -13,17 +13,18 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ToastModule } from 'primeng/toast';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { NotificationService } from '../../../core/services/notification.service';
+import { FormsModule } from '@angular/forms';
+import { InputTextModule } from 'primeng/inputtext';
 import { BreadcrumbService } from '../../../core/layout/breadcrumb.service';
 import { SelectModule } from 'primeng/select';
-import { InputTextModule } from 'primeng/inputtext';
-import { FormsModule } from '@angular/forms';
 import { GenericApi } from '../../../core/services/generic-api';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
+import { TooltipModule } from 'primeng/tooltip';
 
 @Component({
   selector: 'app-resource-page',
-  imports: [CommonModule, CardModule, ButtonModule, TableModule, DataTable, ProgressSpinnerModule, ConfirmDialogModule, ToastModule, RouterLink, SelectModule, InputTextModule, FormsModule, IconFieldModule, InputIconModule],
+  imports: [CommonModule, FormsModule, InputTextModule, CardModule, ButtonModule, TableModule, DataTable, ProgressSpinnerModule, ConfirmDialogModule, ToastModule, RouterLink, SelectModule, IconFieldModule, InputIconModule, TooltipModule],
   templateUrl: './resource-page.html',
   styleUrl: './resource-page.scss',
   providers: [DialogService, ConfirmationService, GenericCrud],
@@ -40,15 +41,15 @@ export class ResourcePage<T extends { id: number }> implements OnInit {
   private breadcrumbService = inject(BreadcrumbService);
   private apiService = inject(GenericApi);
 
-  // Filters
+  // Filters (Using Signals)
   searchTerm = signal<string>('');
   selectedCategoryId = signal<number | null>(null);
   categories = signal<any[]>([]);
   showCategoryFilter = signal<boolean>(false);
 
-  // ... rest of inputs ...
   @Input() title: string = '';
   @Input() backLinkPath?: string;
+  @Input() backLinkLabel?: string;
   @Input({ required: true }) endpoint!: string;
   @Input({ required: true }) columns!: ColumnDefinition[];
   @Input({ required: true }) formComponent!: Type<any>;
@@ -59,6 +60,7 @@ export class ResourcePage<T extends { id: number }> implements OnInit {
 
   ref: DynamicDialogRef | undefined;
   ready = false;
+  lastLazyLoadEvent: any;
 
   async ngOnInit(): Promise<void> {
     const routeData = await firstValueFrom(this.route.data);
@@ -67,6 +69,7 @@ export class ResourcePage<T extends { id: number }> implements OnInit {
     this.title = routeData['title'];
     this.columns = routeData['columns'];
     this.backLinkPath = routeData['backLinkPath'];
+    this.backLinkLabel = routeData['backLinkLabel'];
 
     // Support lazy loadFormComponent (new) or static formComponent (legacy)
     if (typeof routeData['loadFormComponent'] === 'function') {
@@ -109,11 +112,21 @@ export class ResourcePage<T extends { id: number }> implements OnInit {
   }
 
   refreshData() {
-    const event = { first: 0, rows: 10 }; // Default or use last event
-    this.onLazyLoad(event);
+    this.onLazyLoad(this.lastLazyLoadEvent || { first: 0, rows: 10 });
+  }
+
+  onSearch(): void {
+    // Re-trigger lazy load with the current signal values
+    this.onLazyLoad(this.lastLazyLoadEvent || { first: 0, rows: 10 });
+  }
+
+  clearSearch(): void {
+    this.searchTerm.set('');
+    this.onSearch();
   }
 
   onLazyLoad(event: any): void {
+    this.lastLazyLoadEvent = event;
     if (!this.endpoint) return; // Guard against early calls
 
     const pageNumber = event.first / event.rows + 1;

@@ -4,7 +4,10 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { Transaction } from '../transaction';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { DatePickerModule } from 'primeng/datepicker';
+import { DialogModule } from 'primeng/dialog';
+import { Transaction, TransactionService } from '../transaction';
 import { TransactionType } from '../../../core/models/transaction-type';
 import { CategoryForm } from '../../categories/category-form/category-form';
 import { AccountForm } from '../../accounts/account-form/account-form';
@@ -37,10 +40,10 @@ interface BulkTransactionRow {
     ],
     templateUrl: './bulk-transaction-add.html',
     styleUrls: ['./bulk-transaction-add.scss'],
-    providers: [MessageService, DialogService, ConfirmationService]
+    providers: [DialogService]
 })
 export class BulkTransactionAdd {
-    private transactionService = inject(Transaction);
+    private transactionService = inject(TransactionService);
     private messageService = inject(MessageService);
     private apiService = inject(GenericApi);
     private dialogService = inject(DialogService);
@@ -127,8 +130,20 @@ export class BulkTransactionAdd {
         return this.rows().filter(r => !r.isDeleted);
     }
 
-    totalAmount = computed(() => {
-        return this.activeRows.reduce((sum, row) => sum + (row.amount || 0), 0);
+    totalIncome = computed(() => {
+        return this.activeRows
+            .filter(r => r.type === TransactionType.Income)
+            .reduce((sum, row) => sum + (row.amount || 0), 0);
+    });
+
+    totalExpenses = computed(() => {
+        return this.activeRows
+            .filter(r => r.type === TransactionType.Expense)
+            .reduce((sum, row) => sum + (row.amount || 0), 0);
+    });
+
+    netAmount = computed(() => {
+        return this.totalIncome() - this.totalExpenses();
     });
 
     resolveStringsToObject(row: BulkTransactionRow) {

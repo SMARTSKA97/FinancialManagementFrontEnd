@@ -1,12 +1,19 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal, computed, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, finalize } from 'rxjs';
+import { Transaction, TransactionService } from '../transaction';
+import { ColumnDefinition, DataTable } from '../../../shared/components/data-table/data-table';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { ButtonModule } from 'primeng/button';
+import { CardModule } from 'primeng/card';
+import { DatePickerModule } from 'primeng/datepicker';
+import { SelectModule } from 'primeng/select';
+import { InputTextModule } from 'primeng/inputtext';
+import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { Transaction } from '../transaction';
-import { ColumnDefinition, DataTable } from '../../../shared/components/data-table/data-table';
 import { TransactionForm } from '../transaction-form/transaction-form';
 import { TransactionSwitchForm } from '../transaction-switch-form/transaction-switch-form';
 import { AccountSummary } from '../../dashboard/dashboard';
@@ -16,6 +23,8 @@ import { NotificationService } from '../../../core/services/notification.service
 import { BreadcrumbService } from '../../../core/layout/breadcrumb.service';
 import { sharedPrimeModules } from '../../../shared/prime-imports';
 import { StatCard } from '../../../shared/components/stat-card/stat-card';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { ToastModule } from 'primeng/toast';
 
 @Component({
   selector: 'app-transaction-list',
@@ -24,6 +33,16 @@ import { StatCard } from '../../../shared/components/stat-card/stat-card';
     DataTable,
     FormsModule,
     StatCard,
+    RouterLink,
+    CardModule,
+    ButtonModule,
+    ProgressSpinnerModule,
+    ToastModule,
+    ConfirmDialogModule,
+    DatePickerModule,
+    SelectModule,
+    InputTextModule,
+    TooltipModule,
     ...sharedPrimeModules
   ],
   templateUrl: './transaction-list.html',
@@ -33,7 +52,7 @@ import { StatCard } from '../../../shared/components/stat-card/stat-card';
 })
 export class TransactionList implements OnInit {
   private route = inject(ActivatedRoute);
-  private transactionService = inject(Transaction);
+  private transactionService = inject(TransactionService);
   private dashboardService = inject(DashboardService);
   private messageService = inject(MessageService);
   private dialogService = inject(DialogService);
@@ -41,6 +60,7 @@ export class TransactionList implements OnInit {
   private accountState = inject(AccountState);
   private notificationService = inject(NotificationService);
   private breadcrumbService = inject(BreadcrumbService);
+  private cdr = inject(ChangeDetectorRef);
 
   transactions = signal<Transaction[]>([]);
   isLoading = signal(false);
@@ -52,15 +72,13 @@ export class TransactionList implements OnInit {
   lastLazyLoadEvent: any;
   ready = signal(false);
 
-  // Filters
-  searchTerm = signal('');
-  selectedDate = signal(new Date());
+  // Filter state (Using Signals)
+  selectedDate = signal<Date>(new Date());
+  selectedCategory = signal<string | null>(null);
+  globalSearch = signal<string>('');
+  categoryOptions = signal<{ label: string; value: string }[]>([]);
 
-  constructor() {
-    this.breadcrumbService.refresh$.subscribe(() => {
-      this.loadData(this.lastLazyLoadEvent);
-    });
-  }
+  private lastQueryKey: string | null = null;
 
   transactionColumns: ColumnDefinition[] = [
     { field: 'date', header: 'Date', isDate: true, sortable: true },
@@ -69,6 +87,13 @@ export class TransactionList implements OnInit {
     { field: 'amount', header: 'Amount', isCurrency: true, isTransaction: true, sortable: true },
   ];
 
+  constructor() {
+    this.selectedDate().setDate(1); // canonical start of month
+    this.breadcrumbService.refresh$.subscribe(() => {
+      this.loadData(this.lastLazyLoadEvent);
+    });
+  }
+
   async ngOnInit(): Promise<void> {
     const params = await firstValueFrom(this.route.paramMap);
     const id = Number(params.get('id'));
@@ -76,42 +101,93 @@ export class TransactionList implements OnInit {
       return;
     }
     this.accountId.set(id);
+
+    // Load available categories for filtering
+    try {
+      const result = await firstValueFrom(this.transactionService.getAllTransactions({ pageNumber: 1, pageSize: 1, filters: {} }));
+      this.categoryOptions.set(result.availableCategories.map(c => ({ label: c, value: c })));
+    } catch (e) {
+      console.warn('Could not load category options');
+    }
+
     this.ready.set(true);
+    this.cdr.markForCheck();
   }
 
   async loadData(event?: any): Promise<void> {
+    const id = this.accountId();
+    if (id === null || this.isLoading()) return;
+
+    // 1. Determine current state
+    const pageNumber = event ? (event.first / event.rows + 1) : (this.lastLazyLoadEvent ? (this.lastLazyLoadEvent.first / this.lastLazyLoadEvent.rows + 1) : 1);
+    const pageSize = event ? event.rows : (this.lastLazyLoadEvent ? this.lastLazyLoadEvent.rows : this.rows());
+    const sortBy = event?.sortField || this.lastLazyLoadEvent?.sortField || 'date';
+    const sortOrder = event?.sortOrder === 1 ? 'asc' : (event?.sortOrder === -1 ? 'desc' : (this.lastLazyLoadEvent?.sortOrder === 1 ? 'asc' : 'desc'));
+
+    const filters: { [key: string]: string } = {
+      month: (this.selectedDate().getMonth() + 1).toString(),
+      year: this.selectedDate().getFullYear().toString(),
+    };
+    if (this.selectedCategory()) {
+      filters['categoryName'] = this.selectedCategory()!;
+    }
+
+    const startOfMonth = new Date(this.selectedDate().getFullYear(), this.selectedDate().getMonth(), 1, 0, 0, 0);
+    const endOfMonth = new Date(this.selectedDate().getFullYear(), this.selectedDate().getMonth() + 1, 0, 23, 59, 59, 999);
+
+    // 2. Create a unique key for this query to prevent infinite loops
+    const currentQueryKey = JSON.stringify({
+      accountId: id,
+      pageNumber,
+      pageSize,
+      sortBy,
+      sortOrder,
+      filters,
+      globalSearch: this.globalSearch(),
+    });
+
+    if (this.lastQueryKey === currentQueryKey && this.transactions().length > 0) {
+      return;
+    }
+
     this.isLoading.set(true);
     if (event) this.lastLazyLoadEvent = event;
 
     try {
-      if (this.accountId() === null) {
-        const params = await firstValueFrom(this.route.paramMap);
-        const id = Number(params.get('id'));
-        if (!id || isNaN(id)) {
-          this.notificationService.showError('Invalid account.');
-          return;
-        }
-        this.accountId.set(id);
-      }
-
-      const pageNumber = event ? (event.first / event.rows + 1) : 1;
-      const pageSize = event ? event.rows : this.rows();
-      const sortBy = event?.sortField || 'date';
-      const sortOrder = event?.sortOrder === 1 ? 'asc' : 'desc';
+      this.lastQueryKey = currentQueryKey;
 
       // --- FETCH BOTH DATASETS IN PARALLEL ---
       const [paginatedResult, summaryData] = await Promise.all([
-        firstValueFrom(this.transactionService.getTransactionsForAccount(this.accountId()!, {
+        firstValueFrom(this.transactionService.getTransactionsForAccount(id, {
           pageNumber,
           pageSize,
           sortBy,
           sortOrder,
-          globalSearch: this.searchTerm(),
-          month: this.selectedDate().getMonth() + 1,
-          year: this.selectedDate().getFullYear()
+          filters,
+          globalSearch: this.globalSearch() || ''
         })),
-        firstValueFrom(this.dashboardService.getAccountSummary(this.accountId()!))
+        firstValueFrom(this.dashboardService.getAccountSummary(id, startOfMonth, endOfMonth))
       ]);
+
+      this.transactions.set(paginatedResult.data);
+      this.totalRecords.set(paginatedResult.totalRecords);
+      this.summary.set(summaryData);
+
+      // Update Breadcrumbs
+      const accountName = this.accountState.accounts().find(a => a.id === id)?.name || 'Account';
+      this.breadcrumbService.setItems([
+        { label: 'Accounts', routerLink: '/app/accounts' },
+        { label: accountName },
+        { label: 'Transactions' }
+      ]);
+    } catch (err) {
+      console.error('Failed to load account transactions', err);
+      this.lastQueryKey = null; // Allow retry on error
+    } finally {
+      this.isLoading.set(false);
+      this.cdr.markForCheck();
+    }
+  }
 
       this.transactions.set(paginatedResult.data);
       this.totalRecords.set(paginatedResult.totalRecords);
@@ -125,17 +201,33 @@ export class TransactionList implements OnInit {
         { label: 'Transactions' }
       ]);
 
-      // Sync balance with AccountState (Single Source of Truth)
-      const accountInState = this.accountState.accounts().find(a => a.id === this.accountId());
-      const s = this.summary();
-      if (accountInState && s) {
-        s.currentBalance = accountInState.balance;
-        this.summary.set({ ...s });
-      }
     } catch (err) {
+      console.error('Failed to load account transactions', err);
+      this.lastQueryKey = null; // Allow retry on error
     } finally {
       this.isLoading.set(false);
+      this.cdr.markForCheck();
     }
+  }
+
+  onDateChange(event: any): void {
+    if (event) {
+      this.selectedDate.set(event);
+      this.loadData();
+    }
+  }
+
+  onCategoryChange(): void {
+    this.loadData();
+  }
+
+  onSearch(): void {
+    this.loadData();
+  }
+
+  clearSearch(): void {
+    this.globalSearch.set('');
+    this.onSearch();
   }
 
   onLazyLoad(event: any): void {

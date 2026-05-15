@@ -46,6 +46,7 @@ export class Layout {
           { label: 'Accounts', icon: 'pi pi-wallet', routerLink: '/app/accounts', command: () => { this.sidebarVisible = false; } },
           { label: 'Budgets', icon: 'pi pi-chart-line', routerLink: '/app/budgets', command: () => { this.sidebarVisible = false; } },
           { label: 'Recurring', icon: 'pi pi-sync', routerLink: '/app/recurring-transactions', command: () => { this.sidebarVisible = false; } },
+          { label: 'Transactions', icon: 'pi pi-list', routerLink: '/app/transactions', command: () => { this.sidebarVisible = false; } },
         ],
       },
       {

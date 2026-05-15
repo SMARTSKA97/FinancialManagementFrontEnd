@@ -99,6 +99,7 @@ export const routes: Routes = [
           endpoint: 'Accounts',
           columns: accountColumns,
           backLinkPath: '/app/dashboard',
+          backLinkLabel: 'Back to Dashboard',
           loadFormComponent: () => import('./features/accounts/account-form/account-form').then(m => m.AccountForm)
         }
       },
@@ -131,6 +132,10 @@ export const routes: Routes = [
           formConfig: { endpoint: 'TransactionCategories' },
           loadFormComponent: () => import('./features/categories/category-form/category-form').then(m => m.CategoryForm)
         }
+      },
+      {
+        path: 'transactions',
+        loadComponent: () => import('./features/transactions/transactions-page/transactions-page').then(m => m.TransactionsPage)
       },
       {
         path: 'dashboard',
@@ -168,6 +173,14 @@ export const routes: Routes = [
         path: 'change-password',
         loadComponent: () => import('./features/auth/change-password/change-password.component').then(m => m.ChangePasswordComponent)
       },
+      {
+        path: 'issues',
+        loadChildren: () => import('./features/issues/issues.routes').then(m => m.ISSUES_ROUTES)
+      },
+      // {
+      //   path: 'about',
+      //   component: About
+      // },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   },

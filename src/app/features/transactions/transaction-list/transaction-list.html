@@ -1,20 +1,47 @@
 <p-confirmDialog></p-confirmDialog>
 <p-toast></p-toast>
 
-<div class="px-3 md:px-5">
-  <div class="flex flex-column md:flex-row md:align-items-center md:justify-content-between mb-4">
-    <div class="flex align-items-center gap-3">
-      <h1 class="text-3xl font-bold m-0">Transactions</h1>
-      <p-datepicker [ngModel]="selectedDate()" view="month" dateFormat="mm/yy" [showIcon]="true"
-        (ngModelChange)="selectedDate.set($event); onFilterChange()" placeholder="Select Month"></p-datepicker>
-    </div>
-    <div class="mt-3 md:mt-0">
+<div class="transactions-page p-4">
+  <!-- FILTER BAR (GitLab style + Local Signals) -->
+  <div class="filter-bar mb-4 flex flex-wrap align-items-center gap-3">
+    <div class="flex align-items-center gap-2 mr-auto">
+      <p-button label="Back to Accounts" icon="pi pi-arrow-left" severity="secondary" [outlined]="true"
+        routerLink="/app/accounts"></p-button>
       <p-button label="New Transaction" icon="pi pi-plus" (onClick)="showTransactionForm()"
         severity="primary"></p-button>
     </div>
+
+    <div class="flex align-items-center gap-2">
+      <label class="font-semibold text-sm">Period</label>
+      <p-datepicker [ngModel]="selectedDate()" view="month" dateFormat="mm/yy" (ngModelChange)="onDateChange($event)"
+        placeholder="Select Month" [showIcon]="true" [style]="{'width': '12rem'}"></p-datepicker>
+    </div>
+
+    <div class="flex align-items-center gap-1">
+      <p-iconfield>
+        <p-inputicon class="pi pi-search"></p-inputicon>
+        <input pInputText type="text" name="transactionSearch" autocomplete="off" [ngModel]="globalSearch()"
+          (ngModelChange)="globalSearch.set($event)" (keyup.enter)="onSearch()" placeholder="Search..."
+          class="w-15rem p-inputtext-sm" />
+      </p-iconfield>
+      <p-button icon="pi pi-search" [text]="true" severity="primary" size="small" (onClick)="onSearch()"
+        pTooltip="Run Search"></p-button>
+      @if (globalSearch()) {
+      <p-button icon="pi pi-times" [text]="true" severity="secondary" size="small" (onClick)="clearSearch()"
+        pTooltip="Clear Search"></p-button>
+      }
+    </div>
+
+    <div class="flex align-items-center gap-2">
+      <label class="font-semibold text-sm">Category</label>
+      <p-select [options]="categoryOptions()" [ngModel]="selectedCategory()"
+        (ngModelChange)="selectedCategory.set($event); onCategoryChange()" optionLabel="label" optionValue="value"
+        placeholder="All Categories" [showClear]="true" [style]="{'min-width': '12rem'}" class="p-inputtext-sm">
+      </p-select>
+    </div>
   </div>
 
-  <!-- SUMMARY CARDS (Feature 2) -->
+  <!-- SUMMARY CARDS (Stat Card Style) -->
   @if(summary()) {
   <div class="grid mb-4">
     <div class="col-12 sm:col-6 lg:col-3">
@@ -23,7 +50,7 @@
       </app-stat-card>
     </div>
     <div class="col-12 sm:col-6 lg:col-3">
-      <app-stat-card label="Current Balance" [value]="(summary()?.currentBalance | currency:'INR')!" icon="pi pi-wallet"
+      <app-stat-card label="Closing Balance" [value]="(summary()?.currentBalance | currency:'INR')!" icon="pi pi-wallet"
         iconColor="var(--blue-500)"></app-stat-card>
     </div>
     <div class="col-12 sm:col-6 lg:col-3">
@@ -36,9 +63,13 @@
     </div>
   </div>
   }
+    </div>
+  </div>
+  }
 
   <p-card>
     <ng-template pTemplate="header">
+<<<<<<< HEAD
       <div
         class="flex flex-wrap align-items-center justify-content-between gap-3 px-3 py-2 border-bottom-1 surface-border">
         <div class="flex flex-wrap gap-2 text-sm">
@@ -59,6 +90,9 @@
             severity="primary"></p-button>
         </div>
       </div>
+=======
+      <!-- Removed redundant button as it is present in filter bar -->
+>>>>>>> gitlab/main
     </ng-template>
 
     @if (ready()) {

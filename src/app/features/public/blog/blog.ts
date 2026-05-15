@@ -33,6 +33,64 @@ export const BLOG_POSTS = [
     `
   },
   {
+    id: 'v4-6-0-release',
+    tag: 'v4.6.0',
+    tagColor: '#10b981',
+    title: 'v4.6.0 — Seamless Navigation & Bulk Financial Insights',
+    excerpt: 'Enhancing the user experience with smarter navigation, optimized transaction performance, real-time financial summaries, and new account search capabilities.',
+    date: 'Mar 29, 2026',
+    _dateValue: new Date('2026-03-29'),
+    content: `
+      <h2>We Have a Domain: FinPlanner is Official!</h2>
+      <p>We are thrilled to announce that Financial Planner now has a permanent home. You can now access the application at <strong><a href="https://finplanner.ska97homelab.uk" target="_blank">https://finplanner.ska97homelab.uk</a></strong>. This marks a major milestone in our journey to provide a premium, professional-grade financial management tool.</p>
+
+      <h2>Navigation & Search: Faster, Fluid, Intuitive</h2>
+      <p>Version 4.6.0 focuses on the small details that make a big difference in daily usage. We have added <strong>"Back to Dashboard"</strong> navigation points directly within the Accounts and Transactions views, ensuring you are never more than a single click away from your financial high-level overview.</p>
+
+      <p>Managing multiple financial accounts is now easier than ever. We've introduced a <strong>Unified Month-Year Picker</strong> across all transaction views—from the global dashboard to individual account pages. This allows you to filter your entire financial history with a single, intuitive date selector. We've also extended our <strong>Advanced Filtering</strong> (Search, Month, Year, and Category) to individual account views, ensuring you have the same powerful tools whether viewing a unified global list or drilling down into a specific bank account.</p>
+
+      <h2>Performance: On-Demand Financial Intelligence</h2>
+      <p>To ensure peak performance, we've implemented <strong>On-Demand Search</strong>—simply press Enter or click the search icon to fetch results. This significantly reduces background API traffic and keeps the interface snappy even with thousands of records. We've also included a quick <strong>Reset</strong> button to clear your search and return to the full view instantly.</p>
+
+      <h2>Transactions: Stability & Comprehensive Summaries</h2>
+      <p>We have overhauled the <strong>Transactions engine</strong> to ensure a consistent experience. Whether you are on the main transactions page or viewing a specific account, the summary cards now dynamically recalculate to show the <strong>Total Income</strong>, <strong>Total Expenditure</strong>, and the new <strong>Closing Balance</strong> for your exact selected month and year. By implementing robust re-entrancy guards and smarter event-driven lazy loading, we have eliminated infinite loading cycles, ensuring your data loads instantly every time.</p>
+
+      <h2>Bulk Entry & UI Polish</h2>
+      <p>The <strong>Bulk Transaction Add page</strong> continues to evolve as a powerful analytical tool, with real-time session summaries for Income, Expenditure, and Net Amount. From fixing category dropdown bindings to refining the Excel-style grid responsiveness and ensuring <strong>Z-Index Harmony</strong> across all modals, v4.6.0 delivers our most polished and performant experience yet.</p>
+    `
+  },
+  {
+    id: 'v4-5-0-release',
+    tag: 'v4.5.0',
+    tagColor: '#10b981',
+    title: 'v4.5.0 — Unified Transactions, Bulk Entry & Advanced Security',
+    excerpt: 'Our biggest update yet: a unified transactions engine with smart filtering, an advanced bulk entry grid with Excel support, and a complete security overhaul.',
+    date: 'Mar 18, 2026',
+    _dateValue: new Date('2026-03-18'),
+    content: `
+      <h2>A New Way to View Your Finances</h2>
+      <p>Version 4.5.0 introduces the <strong>Unified Transactions Page</strong>. No more clicking through individual accounts to see your spending. Our new engine queries your entire financial history in a single pass, providing a comprehensive month-by-month view with advanced category filtering.</p>
+
+      <h2>Power Features in v4.5.0</h2>
+      <ul>
+        <li><strong>Unified Dashboard:</strong> Real-time summary cards for Balance Brought Forward, Total Income, Total Expenditure, Monthly Savings, and <strong>Closing Balance</strong> — all calculated across all your accounts and respecting your current filters.</li>
+        <li><strong>Direct Row Actions:</strong> Edit or Delete transactions directly from the unified list without leaving the page.</li>
+        <li><strong>Bulk Add Entry:</strong> A new entry point in the toolbar lets you jump straight into the advanced bulk entry grid.</li>
+        <li><strong>Excel-Grade Bulk Entry:</strong> The Bulk Transaction Add page now supports direct Excel/CSV imports with intelligent matching.</li>
+        <li><strong>Soft Delete Engine:</strong> Deleting accounts or transactions now uses a "soft delete" pattern, preserving your historical financial integrity.</li>
+      </ul>
+
+      <h2>Security First: The v16 Upgrade</h2>
+      <p>Infrastructure security is our top priority. In this release, we have upgraded the backend to <strong>AutoMapper v16.1.1</strong>, resolving high-severity vulnerabilities (NU1903) and ensuring your data orchestration is handled by the safest possible libraries.</p>
+
+      <h2>Lightning Fast Performance</h2>
+      <p>We\'ve refactored the entire frontend to use <strong>Full Lazy-Loading</strong>. Every feature module, from Transactions to Settings, now loads only when you need it. This significantly reduces the initial bundle size and makes the application feel snappier than ever.</p>
+
+      <h2>Development Resilience</h2>
+      <p>Finally, we\'ve made the development environment more robust. The backend now supports a <strong>Resilient Caching Fallback</strong>. If Redis is unavailable (common in local setups), the system automatically degrades to in-process Memory Caching without crashing, ensuring a smooth "out of the box" experience for contributors.</p>
+    `
+  },
+  {
     id: 'v4-3-0-release',
     tag: 'v4.3.0',
     tagColor: '#38bdf8',
@@ -42,7 +100,7 @@ export const BLOG_POSTS = [
     _dateValue: new Date('2026-03-10'),
     content: `
       <h2>The Render Cold Start Challenge</h2>
-      <p>Deploying on Render\\'s free tier brings a unique challenge: the backend spins down after inactivity and can take up to 60 seconds to wake up. Version 4.3.0 introduces a robust "holding" pattern to ensure a smooth transition for users during these cold starts.</p>
+      <p>Deploying on Render\'s free tier brings a unique challenge: the backend spins down after inactivity and can take up to 60 seconds to wake up. Version 4.3.0 introduces a robust "holding" pattern to ensure a smooth transition for users during these cold starts.</p>
 
       <h2>Robust Infrastructure Resilience</h2>
       <ul>
@@ -52,7 +110,7 @@ export const BLOG_POSTS = [
       </ul>
 
       <h2>Runtime Responsiveness</h2>
-      <p>It\\'s not just about the initial load. Our new <strong>Status Interceptor</strong> monitors HTTP response times during active sessions. If a request takes more than 2 seconds (indicating a backend spin-up), a "Backend is warming up" progress bar appears at the top of the interface.</p>
+      <p>It\'s not just about the initial load. Our new <strong>Status Interceptor</strong> monitors HTTP response times during active sessions. If a request takes more than 2 seconds (indicating a backend spin-up), a "Backend is warming up" progress bar appears at the top of the interface.</p>
 
       <h2>Code Professionalism: Console Cleanup</h2>
       <p>To provide a more production-ready experience, we have conducted a full sweep of the frontend codebase, removing all <code>console.log</code>, <code>console.warn</code>, and <code>console.error</code> calls. Debugging focus has been shifted to the server-side logs, resulting in a perfectly clean and professional developer console in the browser.</p>
@@ -78,7 +136,7 @@ export const BLOG_POSTS = [
       </ul>
 
       <h2>The Sorting Fix</h2>
-      <p>We addressed a common point of friction where sorting by "Category" or "Account" in the main tables wasn\\'t responding correctly. This was due to a field name mismatch between the frontend (<code>accountCategoryName</code>, <code>categoryName</code>) and the backend (<code>category</code>). The backend services for Accounts and Transactions have been updated to explicitly handle these frontend-driven field names.</p>
+      <p>We addressed a common point of friction where sorting by "Category" or "Account" in the main tables wasn\'t responding correctly. This was due to a field name mismatch between the frontend (<code>accountCategoryName</code>, <code>categoryName</code>) and the backend (<code>category</code>). The backend services for Accounts and Transactions have been updated to explicitly handle these frontend-driven field names.</p>
 
       <h2>Bulk Entry Reliability</h2>
       <p>A critical bug in the <strong>Bulk Transaction Add</strong> page was resolved. Previously, transactions marked as "Income" (internal value 0) were occasionally flagged as invalid during the pre-save check. The validation logic has been updated to correctly handle falsy numeric values, ensuring all valid entries persist on the first click.</p>
